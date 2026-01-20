@@ -4,7 +4,7 @@
 const Layout3Config = {
 	title: 'Layout 3 - Horizontal',
 	defaults: {
-		mode: 'container',
+		mode: 'fullwidth',
 		containerWidth: 1120,
 		scroll: 'content',
 		navbar: {

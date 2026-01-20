@@ -30,12 +30,16 @@ const Root = styled(ListItemButton)<ListItemButtonStyleProps>(({ theme, ...props
 		color: theme.palette.text.primary
 	},
 	'&.active': {
-		color: theme.palette.text.primary,
+		color: theme.palette.secondary.main,
 		backgroundColor:
-			theme.palette.mode === 'light' ? 'rgba(0, 0, 0, .05)!important' : 'rgba(255, 255, 255, .1)!important',
+			theme.palette.mode === 'light'
+				? `${alpha(theme.palette.secondary.light, 0.15)}!important`
+				: `${alpha(theme.palette.secondary.light, 0.25)}!important`,
+		fontWeight: 600,
 		transition: 'border-radius .15s cubic-bezier(0.4,0.0,0.2,1)',
 		'& > .fuse-list-item-text-primary': {
-			color: 'inherit'
+			color: 'inherit',
+			fontWeight: 600
 		},
 		'& > .fuse-list-item-icon': {
 			color: 'inherit'

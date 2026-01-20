@@ -1,9 +1,10 @@
 'use client';
-import ProjectDashboardAppHeader from './ProjectDashboardAppHeader';
+
 import { styled } from '@mui/material/styles';
 import FusePageSimple from '@fuse/core/FusePageSimple';
 import { Box } from '@mui/material';
-import HealthPlanDashboard from './widgets/HealthPlanDashboard';
+import FinancialDashboard from './FinancialDashboard';
+import ProjectDashboardAppHeader from '../painel/ProjectDashboardAppHeader';
 
 const Root = styled(FusePageSimple)(({ theme }) => ({
   '& .FusePageSimple-header': {
@@ -14,18 +15,18 @@ const Root = styled(FusePageSimple)(({ theme }) => ({
   }
 }));
 
-function PainelApp() {
+function FinancialPage() {
   return (
     <Root
       scroll="content"
-      header={<ProjectDashboardAppHeader />}
+      header={<ProjectDashboardAppHeader pageTitle="Gestão Financeira" />}
       content={
         <Box sx={{ width: '100%', px: { xs: 2, sm: 3, md: 3 }, py: { xs: 2, md: 3 } }}>
-          <HealthPlanDashboard />
+          <FinancialDashboard />
         </Box>
       }
     />
   );
 }
 
-export default PainelApp;
+export default FinancialPage;

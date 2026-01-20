@@ -1,3 +1,5 @@
+'use client';
+
 import Fab from '@mui/material/Fab';
 import { styled } from '@mui/material/styles';
 
@@ -7,25 +9,25 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 
 const Root = styled(Tooltip)<{ position: 'left' | 'right' }>(({ theme }) => ({
 	'& > .button': {
-		height: 40,
-		position: 'absolute',
-		zIndex: 99,
-		top: 12,
-		width: 24,
-		borderRadius: 38,
-		padding: 8,
+		height: 48,
+		position: 'fixed',
+		zIndex: 1200,
+		top: 16,
+		width: 48,
+		borderRadius: 24,
+		padding: 12,
 		backgroundColor: theme.palette.background.paper,
-		transition: theme.transitions.create(['background-color', 'border-radius', 'width', 'min-width', 'padding'], {
+		boxShadow: theme.shadows[4],
+		transition: theme.transitions.create(['background-color', 'border-radius', 'width', 'min-width', 'padding', 'box-shadow'], {
 			easing: theme.transitions.easing.easeInOut,
 			duration: theme.transitions.duration.shorter
 		}),
 		'&:hover': {
-			width: 52,
-			paddingLeft: 8,
-			paddingRight: 8
+			boxShadow: theme.shadows[8],
+			width: 56
 		},
 		'& > .button-icon': {
-			fontSize: 18,
+			fontSize: 24,
 			transition: theme.transitions.create(['transform'], {
 				easing: theme.transitions.easing.easeInOut,
 				duration: theme.transitions.duration.short
@@ -41,7 +43,6 @@ const Root = styled(Tooltip)<{ position: 'left' | 'right' }>(({ theme }) => ({
 				'& > .button': {
 					borderBottomLeftRadius: 0,
 					borderTopLeftRadius: 0,
-					paddingLeft: 4,
 					left: 0
 				}
 			}
@@ -54,7 +55,6 @@ const Root = styled(Tooltip)<{ position: 'left' | 'right' }>(({ theme }) => ({
 				'& > .button': {
 					borderBottomRightRadius: 0,
 					borderTopRightRadius: 0,
-					paddingRight: 4,
 					right: 0,
 					'& > .button-icon': {
 						transform: 'rotate(-180deg)'

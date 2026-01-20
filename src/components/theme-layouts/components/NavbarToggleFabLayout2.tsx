@@ -1,3 +1,5 @@
+'use client';
+
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import NavbarToggleFab from 'src/components/theme-layouts/components/navbar/NavbarToggleFab';
 import { useNavbar } from 'src/contexts/NavbarContext';
@@ -12,7 +14,7 @@ type NavbarToggleFabLayout2Props = {
 function NavbarToggleFabLayout2(props: NavbarToggleFabLayout2Props) {
 	const { className } = props;
 
-	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
+	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
 	const { navbarToggle, navbarToggleMobile } = useNavbar();
 

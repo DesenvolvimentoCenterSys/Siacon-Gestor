@@ -106,7 +106,7 @@ export default function SignInPage() {
 							variant="body1"
 							sx={{ mt: 2, maxWidth: 300, mx: 'auto' }}
 						>
-							Impulsione seu sucesso: gerencie suas vendas e transforme cada
+							Impulsione seu sucesso: gerencie suas dados e transforme cada
 							negócio em uma oportunidade única!
 						</Typography>
 					</Box>

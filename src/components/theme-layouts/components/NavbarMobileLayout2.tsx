@@ -47,7 +47,7 @@ function NavbarMobileLayout2(props: NavbarMobileLayout2Props) {
 
 	return (
 		<Root className={clsx('flex h-full flex-col overflow-hidden', className)}>
-			<div className="flex h-48 shrink-0 flex-row items-center px-12 md:h-72">
+			<div className="flex h-48 shrink-0 flex-row items-center px-12 md:h-72 mb-32">
 				<Logo />
 			</div>
 
@@ -56,14 +56,6 @@ function NavbarMobileLayout2(props: NavbarMobileLayout2Props) {
 				option={{ suppressScrollX: true, wheelPropagation: false }}
 			>
 				<Navigation layout="vertical" />
-
-				<div className="flex-0 flex items-center justify-center py-48 opacity-10">
-					<img
-						className="w-full max-w-64"
-						src="/assets/images/logo/logo.svg"
-						alt="footer logo"
-					/>
-				</div>
 			</StyledContent>
 
 			<GoToDocBox className="mx-12 my-16" />

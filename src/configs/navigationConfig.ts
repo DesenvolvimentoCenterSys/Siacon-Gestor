@@ -20,6 +20,30 @@ const navigationConfig: FuseNavItemType[] = [
 		icon: 'heroicons-outline:clipboard-document-check',
 		url: 'painel'
 	},
+	{
+		id: 'clientes',
+		title: 'Clientes',
+		translate: 'Clientes',
+		type: 'item',
+		icon: 'heroicons-outline:users',
+		url: 'clientes'
+	},
+	{
+		id: 'convenios',
+		title: 'Convênios',
+		translate: 'Convênios',
+		type: 'item',
+		icon: 'heroicons-outline:building-office-2',
+		url: 'convenios'
+	},
+	{
+		id: 'financeiro',
+		title: 'Financeiro',
+		translate: 'Financeiro',
+		type: 'item',
+		icon: 'heroicons-outline:currency-dollar',
+		url: 'financeiro'
+	},
 ];
 
 export default navigationConfig;

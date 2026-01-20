@@ -1,3 +1,5 @@
+'use client';
+
 import { styled, ThemeProvider } from '@mui/material/styles';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import { memo, useEffect } from 'react';
@@ -7,7 +9,6 @@ import { useNavbar } from 'src/contexts/NavbarContext';
 import usePathname from '@fuse/hooks/usePathname';
 import { useNavbarTheme } from '@fuse/core/FuseSettings/hooks/fuseThemeHooks';
 import { useFuseLayoutSettings } from '@fuse/core/FuseLayout/FuseLayout';
-import NavbarLayout2 from './NavbarLayout2';
 import NavbarMobileLayout2 from './NavbarMobileLayout2';
 
 const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
@@ -29,7 +30,7 @@ type NavbarWrapperLayout2Props = {
 };
 
 /**
- * The navbar wrapper layout 2.
+ * The navbar wrapper layout 2 - VERTICAL DRAWER ONLY
  */
 function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 	const { className = '' } = props;
@@ -37,39 +38,42 @@ function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 	const { config } = useFuseLayoutSettings();
 
 	const navbarTheme = useNavbarTheme();
-	const { mobileOpen, navbarCloseMobile } = useNavbar();
+	const { mobileOpen, navbarCloseMobile, open, navbarClose } = useNavbar();
 	const pathname = usePathname();
-	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('lg'));
+	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
 	useEffect(() => {
 		if (isMobile) {
 			navbarCloseMobile();
+		} else {
+			navbarClose();
 		}
-	}, [pathname, isMobile]);
+	}, [pathname, isMobile, navbarCloseMobile, navbarClose]);
 
 	return (
 		<>
 			<ThemeProvider theme={navbarTheme}>
-				{!isMobile && <NavbarLayout2 />}
+				{/* REMOVED: Horizontal navbar completely disabled */}
+				{/* Only vertical drawer is used for all screen sizes */}
 
-				{isMobile && (
-					<StyledSwipeableDrawer
-						anchor="left"
-						variant="temporary"
-						open={mobileOpen}
-						onClose={navbarCloseMobile}
-						onOpen={() => { }}
-						disableSwipeToOpen
-						className={className}
-						ModalProps={{
-							keepMounted: true // Better open performance on mobile.
-						}}
-					>
-						<NavbarMobileLayout2 />
-					</StyledSwipeableDrawer>
-				)}
+				<StyledSwipeableDrawer
+					anchor="left"
+					variant="temporary"
+					open={mobileOpen}
+					onClose={navbarCloseMobile}
+					onOpen={() => { }}
+					disableSwipeToOpen
+					className={className}
+					ModalProps={{
+						keepMounted: true
+					}}
+				>
+					<NavbarMobileLayout2 />
+				</StyledSwipeableDrawer>
 			</ThemeProvider>
-			{config.navbar.display && !config.toolbar.display && isMobile && <NavbarToggleFabLayout2 />}
+
+			{/* Toggle button - ALWAYS visible */}
+			<NavbarToggleFabLayout2 />
 		</>
 	);
 }

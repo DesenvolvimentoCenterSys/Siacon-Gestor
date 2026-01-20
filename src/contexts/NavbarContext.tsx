@@ -37,7 +37,7 @@ const NavbarContext = createContext<NavbarContextType>(initialState);
 export const useNavbar = () => useContext(NavbarContext);
 
 export const NavbarProvider = ({ children }: { children: ReactNode }) => {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [foldedOpen, setFoldedOpen] = useState(false);
 
