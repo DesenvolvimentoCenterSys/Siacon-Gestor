@@ -8,6 +8,7 @@ import { useFuseLayoutSettings } from '@fuse/core/FuseLayout/FuseLayout';
 import LeftSideLayout2 from './components/LeftSideLayout2';
 import NavbarWrapperLayout2 from './components/NavbarWrapperLayout2';
 import RightSideLayout2 from './components/RightSideLayout2';
+import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 
 const Root = styled('div')(({ config }: { config: Layout2ConfigDefaultsType }) => ({
 	...(config.mode === 'boxed' && {
@@ -37,6 +38,7 @@ function Layout2(props: Layout2Props) {
 
 	const settings = useFuseLayoutSettings();
 	const config = settings.config as Layout2ConfigDefaultsType;
+	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
 	return (
 		<Root
@@ -58,6 +60,8 @@ function Layout2(props: Layout2Props) {
 					className="relative flex min-h-full min-w-0 flex-auto flex-col"
 				>
 					<div className="relative z-10 flex min-h-0 flex-auto flex-col">
+						{/* Spacer for fixed top bar on mobile */}
+						{isMobile && <div className="h-48 md:h-64 shrink-0" />}
 						<FuseDialog />
 						{children}
 					</div>

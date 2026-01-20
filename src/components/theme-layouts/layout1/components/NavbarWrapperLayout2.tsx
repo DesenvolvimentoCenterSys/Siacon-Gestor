@@ -3,7 +3,10 @@
 import { styled, ThemeProvider } from '@mui/material/styles';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import { memo, useEffect } from 'react';
-import NavbarToggleFab from 'src/components/theme-layouts/components/navbar/NavbarToggleFab';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import IconButton from '@mui/material/IconButton';
+import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useNavbar } from 'src/contexts/NavbarContext';
 import usePathname from '@fuse/hooks/usePathname';
 import { useNavbarTheme } from '@fuse/core/FuseSettings/hooks/fuseThemeHooks';
@@ -72,12 +75,28 @@ function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 				)}
 			</ThemeProvider>
 
-			{/* Toggle button - ONLY visible on mobile */}
+			{/* Top Bar - ONLY visible on mobile */}
 			{isMobile && (
-				<NavbarToggleFab
-					className={className}
-					onClick={navbarToggleMobile}
-				/>
+				<AppBar
+					position="fixed"
+					color="inherit"
+					className="shadow-md z-50"
+					sx={{
+						backgroundColor: 'background.paper',
+						color: 'text.primary'
+					}}
+				>
+					<Toolbar className="px-16 min-h-48 md:min-h-64">
+						<IconButton
+							onClick={navbarToggleMobile}
+							edge="start"
+							color="inherit"
+							aria-label="menu"
+						>
+							<FuseSvgIcon>heroicons-outline:bars-3</FuseSvgIcon>
+						</IconButton>
+					</Toolbar>
+				</AppBar>
 			)}
 		</>
 	);

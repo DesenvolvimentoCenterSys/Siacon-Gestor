@@ -9,8 +9,22 @@ import Navigation from './navigation/Navigation';
 import GoToDocBox from './GoToDocBox';
 
 const Root = styled('div')(({ theme }) => ({
-	backgroundColor: theme.palette.background.default,
-	color: theme.palette.text.primary,
+	backgroundColor: '#E5E7EB !important',
+	color: '#1F232B',
+	'& .fuse-list-item': {
+		'&:not(.active)': {
+			color: '#1F232B !important',
+			'& .fuse-list-item-icon': {
+				color: '#1F232B !important'
+			},
+			'& .fuse-list-item-text-primary': {
+				color: '#1F232B !important'
+			},
+			'& .arrow-icon': {
+				color: '#1F232B !important'
+			}
+		}
+	},
 	'& ::-webkit-scrollbar-thumb': {
 		boxShadow: `inset 0 0 0 20px ${'rgba(255, 255, 255, 0.24)'}`,
 		...theme.applyStyles('light', {
