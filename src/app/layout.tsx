@@ -28,9 +28,16 @@ export default async function RootLayout({
 	const session = await auth();
 
 	return (
-		<html lang="en">
+		<html
+			lang="pt-BR"
+			translate="no"
+		>
 			<head>
 				<meta charSet="utf-8" />
+				<meta
+					name="google"
+					content="notranslate"
+				/>
 				<meta
 					name="viewport"
 					content="width=device-width, initial-scale=1, shrink-to-fit=no"
