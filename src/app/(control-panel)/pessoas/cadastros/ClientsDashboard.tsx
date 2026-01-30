@@ -10,6 +10,7 @@ import { TotalCpfWidget } from '../../../components/widgets/TotalCpfWidget';
 import useUser from '@auth/useUser';
 import { AgeGroupChartWidget } from '../../../components/widgets/AgeGroupChartWidget';
 import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutChartWidget';
+import { NovasVidasWidget } from '../../../components/widgets/NovasVidasWidget';
 
 
 function ClientsDashboard() {
@@ -51,6 +52,13 @@ function ClientsDashboard() {
             <WidgetLoading height={160} />
           ) : (
             <TotalCpfWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 4 && w.isFavorite)} />
+          )}
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={160} />
+          ) : (
+            <NovasVidasWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 12 && w.isFavorite)} />
           )}
         </Grid>
 

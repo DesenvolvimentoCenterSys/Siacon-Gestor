@@ -113,9 +113,9 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
     },
     labels: ['Masculino', 'Feminino', 'Outros'],
     colors: [
-      '#1976D2', // Blue 700 - Masculine
-      '#EC4899', // Pink 500 - Feminine
-      '#90CAF9', // Blue 200 - Others
+      '#1e88e5', // Blue 600 - Masculine
+      '#42a5f5', // Blue 400 - Feminine
+      '#90caf9', // Blue 200 - Others
     ],
     dataLabels: {
       enabled: true,
@@ -186,21 +186,21 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
         label: 'Masculino',
         value: chartData.quantidadeMasculino,
         diff: chartData.diferencaMasculino,
-        color: '#1976D2', // Blue 700
+        color: '#1e88e5', // Blue 600
         icon: 'heroicons-outline:user'
       },
       {
         label: 'Feminino',
         value: chartData.quantidadeFeminino,
         diff: chartData.diferencaFeminino,
-        color: '#EC4899', // Pink 500
+        color: '#42a5f5', // Blue 400
         icon: 'heroicons-outline:user'
       },
       {
         label: 'Outros',
         value: chartData.quantidadeOutros,
         diff: chartData.diferencaOutros,
-        color: '#90CAF9', // Blue 200
+        color: '#90caf9', // Blue 200
         icon: 'heroicons-outline:users'
       }
     ];

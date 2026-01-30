@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
-import { useTotalCpf } from '../../hooks/useDashboard';
+import { useNovasVidas } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
 
-interface TotalCpfWidgetProps {
+interface NovasVidasWidgetProps {
   initialIsFavorite?: boolean;
 }
 
-export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
+export function NovasVidasWidget({ initialIsFavorite }: NovasVidasWidgetProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -18,24 +18,25 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
     return format(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [selectedDate]);
 
-  const { data: totalCpfData, isLoading } = useTotalCpf(apiDate);
+  const { data: novasVidasData, isLoading } = useNovasVidas(apiDate);
 
   const kpiData = useMemo(() => {
-    if (!totalCpfData) return null;
+    if (novasVidasData === undefined) return null;
 
     return {
-      title: 'Total de Pessoas Físicas',
-      value: totalCpfData.total || 0,
-      subtitle: totalCpfData.message || 'pessoas físicas ativas',
-      icon: 'heroicons-outline:identification',
+      title: 'Novas Vidas',
+      value: novasVidasData.total || 0,
+      subtitle: `PF: ${novasVidasData.quantidadePF} | PJ: ${novasVidasData.quantidadePJ}`,
+      icon: 'heroicons-outline:user-plus',
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
+      // No trend data provided in DTO
       trend: {
-        value: `${totalCpfData.percentageChange > 0 ? '+' : ''}${totalCpfData.percentageChange}% vs mês anterior`,
-        isPositive: totalCpfData.percentageChange >= 0,
+        value: 'novos cadastros',
+        isPositive: true, // Neutral/Positive indicator
       },
-      widgetId: 4,
+      widgetId: 12,
     };
-  }, [totalCpfData, theme]);
+  }, [novasVidasData, theme]);
 
   if (isLoading) {
     return <WidgetLoading height={160} />;

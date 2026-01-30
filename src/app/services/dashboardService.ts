@@ -40,6 +40,12 @@ export interface ClientesPorSexoDto {
   diferencaOutros: number;
 }
 
+export interface NovasVidasDto {
+  quantidadePF: number;
+  quantidadePJ: number;
+  total: number;
+}
+
 export interface UsuarioDashboardWidgetDto {
   id: number;
   codUsu: number;
@@ -89,6 +95,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/clientes-por-sexo', {
       searchParams
     }).json<ClientesPorSexoDto>();
+  },
+  getNovasVidas: async (date?: string): Promise<NovasVidasDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/novas-vidas', {
+      searchParams
+    }).json<NovasVidasDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

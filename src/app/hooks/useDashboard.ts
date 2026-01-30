@@ -69,3 +69,9 @@ export const useAllWidgets = (codUsu?: number, widgetId?: number, isFavorite?: b
   });
 };
 
+export const useNovasVidas = (date?: string) => {
+  return useQuery({
+    queryKey: ['novasVidas', date],
+    queryFn: () => dashboardService.getNovasVidas(date)
+  });
+};

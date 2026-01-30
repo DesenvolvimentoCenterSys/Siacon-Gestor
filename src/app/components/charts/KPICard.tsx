@@ -293,6 +293,11 @@ function KPICard({
                   textField: {
                     fullWidth: true,
                     sx: { mb: 2 }
+                  },
+                  popper: {
+                    sx: {
+                      zIndex: 99999,
+                    }
                   }
                 }}
               />

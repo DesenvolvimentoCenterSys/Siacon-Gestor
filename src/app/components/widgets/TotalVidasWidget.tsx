@@ -28,7 +28,7 @@ export function TotalVidasWidget({ initialIsFavorite }: TotalVidasWidgetProps) {
       value: totalVidasData.total || 0,
       subtitle: totalVidasData.message || 'pessoas ativos',
       icon: 'heroicons-outline:users',
-      gradientColors: [theme.palette.secondary.main, theme.palette.secondary.dark] as [string, string],
+      gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
       trend: {
         value: `${totalVidasData.percentageChange > 0 ? '+' : ''}${totalVidasData.percentageChange}% vs mês anterior`,
         isPositive: totalVidasData.percentageChange >= 0,
