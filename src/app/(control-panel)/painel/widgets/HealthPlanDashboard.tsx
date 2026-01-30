@@ -5,6 +5,7 @@ import { Box, Grid } from '@mui/material';
 import { useAllWidgets } from '../../../hooks/useDashboard';
 import { TotalVidasWidget } from '../../../components/widgets/TotalVidasWidget';
 import { TotalEmpresasWidget } from '../../../components/widgets/TotalEmpresasWidget';
+import { TotalCpfWidget } from '../../../components/widgets/TotalCpfWidget';
 
 function HealthPlanDashboard() {
   const { data: user } = useUser();
@@ -33,6 +34,13 @@ function HealthPlanDashboard() {
               return (
                 <Grid item xs={12} sm={6} md={3} key={widget.id}>
                   <TotalEmpresasWidget initialIsFavorite={widget.isFavorite} />
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 4) {
+              return (
+                <Grid item xs={12} sm={6} md={3} key={widget.id}>
+                  <TotalCpfWidget initialIsFavorite={widget.isFavorite} />
                 </Grid>
               );
             }

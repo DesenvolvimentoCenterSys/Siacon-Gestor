@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
-import { useTotalVidas } from '../../hooks/useDashboard';
+import { useTotalCpf } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
 
-interface TotalVidasWidgetProps {
+interface TotalCpfWidgetProps {
   initialIsFavorite?: boolean;
 }
 
-export function TotalVidasWidget({ initialIsFavorite }: TotalVidasWidgetProps) {
+export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -18,24 +18,24 @@ export function TotalVidasWidget({ initialIsFavorite }: TotalVidasWidgetProps) {
     return format(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [selectedDate]);
 
-  const { data: totalVidasData, isLoading } = useTotalVidas(apiDate);
+  const { data: totalCpfData, isLoading } = useTotalCpf(apiDate);
 
   const kpiData = useMemo(() => {
-    if (!totalVidasData) return null;
+    if (!totalCpfData) return null;
 
     return {
-      title: 'Total de pessoas Cadastradas',
-      value: totalVidasData.total || 0,
-      subtitle: totalVidasData.message || 'pessoas ativos',
-      icon: 'heroicons-outline:users',
-      gradientColors: [theme.palette.secondary.main, theme.palette.secondary.dark] as [string, string],
+      title: 'Total de Pessoas Físicas',
+      value: totalCpfData.total || 0,
+      subtitle: totalCpfData.message || 'registros ativos',
+      icon: 'heroicons-outline:identification',
+      gradientColors: [theme.palette.success.main, theme.palette.success.dark] as [string, string],
       trend: {
-        value: `${totalVidasData.percentageChange > 0 ? '+' : ''}${totalVidasData.percentageChange}% vs mês anterior`,
-        isPositive: totalVidasData.percentageChange >= 0,
+        value: `${totalCpfData.percentageChange > 0 ? '+' : ''}${totalCpfData.percentageChange}% vs mês anterior`,
+        isPositive: totalCpfData.percentageChange >= 0,
       },
-      widgetId: 2,
+      widgetId: 4,
     };
-  }, [totalVidasData, theme]);
+  }, [totalCpfData, theme]);
 
   if (isLoading) {
     return <WidgetLoading height={160} />;

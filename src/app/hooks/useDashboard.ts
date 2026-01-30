@@ -40,6 +40,13 @@ export const useTotalEmpresas = (date?: string) => {
   });
 };
 
+export const useTotalCpf = (date?: string) => {
+  return useQuery({
+    queryKey: ['totalCpf', date],
+    queryFn: () => dashboardService.getTotalCpf(date)
+  });
+};
+
 export const useAllWidgets = (codUsu?: number, widgetId?: number, isFavorite?: boolean) => {
   return useQuery({
     queryKey: ['allWidgets', codUsu, widgetId, isFavorite],

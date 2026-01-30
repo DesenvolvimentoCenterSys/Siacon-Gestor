@@ -1,15 +1,20 @@
 'use client';
 
 import { Box, Grid, Typography } from '@mui/material';
+import { PageHeader } from '../../components/ui/PageHeader';
 
 function FinancialDashboard() {
   return (
     <Box sx={{ width: '100%' }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4" className="font-bold text-3xl tracking-tight">
-          Acompanhamento de receitas e previsões
-        </Typography>
-      </Box>
+      <PageHeader
+        title="Financeiro"
+        subtitle="Acompanhamento detalhado de receitas, despesas e previsões orçamentárias."
+        icon={
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+        }
+      />
 
       {/* KPI Cards - Empty for now */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3 } }}>

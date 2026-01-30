@@ -17,6 +17,12 @@ export interface TotalEmpresasDto {
   percentageChange: number;
 }
 
+export interface TotalCpfDto {
+  total: number;
+  message: string;
+  percentageChange: number;
+}
+
 export interface UsuarioDashboardWidgetDto {
   id: number;
   codUsu: number;
@@ -48,6 +54,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/total-empresas', {
       searchParams
     }).json<TotalEmpresasDto>();
+  },
+  getTotalCpf: async (date?: string): Promise<TotalCpfDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/total-cpf', {
+      searchParams
+    }).json<TotalCpfDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

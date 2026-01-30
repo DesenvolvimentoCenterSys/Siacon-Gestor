@@ -32,13 +32,13 @@ function ProjectDashboardAppHeader({ pageTitle }: ProjectDashboardAppHeaderProps
             alt="user photo"
             src={user?.photoURL}
           >
-            {user?.displayName?.[0]}
+            {_.toUpper(user?.displayName?.[0])}
           </Avatar>
           <div className="flex flex-col min-w-0 mx-16">
             {pageTitle ? (
               <>
                 <Typography className="text-lg font-medium tracking-tight text-secondary leading-6">
-                  {user?.displayName || user?.email}
+                  {_.startCase(_.toLower(user?.displayName || user?.email))}
                 </Typography>
                 <Typography className="text-2xl md:text-5xl font-semibold tracking-tight leading-7 md:leading-snug truncate text-primary">
                   {pageTitle}
@@ -46,7 +46,7 @@ function ProjectDashboardAppHeader({ pageTitle }: ProjectDashboardAppHeaderProps
               </>
             ) : (
               <Typography className="text-2xl md:text-5xl font-semibold tracking-tight leading-7 md:leading-snug truncate text-primary">
-                {isGuest ? 'Hi Guest!' : `Bem vindo ${user?.displayName || user?.email}!`}
+                {isGuest ? 'Hi Guest!' : `Bem vindo ${_.startCase(_.toLower(user?.displayName || user?.email))}!`}
               </Typography>
             )}
           </div>
