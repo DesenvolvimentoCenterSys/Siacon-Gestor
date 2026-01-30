@@ -1,8 +1,21 @@
 import { apiClient } from '@/lib/apiClient';
 
 // Extend apiClient to use the specific URL requested for these widgets
+const dashboardBaseUrl = process.env.NODE_ENV === 'development'
+  ? 'https://localhost:15001/'
+  : process.env.NEXT_PUBLIC_BASE_URL;
+
 const dashboardClient = apiClient.extend({
-  prefixUrl: 'https://localhost:15001/'
+  prefixUrl: dashboardBaseUrl,
+  hooks: {
+    beforeRequest: [
+      (request) => {
+        if (typeof window !== 'undefined') {
+          request.headers.set('Origin', window.location.origin);
+        }
+      }
+    ]
+  }
 });
 
 export interface TotalVidasDto {
