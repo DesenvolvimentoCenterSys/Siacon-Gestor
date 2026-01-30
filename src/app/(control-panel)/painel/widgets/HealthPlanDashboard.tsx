@@ -9,6 +9,7 @@ import { TotalCpfWidget } from '../../../components/widgets/TotalCpfWidget';
 import { AgeGroupChartWidget } from '../../../components/widgets/AgeGroupChartWidget';
 import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutChartWidget';
 import { NovasVidasWidget } from '../../../components/widgets/NovasVidasWidget';
+import FuseLoading from '@fuse/core/FuseLoading';
 
 
 function HealthPlanDashboard() {
@@ -87,7 +88,11 @@ function HealthPlanDashboard() {
         </Grid>
       )}
 
-      {widgetsLoading && <Box sx={{ p: 2 }}>Carregando favoritos...</Box>}
+      {widgetsLoading && (
+        <Box sx={{ p: 5, display: 'flex', justifyContent: 'center' }}>
+          <FuseLoading />
+        </Box>
+      )}
     </Box>
   );
 }

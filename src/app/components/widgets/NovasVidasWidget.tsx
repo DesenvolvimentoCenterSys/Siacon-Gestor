@@ -24,7 +24,7 @@ export function NovasVidasWidget({ initialIsFavorite }: NovasVidasWidgetProps) {
     if (novasVidasData === undefined) return null;
 
     return {
-      title: 'Novas Vidas',
+      title: 'Novos Cadastros',
       value: novasVidasData.total || 0,
       subtitle: `PF: ${novasVidasData.quantidadePF} | PJ: ${novasVidasData.quantidadePJ}`,
       icon: 'heroicons-outline:user-plus',
