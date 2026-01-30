@@ -8,6 +8,9 @@ import { TotalVidasWidget } from '../../../components/widgets/TotalVidasWidget';
 import { TotalEmpresasWidget } from '../../../components/widgets/TotalEmpresasWidget';
 import { TotalCpfWidget } from '../../../components/widgets/TotalCpfWidget';
 import useUser from '@auth/useUser';
+import { AgeGroupChartWidget } from '../../../components/widgets/AgeGroupChartWidget';
+import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutChartWidget';
+
 
 function ClientsDashboard() {
   const { data: user } = useUser();
@@ -50,13 +53,29 @@ function ClientsDashboard() {
             <TotalCpfWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 4 && w.isFavorite)} />
           )}
         </Grid>
+
       </Grid>
 
-      {/* Charts Grid - Empty for now */}
+
+
+      {/* Charts Grid */}
       <Grid container spacing={{ xs: 2, sm: 3 }}>
-        {/* Charts will be added here */}
+        <Grid item xs={12} md={6}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={400} />
+          ) : (
+            <AgeGroupChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 8 && w.isFavorite)} />
+          )}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={400} />
+          ) : (
+            <GenderDonutChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 24 && w.isFavorite)} />
+          )}
+        </Grid>
       </Grid>
-    </Box>
+    </Box >
   );
 }
 

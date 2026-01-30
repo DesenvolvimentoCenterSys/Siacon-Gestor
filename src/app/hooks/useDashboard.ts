@@ -47,6 +47,20 @@ export const useTotalCpf = (date?: string) => {
   });
 };
 
+export const useClientesPorFaixaEtaria = (date?: string) => {
+  return useQuery({
+    queryKey: ['clientesPorFaixaEtaria', date],
+    queryFn: () => dashboardService.getClientesPorFaixaEtaria(date)
+  });
+};
+
+export const useClientesPorSexo = (date?: string) => {
+  return useQuery({
+    queryKey: ['clientesPorSexo', date],
+    queryFn: () => dashboardService.getClientesPorSexo(date)
+  });
+};
+
 export const useAllWidgets = (codUsu?: number, widgetId?: number, isFavorite?: boolean) => {
   return useQuery({
     queryKey: ['allWidgets', codUsu, widgetId, isFavorite],

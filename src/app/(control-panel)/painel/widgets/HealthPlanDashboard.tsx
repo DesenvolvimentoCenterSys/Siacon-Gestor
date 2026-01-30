@@ -6,6 +6,9 @@ import { useAllWidgets } from '../../../hooks/useDashboard';
 import { TotalVidasWidget } from '../../../components/widgets/TotalVidasWidget';
 import { TotalEmpresasWidget } from '../../../components/widgets/TotalEmpresasWidget';
 import { TotalCpfWidget } from '../../../components/widgets/TotalCpfWidget';
+import { AgeGroupChartWidget } from '../../../components/widgets/AgeGroupChartWidget';
+import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutChartWidget';
+
 
 function HealthPlanDashboard() {
   const { data: user } = useUser();
@@ -44,6 +47,21 @@ function HealthPlanDashboard() {
                 </Grid>
               );
             }
+            if (widget.dashboardWidgetId === 8) {
+              return (
+                <Grid item xs={12} md={6} key={widget.id}>
+                  <AgeGroupChartWidget initialIsFavorite={widget.isFavorite} />
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 24) {
+              return (
+                <Grid item xs={12} md={6} key={widget.id}>
+                  <GenderDonutChartWidget initialIsFavorite={widget.isFavorite} />
+                </Grid>
+              );
+            }
+
             return null;
           })
         )}

@@ -23,6 +23,23 @@ export interface TotalCpfDto {
   percentageChange: number;
 }
 
+export interface FaixaEtariaDto {
+  faixa: string;
+  quantidade: number;
+}
+
+export interface ClientesPorSexoDto {
+  quantidadeMasculino: number;
+  quantidadeFeminino: number;
+  quantidadeOutros: number;
+  porcentagemMasculino: number;
+  porcentagemFeminino: number;
+  porcentagemOutros: number;
+  diferencaMasculino: number;
+  diferencaFeminino: number;
+  diferencaOutros: number;
+}
+
 export interface UsuarioDashboardWidgetDto {
   id: number;
   codUsu: number;
@@ -60,6 +77,18 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/total-cpf', {
       searchParams
     }).json<TotalCpfDto>();
+  },
+  getClientesPorFaixaEtaria: async (date?: string): Promise<FaixaEtariaDto[]> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/clientes-por-faixa-etaria', {
+      searchParams
+    }).json<FaixaEtariaDto[]>();
+  },
+  getClientesPorSexo: async (date?: string): Promise<ClientesPorSexoDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/clientes-por-sexo', {
+      searchParams
+    }).json<ClientesPorSexoDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

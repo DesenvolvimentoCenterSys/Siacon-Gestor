@@ -26,7 +26,7 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
     return {
       title: 'Total de Pessoas Físicas',
       value: totalCpfData.total || 0,
-      subtitle: totalCpfData.message || 'registros ativos',
+      subtitle: totalCpfData.message || 'pessoas físicas ativas',
       icon: 'heroicons-outline:identification',
       gradientColors: [theme.palette.success.main, theme.palette.success.dark] as [string, string],
       trend: {
