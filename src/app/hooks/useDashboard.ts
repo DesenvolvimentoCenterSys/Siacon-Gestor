@@ -75,3 +75,10 @@ export const useNovasVidas = (date?: string) => {
     queryFn: () => dashboardService.getNovasVidas(date)
   });
 };
+
+export const useTotalFiliados = (date?: string) => {
+  return useQuery({
+    queryKey: ['totalFiliados', date],
+    queryFn: () => dashboardService.getTotalFiliados(date)
+  });
+};

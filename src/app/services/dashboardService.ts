@@ -53,6 +53,17 @@ export interface ClientesPorSexoDto {
   diferencaOutros: number;
 }
 
+
+export interface TotalFiliadosDto {
+  totalAtivos: number;
+  totalDesligados: number;
+  totalNovos: number;
+  valorDesligados: number;
+  valorNovos: number;
+  faturamentoTotal: number;
+  dataReferencia: string;
+}
+
 export interface NovasVidasDto {
   quantidadePF: number;
   quantidadePJ: number;
@@ -114,6 +125,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/novas-vidas', {
       searchParams
     }).json<NovasVidasDto>();
+  },
+  getTotalFiliados: async (date?: string): Promise<TotalFiliadosDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/total-filiados', {
+      searchParams
+    }).json<TotalFiliadosDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};
