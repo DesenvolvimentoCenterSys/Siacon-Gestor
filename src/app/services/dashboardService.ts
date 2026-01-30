@@ -64,6 +64,16 @@ export interface TotalFiliadosDto {
   dataReferencia: string;
 }
 
+export interface VidasPorConvenioDto {
+  nomeConvenio: string;
+  quantidadeVidasPF: number;
+  quantidadeEmpresas: number;
+  quantidadeVidasPFAnterior: number;
+  quantidadeEmpresasAnterior: number;
+  diferencaVidasPF: number;
+  diferencaEmpresas: number;
+}
+
 export interface NovasVidasDto {
   quantidadePF: number;
   quantidadePJ: number;
@@ -131,6 +141,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/total-filiados', {
       searchParams
     }).json<TotalFiliadosDto>();
+  },
+  getVidasPorConvenio: async (date?: string): Promise<VidasPorConvenioDto[]> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/vidas-por-convenio', {
+      searchParams
+    }).json<VidasPorConvenioDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

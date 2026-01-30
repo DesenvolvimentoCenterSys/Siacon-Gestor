@@ -82,3 +82,10 @@ export const useTotalFiliados = (date?: string) => {
     queryFn: () => dashboardService.getTotalFiliados(date)
   });
 };
+
+export const useVidasPorConvenio = (date?: string) => {
+  return useQuery({
+    queryKey: ['vidasPorConvenio', date],
+    queryFn: () => dashboardService.getVidasPorConvenio(date)
+  });
+};

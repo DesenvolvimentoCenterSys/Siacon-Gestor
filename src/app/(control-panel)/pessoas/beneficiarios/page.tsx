@@ -2,8 +2,8 @@
 
 import { styled } from '@mui/material/styles';
 import FusePageSimple from '@fuse/core/FusePageSimple';
-import { Box } from '@mui/material';
 import ProjectDashboardAppHeader from '../../painel/ProjectDashboardAppHeader';
+import BeneficiariosDashboard from './BeneficiariosDashboard';
 
 const Root = styled(FusePageSimple)(({ theme }) => ({
   '& .FusePageSimple-header': {
@@ -19,11 +19,7 @@ function BeneficiariosPage() {
     <Root
       scroll="content"
       header={<ProjectDashboardAppHeader pageTitle="Beneficiários de Planos" />}
-      content={
-        <Box sx={{ p: 3 }}>
-          {/* Blank Content */}
-        </Box>
-      }
+      content={<BeneficiariosDashboard />}
     />
   );
 }
