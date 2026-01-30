@@ -131,7 +131,28 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         style: {
           colors: theme.palette.text.secondary,
           fontSize: '12px'
+        },
+        maxWidth: 200,
+        formatter: (value) => {
+          const str = String(value);
+          if (str.length > 25) {
+            return str.substring(0, 25) + '...';
+          }
+          return str;
         }
+      }
+    },
+    tooltip: {
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const convenioName = w.globals.labels[dataPointIndex];
+        const value1 = series[0][dataPointIndex];
+        const value2 = series[1]?.[dataPointIndex];
+
+        return `<div class="apexcharts-tooltip-custom" style="padding: 8px; background: white; border: 1px solid #e0e0e0; border-radius: 4px;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${convenioName}</div>
+          <div style="color: ${theme.palette.info.main};">Vidas PF: ${value1}</div>
+          ${value2 !== undefined ? `<div style="color: ${theme.palette.warning.main};">Empresas: ${value2}</div>` : ''}
+        </div>`;
       }
     },
     legend: {
@@ -144,10 +165,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     grid: {
       borderColor: theme.palette.divider,
       strokeDashArray: 3
-    },
-    tooltip: {
-      shared: true,
-      intersect: false
     }
   };
 
@@ -210,7 +227,31 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         style: {
           colors: theme.palette.text.secondary,
           fontSize: '12px'
+        },
+        maxWidth: 200,
+        formatter: (value) => {
+          const str = String(value);
+          if (str.length > 25) {
+            return str.substring(0, 25) + '...';
+          }
+          return str;
         }
+      }
+    },
+    tooltip: {
+      custom: function ({ series, seriesIndex, dataPointIndex, w }) {
+        const convenioName = w.globals.labels[dataPointIndex];
+        const value1 = series[0][dataPointIndex];
+        const value2 = series[1]?.[dataPointIndex];
+
+        const diff1 = value1 > 0 ? `+${value1}` : value1;
+        const diff2 = value2 !== undefined ? (value2 > 0 ? `+${value2}` : value2) : undefined;
+
+        return `<div class="apexcharts-tooltip-custom" style="padding: 8px; background: white; border: 1px solid #e0e0e0; border-radius: 4px;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${convenioName}</div>
+          <div style="color: ${value1 >= 0 ? theme.palette.success.main : theme.palette.error.main};">Diferença Vidas PF: ${diff1}</div>
+          ${diff2 !== undefined ? `<div style="color: ${value2 >= 0 ? theme.palette.success.main : theme.palette.error.main};">Diferença Empresas: ${diff2}</div>` : ''}
+        </div>`;
       }
     },
     legend: {
@@ -228,27 +269,23 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
           show: true
         }
       }
-    },
-    tooltip: {
-      shared: true,
-      intersect: false,
-      y: {
-        formatter: (val) => {
-          return (val > 0 ? '+' : '') + val.toString();
-        }
-      }
     }
   };
 
-  // Chart 3: Tendência - Slope Chart (only if ≤6 convenios)
-  const shouldShowSlopeChart = conveniosData && conveniosData.length <= 6;
+  // Chart 3: Tendência - Slope Chart (top 6 by total PF vidas)
+  const top6Convenios = useMemo(() => {
+    if (!conveniosData) return [];
+    return [...conveniosData]
+      .sort((a, b) => b.quantidadeVidasPF - a.quantidadeVidasPF)
+      .slice(0, 6);
+  }, [conveniosData]);
 
   const tendenciaSeries = useMemo(() => {
-    if (!conveniosData || !shouldShowSlopeChart) return [];
+    if (!top6Convenios || top6Convenios.length === 0) return [];
 
     const series: any[] = [];
 
-    conveniosData.forEach((convenio, index) => {
+    top6Convenios.forEach((convenio, index) => {
       series.push({
         name: `${convenio.nomeConvenio} - PF`,
         data: [
@@ -266,7 +303,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     });
 
     return series;
-  }, [conveniosData, shouldShowSlopeChart]);
+  }, [top6Convenios]);
 
   const tendenciaOptions: ApexOptions = {
     chart: {
@@ -432,20 +469,22 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
         {tabValue === 2 && (
           <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
-            {shouldShowSlopeChart ? (
+            {top6Convenios && top6Convenios.length > 0 ? (
               <Box sx={{ flex: 1, width: '100%' }}>
+                <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>
+                  Mostrando os 6 convênios com maior número de vidas PF
+                </Typography>
                 <ReactApexChart
                   options={tendenciaOptions}
                   series={tendenciaSeries}
                   type="line"
-                  height="100%"
+                  height="90%"
                 />
               </Box>
             ) : (
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                 <Typography variant="body2" color="text.secondary">
-                  O gráfico de tendência está disponível apenas para até 6 convênios.<br />
-                  Atualmente há {conveniosData?.length || 0} convênios.
+                  Sem dados disponíveis para análise de tendência.
                 </Typography>
               </Box>
             )}
