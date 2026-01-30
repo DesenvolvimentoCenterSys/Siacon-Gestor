@@ -21,12 +21,33 @@ const navigationConfig: FuseNavItemType[] = [
 		url: 'painel'
 	},
 	{
-		id: 'clientes',
-		title: 'Clientes',
-		translate: 'Clientes',
-		type: 'item',
+		id: 'pessoas',
+		title: 'Pessoas',
+		type: 'collapse',
 		icon: 'heroicons-outline:users',
-		url: 'clientes'
+		children: [
+			{
+				id: 'cadastros',
+				title: 'Cadastros',
+				type: 'item',
+				icon: 'heroicons-outline:clipboard-document-list',
+				url: 'pessoas/cadastros'
+			},
+			{
+				id: 'associados',
+				title: 'Associados/Filiados',
+				type: 'item',
+				icon: 'heroicons-outline:identification',
+				url: 'pessoas/associados'
+			},
+			{
+				id: 'beneficiarios',
+				title: 'Beneficiários de Planos',
+				type: 'item',
+				icon: 'heroicons-outline:heart',
+				url: 'pessoas/beneficiarios'
+			}
+		]
 	},
 	{
 		id: 'convenios',

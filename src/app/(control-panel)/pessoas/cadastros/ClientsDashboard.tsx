@@ -1,10 +1,10 @@
 'use client';
 
 import { Box, Grid, Typography } from '@mui/material';
-import { useUserFavoriteWidgets } from '../../hooks/useDashboard';
-import WidgetLoading from '../../components/ui/WidgetLoading';
-import { TotalVidasWidget } from '../../components/widgets/TotalVidasWidget';
-import { TotalEmpresasWidget } from '../../components/widgets/TotalEmpresasWidget';
+import { useUserFavoriteWidgets } from '../../../hooks/useDashboard';
+import WidgetLoading from '../../../components/ui/WidgetLoading';
+import { TotalVidasWidget } from '../../../components/widgets/TotalVidasWidget';
+import { TotalEmpresasWidget } from '../../../components/widgets/TotalEmpresasWidget';
 import useUser from '@auth/useUser';
 
 function ClientsDashboard() {
@@ -17,7 +17,7 @@ function ClientsDashboard() {
     <Box sx={{ width: '100%' }}>
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4" className="font-bold text-3xl tracking-tight">
-          Visão geral da base de clientes cadastrados
+          Visão geral da base de pessoas cadastrados
         </Typography>
       </Box>
 

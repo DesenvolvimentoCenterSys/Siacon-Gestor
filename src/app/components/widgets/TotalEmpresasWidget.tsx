@@ -24,7 +24,7 @@ export function TotalEmpresasWidget({ initialIsFavorite }: TotalEmpresasWidgetPr
     if (!totalEmpresasData) return null;
 
     return {
-      title: 'Total de Empresas',
+      title: 'Total de Empresas Cadastradas',
       value: totalEmpresasData.total || 0,
       subtitle: totalEmpresasData.message || 'empresas ativas',
       icon: 'heroicons-outline:building-office-2',

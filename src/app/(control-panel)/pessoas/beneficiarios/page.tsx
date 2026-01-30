@@ -3,8 +3,7 @@
 import { styled } from '@mui/material/styles';
 import FusePageSimple from '@fuse/core/FusePageSimple';
 import { Box } from '@mui/material';
-import ClientsDashboard from './ClientsDashboard';
-import ProjectDashboardAppHeader from '../painel/ProjectDashboardAppHeader';
+import ProjectDashboardAppHeader from '../../painel/ProjectDashboardAppHeader';
 
 const Root = styled(FusePageSimple)(({ theme }) => ({
   '& .FusePageSimple-header': {
@@ -15,18 +14,18 @@ const Root = styled(FusePageSimple)(({ theme }) => ({
   }
 }));
 
-function ClientsPage() {
+function BeneficiariosPage() {
   return (
     <Root
       scroll="content"
-      header={<ProjectDashboardAppHeader pageTitle="Gestão de Clientes" />}
+      header={<ProjectDashboardAppHeader pageTitle="Beneficiários de Planos" />}
       content={
-        <Box sx={{ width: '100%', px: { xs: 2, sm: 3, md: 3 }, py: { xs: 2, md: 3 } }}>
-          <ClientsDashboard />
+        <Box sx={{ p: 3 }}>
+          {/* Blank Content */}
         </Box>
       }
     />
   );
 }
 
-export default ClientsPage;
+export default BeneficiariosPage;

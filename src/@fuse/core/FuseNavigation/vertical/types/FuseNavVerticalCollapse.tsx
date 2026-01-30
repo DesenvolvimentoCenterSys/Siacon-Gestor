@@ -138,7 +138,11 @@ function FuseNavVerticalCollapse(props: FuseNavItemComponentProps) {
 						<FuseSvgIcon
 							size={13}
 							className="arrow-icon"
-							color="inherit"
+							sx={{
+								color: 'black',
+								stroke: 'black',
+								strokeWidth: 1
+							}}
 						>
 							{open ? 'heroicons-solid:chevron-down' : 'heroicons-solid:chevron-right'}
 						</FuseSvgIcon>

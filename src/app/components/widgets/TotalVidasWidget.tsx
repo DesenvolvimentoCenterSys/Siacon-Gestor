@@ -24,9 +24,9 @@ export function TotalVidasWidget({ initialIsFavorite }: TotalVidasWidgetProps) {
     if (!totalVidasData) return null;
 
     return {
-      title: 'Total de Clientes Cadastrados',
+      title: 'Total de pessoas Cadastrados',
       value: totalVidasData.total || 0,
-      subtitle: totalVidasData.message || 'clientes ativos',
+      subtitle: totalVidasData.message || 'pessoas ativos',
       icon: 'heroicons-outline:users',
       gradientColors: [theme.palette.secondary.main, theme.palette.secondary.dark] as [string, string],
       trend: {
