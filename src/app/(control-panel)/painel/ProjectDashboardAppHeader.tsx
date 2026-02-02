@@ -17,6 +17,11 @@ function ProjectDashboardAppHeader({ pageTitle }: ProjectDashboardAppHeaderProps
   const { navbarToggleMobile } = useNavbar();
   const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
+  // Hide header on mobile devices to maximize screen space
+  if (isMobile) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col w-full px-6 sm:px-8">
       <div className="flex flex-col sm:flex-row flex-auto sm:items-center min-w-0 my-16 sm:my-24">

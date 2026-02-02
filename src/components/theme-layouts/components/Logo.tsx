@@ -81,11 +81,13 @@ function Logo() {
 	return (
 		<Root className="flex flex-1 items-center">
 			<div className="flex flex-1 flex-col items-center px-10 mt-20 w-full">
-				<img
-					className="logo-icon h-32 w-50"
-					src={logoSrc}
-					alt="logo"
-				/>
+				{logoSrc && (
+					<img
+						className="logo-icon h-32 w-50"
+						src={logoSrc}
+						alt="logo"
+					/>
+				)}
 				<div className="flex items-center ml-64 mt-2" />
 
 			</div>

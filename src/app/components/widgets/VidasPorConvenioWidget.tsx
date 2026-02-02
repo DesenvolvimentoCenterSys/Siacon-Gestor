@@ -1,5 +1,6 @@
 import { useMemo, useState, useEffect } from 'react';
 import { useTheme, alpha } from '@mui/material/styles';
+import { useMediaQuery } from '@mui/material';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, Tabs, Tab, Divider, ListItemIcon, ListItemText, Button, Dialog, DialogContent, DialogActions } from '@mui/material';
@@ -19,6 +20,8 @@ interface VidasPorConvenioWidgetProps {
 
 export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorConvenioWidgetProps) {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.down('md'));
   const { data: user } = useUser();
   const toggleFavoriteMutation = useToggleFavoriteWidget();
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
@@ -384,8 +387,8 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       elevation={0}
       sx={{ border: `1px solid ${theme.palette.divider}`, height: '100%', display: 'flex', flexDirection: 'column' }}
     >
-      <Box className="flex items-center justify-between px-6 py-4 border-b">
-        <Typography className="text-lg font-semibold truncate text-primary">Vidas por Convênio</Typography>
+      <Box className="flex items-center justify-between border-b" sx={{ px: isMobile ? 2 : 3, py: isMobile ? 2 : 3 }}>
+        <Typography sx={{ fontSize: isMobile ? '1rem' : '1.125rem', fontWeight: 600 }} className="truncate text-primary">Vidas por Convênio</Typography>
         <Box className="flex items-center gap-2">
           <Tooltip title="Filtrar por data">
             <IconButton size="small" onClick={handleClickMenu}>
@@ -441,13 +444,24 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         onChange={handleTabChange}
         textColor="primary"
         indicatorColor="primary"
-        variant="fullWidth"
-        sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 48 }}
+        variant={isMobile || isTablet ? 'scrollable' : 'fullWidth'}
+        scrollButtons={isMobile || isTablet ? 'auto' : false}
+        allowScrollButtonsMobile
+        sx={{
+          borderBottom: 1,
+          borderColor: 'divider',
+          minHeight: isMobile ? 42 : 48,
+          '& .MuiTab-root': {
+            minWidth: isMobile ? 80 : 100,
+            fontSize: isMobile ? '0.75rem' : '0.875rem',
+            px: isMobile ? 1 : 2
+          }
+        }}
       >
-        <Tab label="Vidas PF" sx={{ textTransform: 'none', fontWeight: 600 }} />
+        <Tab label={isMobile ? "PF" : "Vidas PF"} sx={{ textTransform: 'none', fontWeight: 600 }} />
         <Tab label="Empresas" sx={{ textTransform: 'none', fontWeight: 600 }} />
-        <Tab label="Cresc. PF" sx={{ textTransform: 'none', fontWeight: 600 }} />
-        <Tab label="Cresc. Empresas" sx={{ textTransform: 'none', fontWeight: 600 }} />
+        <Tab label={isMobile ? "↑ PF" : "Cresc. PF"} sx={{ textTransform: 'none', fontWeight: 600 }} />
+        <Tab label={isMobile ? "↑ Emp" : "Cresc. Empresas"} sx={{ textTransform: 'none', fontWeight: 600 }} />
         <Tab label="Tendência" sx={{ textTransform: 'none', fontWeight: 600 }} />
         <Tab label="Painel" sx={{ textTransform: 'none', fontWeight: 600 }} />
       </Tabs>
@@ -455,7 +469,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       <CardContent className="p-0" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 0, '&:last-child': { pb: 0 } }}>
         {/* Tab 0: Overview - Vidas PF */}
         {tabValue === 0 && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: isMobile ? 1 : 2, minHeight: isMobile ? 350 : 500 }}>
             {vidasPFData && vidasPFData.length > 0 ? (
               <Box sx={{ flex: 1, width: '100%' }}>
                 <ReactApexChart options={overviewVidasPFOptions} series={overviewVidasPFSeries} type="bar" height="100%" />
@@ -470,7 +484,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
         {/* Tab 1: Overview - Empresas */}
         {tabValue === 1 && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: isMobile ? 1 : 2, minHeight: isMobile ? 350 : 500 }}>
             {empresasData && empresasData.length > 0 ? (
               <Box sx={{ flex: 1, width: '100%' }}>
                 <ReactApexChart options={overviewEmpresasOptions} series={overviewEmpresasSeries} type="bar" height="100%" />
@@ -485,7 +499,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
         {/* Tab 2: Crescimento - Vidas PF */}
         {tabValue === 2 && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: isMobile ? 1 : 2, minHeight: isMobile ? 350 : 500 }}>
             {crescimentoPFData && crescimentoPFData.length > 0 ? (
               <Box sx={{ flex: 1, width: '100%' }}>
                 <ReactApexChart options={crescimentoPFOptions} series={crescimentoPFSeries} type="bar" height="100%" />
@@ -500,7 +514,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
         {/* Tab 3: Crescimento - Empresas */}
         {tabValue === 3 && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: isMobile ? 1 : 2, minHeight: isMobile ? 350 : 500 }}>
             {crescimentoEmpresasData && crescimentoEmpresasData.length > 0 ? (
               <Box sx={{ flex: 1, width: '100%' }}>
                 <ReactApexChart options={crescimentoEmpresasOptions} series={crescimentoEmpresasSeries} type="bar" height="100%" />
@@ -515,7 +529,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
         {/* Tab 4: Tendência */}
         {tabValue === 4 && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: isMobile ? 1 : 2, minHeight: isMobile ? 350 : 500 }}>
             {conveniosComMudancaSignificativa && conveniosComMudancaSignificativa.length > 0 ? (
               <Box sx={{ flex: 1, width: '100%' }}>
                 <Typography variant="caption" color="text.secondary" sx={{ mb: 2, display: 'block' }}>Mostrando convênios com aumento ou queda significativos</Typography>
@@ -531,11 +545,11 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
         {/* Tab 5: Painel */}
         {tabValue === 5 && conveniosData && (
-          <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, height: 500, overflowY: 'auto' }}>
+          <Box sx={{ p: isMobile ? 1.5 : 3, display: 'flex', flexDirection: 'column', gap: isMobile ? 1.5 : 2, height: isMobile ? 350 : 500, overflowY: 'auto' }}>
             {conveniosData.map((convenio) => (
-              <Box key={convenio.nomeConvenio} sx={{ p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
-                <Typography variant="h6" fontWeight={700} color="primary" sx={{ mb: 2 }}>{convenio.nomeConvenio}</Typography>
-                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+              <Box key={convenio.nomeConvenio} sx={{ p: isMobile ? 1.5 : 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
+                <Typography variant={isMobile ? "subtitle1" : "h6"} fontWeight={700} color="primary" sx={{ mb: isMobile ? 1 : 2 }}>{convenio.nomeConvenio}</Typography>
+                <Box sx={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: isMobile ? 1.5 : 2 }}>
                   <Box>
                     <Typography variant="caption" color="text.secondary">Vidas PF</Typography>
                     <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>

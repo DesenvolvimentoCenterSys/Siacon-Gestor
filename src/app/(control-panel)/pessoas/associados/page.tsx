@@ -21,7 +21,7 @@ function AssociadosPage() {
       scroll="content"
       header={<ProjectDashboardAppHeader pageTitle="Associados/Filiados" />}
       content={
-        <Box sx={{ p: 3 }}>
+        <Box sx={{ px: { xs: 1.5, sm: 2.5, md: 3 }, py: { xs: 1.5, sm: 2, md: 3 } }}>
           <AssociadosDashboard />
         </Box>
       }

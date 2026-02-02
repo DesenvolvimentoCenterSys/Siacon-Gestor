@@ -21,7 +21,7 @@ function ClientsPage() {
       scroll="content"
       header={<ProjectDashboardAppHeader pageTitle="Gestão de pessoas" />}
       content={
-        <Box sx={{ width: '100%', px: { xs: 2, sm: 3, md: 3 }, py: { xs: 2, md: 3 } }}>
+        <Box sx={{ width: '100%', px: { xs: 1.5, sm: 2.5, md: 3 }, py: { xs: 1.5, sm: 2, md: 3 } }}>
           <ClientsDashboard />
         </Box>
       }
