@@ -360,7 +360,20 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       y: { formatter: (value) => value?.toLocaleString('pt-BR') || '0' }
     },
     markers: { size: 6, hover: { size: 8 } },
-    colors: [theme.palette.info.main, theme.palette.primary.main] // Consistent colors
+    colors: [
+      '#2196F3', // Blue
+      '#9C27B0', // Purple
+      '#4CAF50', // Green
+      '#FF9800', // Orange
+      '#F44336', // Red
+      '#00BCD4', // Cyan
+      '#E91E63', // Pink
+      '#8BC34A', // Light Green
+      '#FF5722', // Deep Orange
+      '#673AB7', // Deep Purple
+      '#009688', // Teal
+      '#FFC107', // Amber
+    ]
   };
 
   if (isLoading) return <WidgetLoading height={500} />;
