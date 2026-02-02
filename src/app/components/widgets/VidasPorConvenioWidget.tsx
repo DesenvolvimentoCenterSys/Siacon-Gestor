@@ -128,6 +128,15 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
   // --- CHARTS CONFIGURATION ---
 
+  // Blue Palettes
+  const bluePalettePF = [
+    '#90CAF9', '#64B5F6', '#42A5F5', '#2196F3', '#1E88E5', '#1976D2', '#1565C0', '#0D47A1'
+  ]; // Light to Medium Blue
+
+  const bluePaletteEmpresas = [
+    '#81D4FA', '#4FC3F7', '#29B6F6', '#039BE5', '#0288D1', '#0277BD', '#01579B'
+  ]; // Cyan/Light Blue to Deep Blue (Distinct tone)
+
   // Chart 1A: Overview - Vidas PF
   const overviewVidasPFSeries = useMemo(() => [{
     name: 'Vidas PF',
@@ -143,7 +152,25 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
   const baseOverviewOptions: ApexOptions = {
     chart: { type: 'bar', fontFamily: 'inherit', toolbar: { show: false }, stacked: false },
     plotOptions: {
-      bar: { horizontal: true, borderRadius: 4, barHeight: '70%', dataLabels: { position: 'right' } }
+      bar: {
+        horizontal: true,
+        borderRadius: 4,
+        barHeight: '60%',
+        distributed: true, // Enable distributed colors like the example
+        dataLabels: { position: 'right' }
+      }
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'light',
+        type: 'horizontal', // Horizontal for horizontal bars
+        shadeIntensity: 0.5,
+        inverseColors: true,
+        opacityFrom: 0.85,
+        opacityTo: 0.85,
+        stops: [0, 100]
+      }
     },
     dataLabels: {
       enabled: true,
@@ -154,7 +181,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     },
     yaxis: {
       labels: {
-        style: { colors: theme.palette.text.secondary, fontSize: '12px' },
+        style: { colors: theme.palette.text.secondary, fontSize: '13px', fontFamily: 'inherit', fontWeight: 500 },
         maxWidth: 200,
         formatter: (value) => {
           const str = String(value);
@@ -162,7 +189,15 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         }
       }
     },
-    grid: { xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } }
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 4,
+      xaxis: { lines: { show: true } },
+      yaxis: { lines: { show: false } },
+      padding: { top: 0, right: 0, bottom: 0, left: 10 }
+    },
+    stroke: { show: false },
+    legend: { show: false } // Hide legend for distributed
   };
 
   const overviewVidasPFOptions: ApexOptions = {
@@ -171,7 +206,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       categories: vidasPFData.map(c => c.nomeConvenio),
       labels: { style: { colors: theme.palette.text.secondary } }
     },
-    colors: [theme.palette.info.main],
+    colors: bluePalettePF,
     tooltip: { y: { formatter: (val) => `${val.toLocaleString('pt-BR')} Vidas` } }
   };
 
@@ -181,7 +216,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       categories: empresasData.map(c => c.nomeConvenio),
       labels: { style: { colors: theme.palette.text.secondary } }
     },
-    colors: [theme.palette.warning.main],
+    colors: bluePaletteEmpresas,
     tooltip: { y: { formatter: (val) => `${val.toLocaleString('pt-BR')} Empresas` } }
   };
 
@@ -202,20 +237,33 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     plotOptions: {
       bar: {
         horizontal: true,
-        borderRadius: 8,
+        borderRadius: 6,
+        barHeight: '60%',
         colors: {
           ranges: [
             { from: -10000, to: -0.01, color: theme.palette.error.main },
-            { from: 0.01, to: 10000, color: theme.palette.success.main },
-            { from: -0.0001, to: 0.0001, color: theme.palette.text.secondary } // Zero fallback
+            { from: 0.01, to: 10000, color: theme.palette.info.main }, // Blue for positive
+            { from: -0.0001, to: 0.0001, color: theme.palette.text.disabled }
           ]
         }
+      }
+    },
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'light',
+        type: 'horizontal',
+        shadeIntensity: 0.5,
+        inverseColors: true,
+        opacityFrom: 0.85,
+        opacityTo: 0.85,
+        stops: [0, 100]
       }
     },
     dataLabels: { enabled: false },
     yaxis: {
       labels: {
-        style: { colors: theme.palette.text.secondary, fontSize: '12px' },
+        style: { colors: theme.palette.text.secondary, fontSize: '13px', fontWeight: 500 },
         maxWidth: 200,
         formatter: (value) => {
           const str = String(value);
@@ -223,7 +271,8 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         }
       }
     },
-    grid: { borderColor: theme.palette.divider, strokeDashArray: 3, xaxis: { lines: { show: true } } }
+    grid: { borderColor: theme.palette.divider, strokeDashArray: 4, xaxis: { lines: { show: true } } },
+    stroke: { show: false }
   };
 
   const crescimentoPFOptions: ApexOptions = {
@@ -297,20 +346,21 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
   const tendenciaOptions: ApexOptions = {
     chart: { type: 'line', fontFamily: 'inherit', toolbar: { show: false } },
-    stroke: { width: 2, curve: 'straight' },
+    stroke: { width: 3, curve: 'smooth' }, // Smoother line
     xaxis: {
       categories: ['Anterior', 'Atual'],
-      labels: { style: { colors: theme.palette.text.secondary, fontSize: '12px', fontWeight: 600 } }
+      labels: { style: { colors: theme.palette.text.secondary, fontSize: '13px', fontWeight: 600 } }
     },
     yaxis: { labels: { style: { colors: theme.palette.text.secondary } } },
     legend: { position: 'top', horizontalAlign: 'left', labels: { colors: theme.palette.text.secondary } },
-    grid: { borderColor: theme.palette.divider, strokeDashArray: 3 },
+    grid: { borderColor: theme.palette.divider, strokeDashArray: 4 },
     tooltip: {
       shared: true,
       intersect: false,
       y: { formatter: (value) => value?.toLocaleString('pt-BR') || '0' }
     },
-    markers: { size: 6, hover: { size: 8 } }
+    markers: { size: 6, hover: { size: 8 } },
+    colors: [theme.palette.info.main, theme.palette.primary.main] // Consistent colors
   };
 
   if (isLoading) return <WidgetLoading height={500} />;

@@ -152,19 +152,34 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
       }
     ],
     stroke: {
-      width: [0, 3],
+      width: [0, 4],
       curve: 'smooth'
     },
     plotOptions: {
       bar: {
         columnWidth: '50%',
-        borderRadius: 8
+        borderRadius: 8,
+        distributed: true // Use distributed colors for bars
       }
     },
+    // Colors: Bar1 (Light Blue), Bar2 (Dark Blue), Line (Orange)
     colors: [
-      theme.palette.info.main,      // Quantidade - Blue
-      theme.palette.warning.main    // Valor - Orange/Yellow for visibility
+      '#42A5F5', // Bar 1: Novos - Light Blue
+      '#0D47A1', // Bar 2: Desligados - Deep Blue
+      '#FF9800'  // Line: Valor - Orange
     ],
+    fill: {
+      type: ['gradient', 'solid'], // Gradient for bars, solid for line? Default assumes gradient for all if single string
+      gradient: {
+        shade: 'light',
+        type: 'vertical',
+        shadeIntensity: 0.5,
+        inverseColors: true,
+        opacityFrom: 0.85,
+        opacityTo: 0.85,
+        stops: [0, 100]
+      }
+    },
     labels: ['Novos', 'Desligados'],
     xaxis: {
       labels: {
@@ -234,10 +249,10 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
       intersect: false,
       y: {
         formatter: (val, opts) => {
-          if (opts.seriesIndex === 0) {
+          if (opts.seriesIndex === 0) { // Column series
             return val.toString() + ' pessoas';
           }
-          return formatCurrency(val);
+          return formatCurrency(val); // Line series
         }
       }
     }
