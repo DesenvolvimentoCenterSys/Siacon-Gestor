@@ -34,7 +34,7 @@ export function NovasVidasWidget({ initialIsFavorite }: NovasVidasWidgetProps) {
         value: 'novos cadastros',
         isPositive: true, // Neutral/Positive indicator
       },
-      widgetId: 12,
+      widgetId: 13,
     };
   }, [novasVidasData, theme]);
 

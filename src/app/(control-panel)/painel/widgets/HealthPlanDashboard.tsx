@@ -9,6 +9,8 @@ import { TotalCpfWidget } from '../../../components/widgets/TotalCpfWidget';
 import { AgeGroupChartWidget } from '../../../components/widgets/AgeGroupChartWidget';
 import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutChartWidget';
 import { NovasVidasWidget } from '../../../components/widgets/NovasVidasWidget';
+import { VidasPorConvenioWidget } from '../../../components/widgets/VidasPorConvenioWidget';
+import { TotalFiliadosWidget } from '../../../components/widgets/TotalFiliadosWidget';
 import FuseLoading from '@fuse/core/FuseLoading';
 
 
@@ -20,8 +22,8 @@ function HealthPlanDashboard() {
     true
   );
 
-  const kpiWidgetIds = [2, 3, 4, 12];
-  const chartWidgetIds = [8, 24];
+  const kpiWidgetIds = [2, 3, 4, 13];
+  const chartWidgetIds = [8, 10, 24, 14];
 
   const kpiWidgets = favoriteWidgets?.filter(w => kpiWidgetIds.includes(w.dashboardWidgetId)) || [];
   const chartWidgets = favoriteWidgets?.filter(w => chartWidgetIds.includes(w.dashboardWidgetId)) || [];
@@ -53,7 +55,7 @@ function HealthPlanDashboard() {
                 </Grid>
               );
             }
-            if (widget.dashboardWidgetId === 12) {
+            if (widget.dashboardWidgetId === 13) {
               return (
                 <Grid item xs={12} sm={6} md={3} key={widget.id}>
                   <NovasVidasWidget initialIsFavorite={widget.isFavorite} />
@@ -80,6 +82,20 @@ function HealthPlanDashboard() {
               return (
                 <Grid item xs={12} md={6} key={widget.id}>
                   <GenderDonutChartWidget initialIsFavorite={widget.isFavorite} />
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 10) {
+              return (
+                <Grid item xs={12} md={6} key={widget.id}>
+                  <VidasPorConvenioWidget initialIsFavorite={widget.isFavorite} />
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 14) {
+              return (
+                <Grid item xs={12} md={6} key={widget.id}>
+                  <TotalFiliadosWidget initialIsFavorite={widget.isFavorite} />
                 </Grid>
               );
             }

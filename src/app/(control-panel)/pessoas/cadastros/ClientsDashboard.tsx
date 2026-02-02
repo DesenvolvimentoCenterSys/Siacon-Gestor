@@ -58,7 +58,7 @@ function ClientsDashboard() {
           {isFavoritesLoading ? (
             <WidgetLoading height={160} />
           ) : (
-            <NovasVidasWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 12 && w.isFavorite)} />
+            <NovasVidasWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 13 && w.isFavorite)} />
           )}
         </Grid>
 

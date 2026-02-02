@@ -4,7 +4,7 @@ import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, Tabs, Tab, Divider, ListItemIcon, ListItemText, Button, Dialog, DialogContent, DialogActions } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useTotalFiliados, useToggleFavoriteWidget } from '../../hooks/useDashboard';
+import { useTotalFiliados, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
 import { format } from 'date-fns';
@@ -22,6 +22,7 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
   const { data: user } = useUser();
   const [filterDate, setFilterDate] = useState<Date>(new Date());
   const [refetchCounter, setRefetchCounter] = useState(0);
+  const widgetId = 14;
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
@@ -80,16 +81,40 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
 
   // Data Fetching
   const { data: widgetData, isLoading } = useTotalFiliados(apiDate);
+  const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
+  const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-  // Favorite Logic (Placeholder ID, assuming distinct ID for this widget, e.g., 50)
-  // Check backend for real ID or use a placeholder if not favoritable yet.
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
+  // Derive backend status
+  const backendIsFavorite = useMemo(() => {
+    if (!favoriteWidgets) return initialIsFavorite;
+    return favoriteWidgets.some((w: any) => w.dashboardWidgetId === widgetId && w.isFavorite);
+  }, [favoriteWidgets, widgetId, initialIsFavorite]);
 
-  // NOTE: Assuming WidgetId logic would be added later or is not strictly required for this demo.
-  // const toggleFavoriteMutation = useToggleFavoriteWidget();
-  const handleToggleFavorite = () => {
-    // Implement if needed
-    setIsFavorite(!isFavorite);
+  // Local state initialized with backend status
+  const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(null);
+  const isFavorite = optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
+
+  useEffect(() => {
+    if (optimisticStatus !== null && backendIsFavorite === optimisticStatus) {
+      setOptimisticStatus(null);
+    }
+  }, [backendIsFavorite, optimisticStatus]);
+
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user?.id || !widgetId) return;
+
+    const newStatus = !isFavorite;
+    setOptimisticStatus(newStatus); // Optimistic UI update
+
+    toggleFavoriteMutation.mutate(
+      { codUsu: Number(user.id), widgetId, isFavorite: newStatus },
+      {
+        onError: () => {
+          setOptimisticStatus(null); // Revert on error
+        }
+      }
+    );
   };
 
   const chartSeries = useMemo(() => {
@@ -294,7 +319,7 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
 
           <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
             <IconButton onClick={handleToggleFavorite} size="small">
-              <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "inherit" }} size={20}>
+              <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "action.active" }} size={20}>
                 {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
               </FuseSvgIcon>
             </IconButton>

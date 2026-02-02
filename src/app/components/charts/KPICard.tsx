@@ -57,7 +57,11 @@ function KPICard({
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!user?.id || !widgetId) return;
+    if (!user?.id || !widgetId) {
+      console.warn('KPICard: Missing user or widgetId', { user, widgetId });
+      return;
+    }
+    console.log('KPICard: Toggling favorite', { userId: user.id, widgetId, newStatus: !isFavorite });
 
     const newStatus = !isFavorite;
     setIsFavorite(newStatus);
