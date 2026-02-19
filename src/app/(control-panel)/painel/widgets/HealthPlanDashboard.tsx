@@ -16,6 +16,7 @@ import { TaxaUtilizacaoWidget } from '../../../components/widgets/TaxaUtilizacao
 import { MensalidadeMediaWidget } from '../../../components/widgets/MensalidadeMediaWidget';
 import { EvolucaoFaturamentoChartWidget } from '../../../components/widgets/EvolucaoFaturamentoChartWidget';
 import { FaturamentoPorConvenioChartWidget } from '../../../components/widgets/FaturamentoPorConvenioChartWidget';
+import { DependentesTitularesWidget } from '../../../components/widgets/DependentesTitularesWidget';
 import { Suspense } from 'react';
 
 // Loading component for individual widgets
@@ -37,7 +38,7 @@ function HealthPlanDashboard() {
     true
   );
 
-  const kpiWidgetIds = [2, 3, 4, 5, 6, 13, 23];
+  const kpiWidgetIds = [2, 3, 4, 5, 6, 13, 23, 11];
   const chartWidgetIds = [7, 9, 8, 10, 24, 14];
 
   const kpiWidgets = favoriteWidgets?.filter(w => kpiWidgetIds.includes(w.dashboardWidgetId)) || [];
