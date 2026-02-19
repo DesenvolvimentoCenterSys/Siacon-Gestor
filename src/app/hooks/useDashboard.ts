@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSnackbar } from 'notistack';
 import { dashboardService } from '../services/dashboardService';
 
 export const useToggleFavoriteWidget = () => {
   const queryClient = useQueryClient();
+  const { enqueueSnackbar } = useSnackbar();
 
   return useMutation({
     mutationFn: ({ codUsu, widgetId, isFavorite }: { codUsu: number; widgetId: number; isFavorite: boolean }) =>
@@ -12,8 +14,28 @@ export const useToggleFavoriteWidget = () => {
       queryClient.invalidateQueries({ queryKey: ['userFavoriteWidgets', variables.codUsu] });
       queryClient.invalidateQueries({ queryKey: ['allWidgets'] });
     },
-    onError: (error) => {
+    onError: async (error) => {
       console.error('Erro ao atualizar favorito', error);
+
+      let mensagem = 'Não foi possível atualizar o favorito. Tente novamente.';
+
+      // Tenta extrair a mensagem de erro do corpo da resposta HTTP (ky / fetch)
+      if (error && typeof error === 'object' && 'response' in error) {
+        try {
+          const body = await (error as { response: Response }).response.json();
+          if (body?.message) {
+            mensagem = body.message;
+          }
+        } catch {
+          // ignora erros ao ler o corpo
+        }
+      }
+
+      enqueueSnackbar(mensagem, {
+        variant: 'error',
+        autoHideDuration: 5000,
+        anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
+      });
     }
   });
 };

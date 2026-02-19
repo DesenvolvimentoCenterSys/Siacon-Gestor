@@ -235,11 +235,6 @@ export interface DelinquencySummaryDto {
   percentualAReceber: number;
 }
 
-export interface NovasVidasDto {
-  quantidadePF: number;
-  quantidadePJ: number;
-  total: number;
-}
 
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
@@ -284,12 +279,7 @@ export const dashboardService = {
       searchParams
     }).json<ClientesPorSexoDto>();
   },
-  getNovasVidas: async (date?: string): Promise<NovasVidasDto> => {
-    const searchParams = date ? { date } : undefined;
-    return dashboardClient.get('api/Dashboard/novas-vidas', {
-      searchParams
-    }).json<NovasVidasDto>();
-  },
+
   getTotalFiliados: async (date?: string): Promise<TotalFiliadosDto> => {
     const searchParams = date ? { date } : undefined;
     return dashboardClient.get('api/Dashboard/total-filiados', {
