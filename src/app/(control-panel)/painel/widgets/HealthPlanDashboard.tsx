@@ -16,6 +16,7 @@ import { TaxaUtilizacaoWidget } from '../../../components/widgets/TaxaUtilizacao
 import { MensalidadeMediaWidget } from '../../../components/widgets/MensalidadeMediaWidget';
 import { EvolucaoFaturamentoChartWidget } from '../../../components/widgets/EvolucaoFaturamentoChartWidget';
 import { FaturamentoPorConvenioChartWidget } from '../../../components/widgets/FaturamentoPorConvenioChartWidget';
+import { TotalUsuariosConvenioWidget } from '../../../components/widgets/TotalUsuariosConvenioWidget';
 import { DependentesTitularesWidget } from '../../../components/widgets/DependentesTitularesWidget';
 import { Suspense } from 'react';
 
@@ -122,6 +123,15 @@ function HealthPlanDashboard() {
                 </Grid>
               );
             }
+            if (widget.dashboardWidgetId === 11) {
+              return (
+                <Grid item xs={12} sm={6} md={3} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={160} />}>
+                    <DependentesTitularesWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
             return null;
           })}
         </Grid>
@@ -178,9 +188,9 @@ function HealthPlanDashboard() {
             }
             if (widget.dashboardWidgetId === 14) {
               return (
-                <Grid item xs={12} md={6} key={widget.id}>
+                <Grid item xs={12} md={12} key={widget.id}>
                   <Suspense fallback={<WidgetLoader height={400} />}>
-                    <TotalFiliadosWidget initialIsFavorite={widget.isFavorite} />
+                    <TotalUsuariosConvenioWidget initialIsFavorite={widget.isFavorite} />
                   </Suspense>
                 </Grid>
               );

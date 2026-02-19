@@ -131,3 +131,10 @@ export const useDependentesTitularesCount = (date?: string) => {
     queryFn: () => dashboardService.getDependentesTitularesCount(date)
   });
 };
+
+export const useTotalUsuariosConvenio = (date?: string) => {
+  return useQuery({
+    queryKey: ['totalUsuariosConvenio', date],
+    queryFn: () => dashboardService.getTotalUsuariosConvenio(date)
+  });
+};

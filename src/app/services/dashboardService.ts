@@ -100,6 +100,31 @@ export interface DependentesTitularesDto {
   dependentesGrowth: number;
 }
 
+export interface ResumoUsuariosDto {
+  totalAtivos: number;
+  totalDesligados: number;
+  totalNovos: number;
+  valorDesligados: number;
+  valorNovos: number;
+  faturamentoTotal: number;
+}
+
+export interface UsuariosPorConvenioDto {
+  codConvenio: number;
+  nomeConvenio: string;
+  geral: ResumoUsuariosDto;
+  pf: ResumoUsuariosDto;
+  pj: ResumoUsuariosDto;
+}
+
+export interface TotalUsuariosConvenioDto {
+  dataReferencia: string;
+  geral: ResumoUsuariosDto;
+  pf: ResumoUsuariosDto;
+  pj: ResumoUsuariosDto;
+  porConvenio: UsuariosPorConvenioDto[];
+}
+
 export interface TotalFiliadosDto {
   totalAtivos: number;
   totalDesligados: number;
@@ -232,6 +257,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/dependentes-titulares', {
       searchParams
     }).json<DependentesTitularesDto>();
+  },
+  getTotalUsuariosConvenio: async (date?: string): Promise<TotalUsuariosConvenioDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/total-usuarios-convenio', {
+      searchParams
+    }).json<TotalUsuariosConvenioDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};
