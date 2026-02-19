@@ -166,3 +166,17 @@ export const useFinancialEvolution = (date?: string) => {
     queryFn: () => dashboardService.getFinancialEvolution(date)
   });
 };
+
+export const useAccumulatedDelinquency = (year?: number) => {
+  return useQuery({
+    queryKey: ['accumulatedDelinquency', year],
+    queryFn: () => dashboardService.getAccumulatedDelinquency(year)
+  });
+};
+
+export const useDailyDelinquency = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['dailyDelinquency', startDate, endDate],
+    queryFn: () => dashboardService.getDailyDelinquency(startDate, endDate)
+  });
+};

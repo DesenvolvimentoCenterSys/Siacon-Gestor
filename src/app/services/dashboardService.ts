@@ -206,6 +206,18 @@ export interface FinancialEvolutionDto {
   saldoAcumulado: number;
 }
 
+export interface AccumulatedDelinquencyDto {
+  mes: number;
+  valorMensal: number;
+  valorAcumulado: number;
+}
+
+export interface DailyDelinquencyDto {
+  data: string;
+  valorDiario: number;
+  valorAcumulado: number;
+}
+
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
     return dashboardClient.post('api/UsuarioDashboardWidgets/favorite', {
@@ -340,6 +352,23 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/financial-evolution', {
       searchParams
     }).json<FinancialEvolutionDto[]>();
+  },
+  getAccumulatedDelinquency: async (year?: number): Promise<AccumulatedDelinquencyDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (year) searchParams.year = year.toString();
+
+    return dashboardClient.get('api/Dashboard/accumulated-delinquency', {
+      searchParams
+    }).json<AccumulatedDelinquencyDto[]>();
+  },
+  getDailyDelinquency: async (startDate?: string, endDate?: string): Promise<DailyDelinquencyDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
+    return dashboardClient.get('api/Dashboard/daily-delinquency', {
+      searchParams
+    }).json<DailyDelinquencyDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};
