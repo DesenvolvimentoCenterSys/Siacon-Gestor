@@ -337,13 +337,13 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
                 border: `1px solid ${alpha(card.color, 0.18)}`
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 0.8 }}>
-                <FuseSvgIcon size={15} sx={{ color: card.color }}>{card.icon}</FuseSvgIcon>
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.7rem' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.8 }}>
+                <FuseSvgIcon size={17} sx={{ color: card.color }}>{card.icon}</FuseSvgIcon>
+                <Typography sx={{ color: theme.palette.text.secondary, fontWeight: 700, fontSize: '0.9rem' }}>
                   {card.label}
                 </Typography>
               </Box>
-              <Typography sx={{ fontWeight: 800, color: card.color, fontSize: '1rem', lineHeight: 1.2 }}>
+              <Typography sx={{ fontWeight: 800, color: card.color, fontSize: '1.6rem', lineHeight: 1.1 }}>
                 {card.value}
               </Typography>
               {card.sub && (

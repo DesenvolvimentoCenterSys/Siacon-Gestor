@@ -35,7 +35,7 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
 
-  const handleClickMenu = (e: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(e.currentTarget);
+  const handleClickMenu = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
   const handleCloseMenu = () => setAnchorEl(null);
   const handleSelectYear = (year: number) => { setSelectedYear(year); handleCloseMenu(); };
 
@@ -316,13 +316,13 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
                 border: `1px solid ${alpha(card.color, 0.18)}`
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.8, mb: 0.8 }}>
-                <FuseSvgIcon size={15} sx={{ color: card.color }}>{card.icon}</FuseSvgIcon>
-                <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 600, fontSize: '0.7rem' }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.8 }}>
+                <FuseSvgIcon size={17} sx={{ color: card.color }}>{card.icon}</FuseSvgIcon>
+                <Typography sx={{ color: theme.palette.text.secondary, fontWeight: 700, fontSize: '0.9rem' }}>
                   {card.label}
                 </Typography>
               </Box>
-              <Typography sx={{ fontWeight: 800, color: card.color, fontSize: '1rem', lineHeight: 1.2 }}>
+              <Typography sx={{ fontWeight: 800, color: card.color, fontSize: '1.6rem', lineHeight: 1.1 }}>
                 {card.value}
               </Typography>
               {card.sub && (
