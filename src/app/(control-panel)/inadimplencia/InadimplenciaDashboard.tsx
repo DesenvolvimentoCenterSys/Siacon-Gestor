@@ -72,6 +72,9 @@ function InadimplenciaDashboard() {
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           textColor="inherit"
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
           TabIndicatorProps={{
             style: { backgroundColor: activeColor, height: 3, borderRadius: 3 }
           }}

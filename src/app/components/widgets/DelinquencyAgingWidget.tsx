@@ -68,11 +68,40 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
     );
   };
 
-  // Derived
+  // Derived - Raw sorted data for Table
   const sorted = useMemo(() =>
     widgetData ? [...widgetData].filter(d => d.valor > 0).sort((a, b) => a.diasVencido - b.diasVencido) : [],
     [widgetData]
   );
+
+  // Aggregated Data for Chart (10-day buckets)
+  const chartBuckets = useMemo(() => {
+    if (!widgetData) return [];
+
+    const buckets = [
+      { label: '10 dias', max: 10, valor: 0, qtd: 0, color: agingColor(10) },
+      { label: '20 dias', max: 20, valor: 0, qtd: 0, color: agingColor(20) },
+      { label: '30 dias', max: 30, valor: 0, qtd: 0, color: agingColor(30) },
+      { label: '40 dias', max: 40, valor: 0, qtd: 0, color: agingColor(40) },
+      { label: '50 dias', max: 50, valor: 0, qtd: 0, color: agingColor(50) },
+      { label: '60 dias', max: 60, valor: 0, qtd: 0, color: agingColor(60) },
+      { label: '90 dias', max: 90, valor: 0, qtd: 0, color: agingColor(90) },
+      { label: '90+ dias', max: Infinity, valor: 0, qtd: 0, color: agingColor(180) }
+    ];
+
+    widgetData.forEach(d => {
+      if (d.valor <= 0) return;
+
+      // Find the correct bucket
+      const bucket = buckets.find(b => d.diasVencido <= b.max);
+      if (bucket) {
+        bucket.valor += d.valor;
+        bucket.qtd += d.quantidade;
+      }
+    });
+
+    return buckets.filter(b => b.valor > 0);
+  }, [widgetData]);
 
   const totals = useMemo(() => ({
     valor: sorted.reduce((s, d) => s + d.valor, 0),
@@ -90,7 +119,7 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
       fontFamily: 'inherit',
       animations: { enabled: true, speed: 600 }
     },
-    colors: sorted.map(d => agingColor(d.diasVencido)),
+    colors: chartBuckets.map(b => b.color),
     plotOptions: {
       bar: {
         horizontal: true,
@@ -111,7 +140,7 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
     },
     dataLabels: { enabled: false },
     xaxis: {
-      categories: sorted.map(d => d.descricao || `${d.diasVencido}d`),
+      categories: chartBuckets.map(b => b.label),
       labels: {
         formatter: (v) => {
           const n = Number(v);
@@ -137,25 +166,25 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
     tooltip: {
       theme: theme.palette.mode,
       custom: ({ series, seriesIndex, dataPointIndex }) => {
-        const d = sorted[dataPointIndex];
+        const d = chartBuckets[dataPointIndex];
         if (!d) return '';
         return `
           <div style="padding:10px 14px;font-family:inherit;min-width:180px">
-            <div style="font-weight:700;margin-bottom:6px;color:${agingColor(d.diasVencido)}">${d.descricao}</div>
+            <div style="font-weight:700;margin-bottom:6px;color:${d.color}">${d.label}</div>
             <div style="display:flex;justify-content:space-between;gap:12px">
               <span style="color:#888;font-size:12px">Valor</span>
               <strong>${formatCurrency(d.valor)}</strong>
             </div>
             <div style="display:flex;justify-content:space-between;gap:12px;margin-top:2px">
               <span style="color:#888;font-size:12px">Qtd.</span>
-              <strong>${d.quantidade}</strong>
+              <strong>${d.qtd}</strong>
             </div>
           </div>`;
       }
     }
   };
 
-  const chartSeries = [{ name: 'Valor', data: sorted.map(d => d.valor) }];
+  const chartSeries = [{ name: 'Valor', data: chartBuckets.map(b => b.valor) }];
 
   if (isLoading) return <WidgetLoading height={480} />;
 
@@ -265,7 +294,7 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
               options={chartOptions}
               series={chartSeries}
               type="bar"
-              height={Math.max(280, sorted.length * 52 + 60)}
+              height={Math.max(280, chartBuckets.length * 52 + 60)}
             />
           </Box>
         )}
