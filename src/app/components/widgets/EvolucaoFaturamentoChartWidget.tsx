@@ -85,8 +85,9 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 
   const chartOptions: ApexOptions = {
     chart: {
-      type: 'area', // Changed to area for better visualization of evolution
+      type: 'area',
       toolbar: { show: false },
+      zoom: { enabled: false },
       fontFamily: 'inherit',
       animations: {
         enabled: true

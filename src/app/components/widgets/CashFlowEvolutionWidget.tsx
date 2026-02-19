@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useTheme, alpha } from '@mui/material/styles';
-import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip } from '@mui/material';
+import { Card, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button, Avatar } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useCashFlowEvolution, useToggleFavoriteWidget } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
@@ -37,14 +37,12 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  // Filter State
   const [startDate, setStartDate] = useState<Date>(startOfMonth(new Date()));
   const [endDate, setEndDate] = useState<Date>(endOfMonth(new Date()));
 
   const apiStartDate = useMemo(() => format(startDate, 'yyyy-MM-dd'), [startDate]);
   const apiEndDate = useMemo(() => format(endDate, 'yyyy-MM-dd'), [endDate]);
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [dateRangeOpen, setDateRangeOpen] = useState(false);
@@ -56,9 +54,7 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
     setAnchorEl(event.currentTarget);
   };
 
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
+  const handleCloseMenu = () => setAnchorEl(null);
 
   const handleSelectPredefined = (days: number | 'current_month') => {
     const today = new Date();
@@ -97,10 +93,8 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
     return `${start} - ${end}`;
   };
 
-  // Data Fetching
   const { data: widgetData, isLoading } = useCashFlowEvolution(apiStartDate, apiEndDate);
 
-  // Favorite Logic
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -114,101 +108,140 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
     );
   };
 
-  // Process Data for Chart and Totals
   const processedData = useMemo(() => {
     if (!widgetData || widgetData.length === 0) return { series: [], categories: [], totals: { entrada: 0, saida: 0, saldo: 0 } };
 
-    // Aggregate by date (in case API returns multiple entries per date)
     const groupedByDate = widgetData.reduce((acc, curr) => {
       const dateKey = curr.data.split('T')[0];
       if (!acc[dateKey]) {
-        acc[dateKey] = {
-          date: dateKey,
-          totalEntrada: 0,
-          totalSaida: 0,
-          saldoDoDia: 0,
-          saldoAcumulado: curr.saldoAcumulado
-        };
+        acc[dateKey] = { date: dateKey, totalEntrada: 0, totalSaida: 0, saldoDoDia: 0, saldoAcumulado: curr.saldoAcumulado };
       }
       acc[dateKey].totalEntrada += curr.totalEntrada;
-      acc[dateKey].totalSaida += curr.totalSaida;
+      // Garantir que saída seja sempre valor positivo (Math.abs)
+      acc[dateKey].totalSaida += Math.abs(curr.totalSaida);
       acc[dateKey].saldoDoDia += curr.saldoDoDia;
-      // Use the latest accumulated balance for the day (assuming sorted or take last)
-      // Ideally backend should provide a daily summary. If filtering by movement, this logic might need refinement.
-      // For now, let's assume one row per day or we sum up flow and take last balance.
       acc[dateKey].saldoAcumulado = curr.saldoAcumulado;
       return acc;
     }, {} as Record<string, any>);
 
     const sortedDates = Object.keys(groupedByDate).sort();
     const categories = sortedDates.map(d => format(parseISO(d), 'dd/MM'));
-    const seriesEntrada = sortedDates.map(d => groupedByDate[d].totalEntrada);
-    const seriesSaida = sortedDates.map(d => groupedByDate[d].totalSaida);
+    const seriesEntrada = sortedDates.map(d => Math.abs(groupedByDate[d].totalEntrada));
+    const seriesSaida = sortedDates.map(d => Math.abs(groupedByDate[d].totalSaida));
     const seriesSaldo = sortedDates.map(d => groupedByDate[d].saldoAcumulado);
 
     const totals = widgetData.reduce((acc, curr) => ({
-      entrada: acc.entrada + curr.totalEntrada,
-      saida: acc.saida + curr.totalSaida,
-      saldo: acc.saldo + curr.totalEntrada - curr.totalSaida // Net result of the period
+      entrada: acc.entrada + Math.abs(curr.totalEntrada),
+      saida: acc.saida + Math.abs(curr.totalSaida),
+      saldo: acc.saldo + curr.totalEntrada - Math.abs(curr.totalSaida)
     }), { entrada: 0, saida: 0, saldo: 0 });
+
+    // Calcular o máximo para o eixo Y esquerdo para garantir que min=0 funcione
+    const maxBarValue = Math.max(...seriesEntrada, ...seriesSaida, 1);
 
     return {
       series: [
         { name: 'Entradas', type: 'column', data: seriesEntrada },
         { name: 'Saídas', type: 'column', data: seriesSaida },
         { name: 'Saldo Acumulado', type: 'line', data: seriesSaldo }
-      ],
-      categories,
-      totals
+      ], categories, totals, maxBarValue
     };
   }, [widgetData]);
 
+  // Cores metálicas
+  const colorEntradas = '#2E7D32'; // Verde metálico escuro
+  const colorSaidas = '#C62828';   // Vermelho metálico escuro
+  const colorSaldo = theme.palette.secondary.main; // Saldo (cor secundária do tema)
+
   const chartOptions: ApexOptions = {
     chart: {
+      // CRITICAL: usar 'bar' como tipo base para grouped bars + line overlay
       type: 'line',
+      stacked: false,
       toolbar: { show: false },
+      zoom: { enabled: false },
       fontFamily: 'inherit',
-      animations: { enabled: true }
+      animations: { enabled: false } // Desabilitar para debug visual
     },
-    colors: [theme.palette.success.main, theme.palette.error.main, theme.palette.primary.main],
+    colors: [colorEntradas, colorSaidas, colorSaldo],
     stroke: {
+      // 0 = sem linha (bar), 0 = sem linha (bar), 3 = linha para Saldo
       width: [0, 0, 3],
-      curve: 'smooth'
+      curve: 'smooth',
+      colors: ['transparent', 'transparent', colorSaldo]
     },
     plotOptions: {
       bar: {
-        columnWidth: '50%',
-        borderRadius: 4
+        columnWidth: '55%',
+        borderRadius: 3,
+        // NÃO usar distributed nem dataLabels com posição top para barras
       }
     },
     dataLabels: { enabled: false },
     xaxis: {
       categories: processedData.categories,
       axisBorder: { show: false },
-      axisTicks: { show: false }
+      axisTicks: { show: false },
+      tooltip: { enabled: false }
     },
     yaxis: [
       {
-        title: { text: 'Movimentação' },
+        // Eixo Y ESQUERDO para Entradas e Saídas
+        // CRITICAL FIX: min: 0 garante que barras comecem do zero
+        // e não afeta o zero visual quando o eixo direito tem negativos
+        seriesName: 'Entradas',
+        min: 0,
+        forceNiceScale: true,
+        title: {
+          text: 'Movimentação',
+          style: { color: theme.palette.text.secondary }
+        },
         labels: {
-          formatter: (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+          style: { colors: theme.palette.text.secondary },
+          formatter: (value) => {
+            if (value >= 1000) return `R$${(value / 1000).toFixed(0)}k`;
+            return `R$${value.toFixed(0)}`;
+          }
         }
       },
       {
+        // Segundo yaxis para Saídas pero usando o mesmo eixo visual (hidden)
+        seriesName: 'Saídas',
+        show: false,
+        min: 0,
+        forceNiceScale: true,
+      },
+      {
+        // Eixo Y DIREITO para Saldo Acumulado (pode ter negativos)
+        seriesName: 'Saldo Acumulado',
         opposite: true,
-        title: { text: 'Saldo Acumulado' },
+        title: {
+          text: 'Saldo Acumulado',
+          style: { color: colorSaldo }
+        },
         labels: {
-          formatter: (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', minimumFractionDigits: 0, maximumFractionDigits: 0 })
+          style: { colors: colorSaldo },
+          formatter: (value) => {
+            if (Math.abs(value) >= 1000) return `R$${(value / 1000).toFixed(0)}k`;
+            return `R$${value.toFixed(0)}`;
+          }
         }
       }
     ],
     tooltip: {
       y: {
         formatter: (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-      }
+      },
+      theme: theme.palette.mode
     },
-    legend: { position: 'top' },
-    grid: { borderColor: theme.palette.divider }
+    legend: {
+      position: 'top',
+      horizontalAlign: 'center',
+    },
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 3
+    }
   };
 
   if (isLoading) return <WidgetLoading height={500} />;
@@ -233,12 +266,7 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
             onClick={(e: any) => handleClickMenu(e)}
             startIcon={<FuseSvgIcon size={16}>heroicons-outline:calendar</FuseSvgIcon>}
             endIcon={<FuseSvgIcon size={16}>heroicons-solid:chevron-down</FuseSvgIcon>}
-            sx={{
-              borderRadius: '8px',
-              textTransform: 'none',
-              color: 'text.secondary',
-              borderColor: 'divider'
-            }}
+            sx={{ borderRadius: '8px', textTransform: 'none', color: 'text.secondary', borderColor: 'divider' }}
           >
             {getFilterLabel()}
           </Button>
@@ -256,29 +284,34 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
       <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Summary Metrics */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#2E7D32', 0.08), border: `1px solid ${alpha('#2E7D32', 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: alpha('#2E7D32', 0.2), color: '#1B5E20' }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(colorEntradas, 0.08), border: `1px solid ${alpha(colorEntradas, 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: alpha(colorEntradas, 0.2), color: colorEntradas }}>
               <FuseSvgIcon>heroicons-outline:arrow-trending-up</FuseSvgIcon>
             </Avatar>
-            <MetricItem label="Total Entradas" value={processedData.totals.entrada} color="#1B5E20" money bold />
+            <MetricItem label="Total Entradas" value={processedData.totals.entrada} color={colorEntradas} money bold />
           </Box>
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#C62828', 0.08), border: `1px solid ${alpha('#C62828', 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: alpha('#C62828', 0.2), color: '#B71C1C' }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(colorSaidas, 0.08), border: `1px solid ${alpha(colorSaidas, 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: alpha(colorSaidas, 0.2), color: colorSaidas }}>
               <FuseSvgIcon>heroicons-outline:arrow-trending-down</FuseSvgIcon>
             </Avatar>
-            <MetricItem label="Total Saídas" value={processedData.totals.saida} color="#B71C1C" money bold />
+            <MetricItem label="Total Saídas" value={processedData.totals.saida} color={colorSaidas} money bold />
           </Box>
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#F57F17', 0.08), border: `1px solid ${alpha('#F57F17', 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: alpha('#F57F17', 0.2), color: '#E65100' }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(colorSaldo, 0.08), border: `1px solid ${alpha(colorSaldo, 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: alpha(colorSaldo, 0.2), color: colorSaldo }}>
               <FuseSvgIcon>heroicons-outline:scale</FuseSvgIcon>
             </Avatar>
-            <MetricItem label="Resultado do Período" value={processedData.totals.saldo} color="#E65100" money bold />
+            <MetricItem label="Resultado do Período" value={processedData.totals.saldo} color={colorSaldo} money bold />
           </Box>
         </Box>
 
         {/* Chart */}
         <Box sx={{ flex: 1, minHeight: 350 }}>
-          <ReactApexChart options={chartOptions} series={processedData.series} type="line" height="100%" />
+          <ReactApexChart
+            options={chartOptions}
+            series={processedData.series}
+            type="line"
+            height="100%"
+          />
         </Box>
       </Box>
 

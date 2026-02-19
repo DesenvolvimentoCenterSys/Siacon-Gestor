@@ -109,6 +109,7 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
     chart: {
       type: 'donut',
       toolbar: { show: false },
+      zoom: { enabled: false },
       fontFamily: 'inherit'
     },
     labels: ['Masculino', 'Feminino', 'Outros'],

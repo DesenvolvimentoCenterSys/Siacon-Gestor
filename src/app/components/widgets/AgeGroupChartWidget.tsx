@@ -107,6 +107,7 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
     chart: {
       type: 'bar',
       toolbar: { show: false },
+      zoom: { enabled: false },
       fontFamily: 'inherit'
     },
     plotOptions: {

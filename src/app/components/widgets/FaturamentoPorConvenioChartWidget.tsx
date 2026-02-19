@@ -86,6 +86,7 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
     chart: {
       type: 'bar',
       toolbar: { show: false },
+      zoom: { enabled: false },
       fontFamily: 'inherit'
     },
     plotOptions: {

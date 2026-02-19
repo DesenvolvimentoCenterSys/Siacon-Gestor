@@ -138,6 +138,7 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
       type: 'line',
       fontFamily: 'inherit',
       toolbar: { show: false },
+      zoom: { enabled: false },
       stacked: false,
       width: '100%'
     },

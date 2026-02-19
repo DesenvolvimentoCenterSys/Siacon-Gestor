@@ -153,7 +153,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
   }], [empresasData]);
 
   const baseOverviewOptions: ApexOptions = {
-    chart: { type: 'bar', fontFamily: 'inherit', toolbar: { show: false }, stacked: false },
+    chart: { type: 'bar', fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false }, stacked: false },
     plotOptions: {
       bar: {
         horizontal: true,
@@ -236,7 +236,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
   }], [crescimentoEmpresasData]);
 
   const baseCrescimentoOptions: ApexOptions = {
-    chart: { type: 'bar', fontFamily: 'inherit', toolbar: { show: false }, stacked: false },
+    chart: { type: 'bar', fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false }, stacked: false },
     plotOptions: {
       bar: {
         horizontal: true,
@@ -348,7 +348,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
   }, [conveniosComMudancaSignificativa]);
 
   const tendenciaOptions: ApexOptions = {
-    chart: { type: 'line', fontFamily: 'inherit', toolbar: { show: false } },
+    chart: { type: 'line', fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false } },
     stroke: { width: 3, curve: 'smooth' }, // Smoother line
     xaxis: {
       categories: ['Anterior', 'Atual'],
