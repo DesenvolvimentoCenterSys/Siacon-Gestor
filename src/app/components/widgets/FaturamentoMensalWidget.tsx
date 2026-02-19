@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
-import { useTotalCpf } from '../../hooks/useDashboard';
+import { useFaturamentoMensal } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
 
-interface TotalCpfWidgetProps {
+interface FaturamentoMensalWidgetProps {
   initialIsFavorite?: boolean;
 }
 
-export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
+export function FaturamentoMensalWidget({ initialIsFavorite }: FaturamentoMensalWidgetProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -18,24 +18,24 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
     return format(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [selectedDate]);
 
-  const { data: totalCpfData, isLoading } = useTotalCpf(apiDate);
+  const { data: faturamentoData, isLoading } = useFaturamentoMensal(apiDate);
 
   const kpiData = useMemo(() => {
-    if (!totalCpfData) return null;
+    if (!faturamentoData) return null;
 
     return {
-      title: 'Total de Pessoas Físicas',
-      value: totalCpfData.total || 0,
-      subtitle: totalCpfData.message || 'pessoas físicas ativas',
-      icon: 'heroicons-outline:identification',
+      title: 'Faturamento Mensal',
+      value: faturamentoData.total || 0,
+      subtitle: faturamentoData.message || 'faturamento do mês',
+      icon: 'heroicons-outline:currency-dollar',
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
       trend: {
-        value: `${totalCpfData.percentageChange > 0 ? '+' : ''}${totalCpfData.percentageChange}% vs mês anterior`,
-        isPositive: totalCpfData.percentageChange >= 0,
+        value: `${faturamentoData.percentageChange > 0 ? '+' : ''}${faturamentoData.percentageChange}% vs mês anterior`,
+        isPositive: faturamentoData.percentageChange >= 0,
       },
-      widgetId: 23,
+      widgetId: 4,
     };
-  }, [totalCpfData, theme]);
+  }, [faturamentoData, theme]);
 
   if (isLoading) {
     return <WidgetLoading height={160} />;
@@ -48,7 +48,7 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
   return (
     <KPICard
       {...kpiData}
-      value={kpiData.value.toLocaleString('pt-BR')}
+      value={kpiData.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       showFilter={true}
       filterDate={selectedDate}
       onFilterChange={setSelectedDate}

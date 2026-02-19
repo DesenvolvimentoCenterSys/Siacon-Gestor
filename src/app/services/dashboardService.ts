@@ -53,6 +53,43 @@ export interface ClientesPorSexoDto {
   diferencaOutros: number;
 }
 
+export interface FaturamentoMensalDto {
+  total: number;
+  percentageChange: number;
+  message: string;
+}
+
+export interface TaxaUtilizacaoDto {
+  rate: number;
+  percentageChange: number;
+  message: string;
+}
+
+export interface MensalidadeMediaDto {
+  average: number;
+  percentageChange: number;
+  message: string;
+}
+
+export interface MesFaturamentoDto {
+  mes: number;
+  valorPago: number;
+  valorPrevisto: number;
+  valorInadimplencia: number;
+  despesasPagas: number;
+  despesasPrevistas: number;
+  despesasInadimplencia: number;
+}
+
+export interface EvolucaoFaturamentoDto {
+  meses: MesFaturamentoDto[];
+}
+
+export interface FaturamentoPorConvenioDto {
+  nomeConvenio: string;
+  valorTotalFaturado: number;
+  valorTotalTaxaAdm: number;
+}
 
 export interface TotalFiliadosDto {
   totalAtivos: number;
@@ -147,6 +184,39 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/vidas-por-convenio', {
       searchParams
     }).json<VidasPorConvenioDto[]>();
+  },
+  getFaturamentoMensal: async (date?: string): Promise<FaturamentoMensalDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/faturamento-mensal', {
+      searchParams
+    }).json<FaturamentoMensalDto>();
+  },
+  getTaxaUtilizacao: async (date?: string): Promise<TaxaUtilizacaoDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/taxa-utilizacao', {
+      searchParams
+    }).json<TaxaUtilizacaoDto>();
+  },
+  getMensalidadeMedia: async (date?: string): Promise<MensalidadeMediaDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/mensalidade-media', {
+      searchParams
+    }).json<MensalidadeMediaDto>();
+  },
+  getEvolucaoFaturamento: async (year?: number): Promise<EvolucaoFaturamentoDto> => {
+    const searchParams = year ? { year } : undefined;
+    return dashboardClient.get('api/Dashboard/evolucao-faturamento', {
+      searchParams
+    }).json<EvolucaoFaturamentoDto>();
+  },
+  getFaturamentoPorConvenio: async (startDate?: string, endDate?: string): Promise<FaturamentoPorConvenioDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
+    return dashboardClient.get('api/Dashboard/faturamento-por-convenio', {
+      searchParams
+    }).json<FaturamentoPorConvenioDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

@@ -2,8 +2,16 @@
 
 import { Box, Grid, Typography } from '@mui/material';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import WidgetLoading from '../../components/ui/WidgetLoading';
+import useUser from '@auth/useUser';
+import { TaxaUtilizacaoWidget } from '../../components/widgets/TaxaUtilizacaoWidget';
 
 function ConveniosDashboard() {
+  const { data: user } = useUser();
+
+  // Fetch user's favorite widgets
+  const { data: favoriteWidgets, isLoading: isFavoritesLoading } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   return (
     <Box sx={{ width: '100%' }}>
       <PageHeader
@@ -16,9 +24,15 @@ function ConveniosDashboard() {
         }
       />
 
-      {/* KPI Cards - Empty for now */}
+      {/* KPI Cards */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3 } }}>
-        {/* Cards will be added here */}
+        <Grid item xs={12} sm={6} md={3}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={160} />
+          ) : (
+            <TaxaUtilizacaoWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 5 && w.isFavorite)} />
+          )}
+        </Grid>
       </Grid>
 
       {/* Charts Grid - Empty for now */}

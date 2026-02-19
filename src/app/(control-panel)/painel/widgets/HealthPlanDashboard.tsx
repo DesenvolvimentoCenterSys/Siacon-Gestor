@@ -11,6 +11,11 @@ import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutC
 import { NovasVidasWidget } from '../../../components/widgets/NovasVidasWidget';
 import { VidasPorConvenioWidget } from '../../../components/widgets/VidasPorConvenioWidget';
 import { TotalFiliadosWidget } from '../../../components/widgets/TotalFiliadosWidget';
+import { FaturamentoMensalWidget } from '../../../components/widgets/FaturamentoMensalWidget';
+import { TaxaUtilizacaoWidget } from '../../../components/widgets/TaxaUtilizacaoWidget';
+import { MensalidadeMediaWidget } from '../../../components/widgets/MensalidadeMediaWidget';
+import { EvolucaoFaturamentoChartWidget } from '../../../components/widgets/EvolucaoFaturamentoChartWidget';
+import { FaturamentoPorConvenioChartWidget } from '../../../components/widgets/FaturamentoPorConvenioChartWidget';
 import { Suspense } from 'react';
 
 // Loading component for individual widgets
@@ -32,8 +37,8 @@ function HealthPlanDashboard() {
     true
   );
 
-  const kpiWidgetIds = [2, 3, 4, 13];
-  const chartWidgetIds = [8, 10, 24, 14];
+  const kpiWidgetIds = [2, 3, 4, 5, 6, 13, 23];
+  const chartWidgetIds = [7, 9, 8, 10, 24, 14];
 
   const kpiWidgets = favoriteWidgets?.filter(w => kpiWidgetIds.includes(w.dashboardWidgetId)) || [];
   const chartWidgets = favoriteWidgets?.filter(w => chartWidgetIds.includes(w.dashboardWidgetId)) || [];
@@ -75,6 +80,33 @@ function HealthPlanDashboard() {
               return (
                 <Grid item xs={12} sm={6} md={3} key={widget.id}>
                   <Suspense fallback={<WidgetLoader height={150} />}>
+                    <FaturamentoMensalWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 5) {
+              return (
+                <Grid item xs={12} sm={6} md={3} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={150} />}>
+                    <TaxaUtilizacaoWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 6) {
+              return (
+                <Grid item xs={12} sm={6} md={3} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={150} />}>
+                    <MensalidadeMediaWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 23) {
+              return (
+                <Grid item xs={12} sm={6} md={3} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={150} />}>
                     <TotalCpfWidget initialIsFavorite={widget.isFavorite} />
                   </Suspense>
                 </Grid>
@@ -98,6 +130,24 @@ function HealthPlanDashboard() {
       {chartWidgets.length > 0 && (
         <Grid container spacing={{ xs: 2, sm: 3 }}>
           {chartWidgets.map((widget) => {
+            if (widget.dashboardWidgetId === 7) {
+              return (
+                <Grid item xs={12} md={12} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={400} />}>
+                    <EvolucaoFaturamentoChartWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 9) {
+              return (
+                <Grid item xs={12} md={12} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={400} />}>
+                    <FaturamentoPorConvenioChartWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
             if (widget.dashboardWidgetId === 8) {
               return (
                 <Grid item xs={12} md={6} key={widget.id}>

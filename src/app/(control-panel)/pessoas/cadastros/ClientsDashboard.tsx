@@ -51,7 +51,7 @@ function ClientsDashboard() {
           {isFavoritesLoading ? (
             <WidgetLoading height={160} />
           ) : (
-            <TotalCpfWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 4 && w.isFavorite)} />
+            <TotalCpfWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 23 && w.isFavorite)} />
           )}
         </Grid>
         <Grid item xs={12} sm={6} md={3}>

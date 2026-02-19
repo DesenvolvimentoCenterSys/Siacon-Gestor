@@ -22,10 +22,10 @@ export interface Cliente {
 const storage = createStorage({
 	driver: process.env.VERCEL
 		? vercelKVDriver({
-				url: process.env.AUTH_KV_REST_API_URL,
-				token: process.env.AUTH_KV_REST_API_TOKEN,
-				env: false
-			})
+			url: process.env.AUTH_KV_REST_API_URL,
+			token: process.env.AUTH_KV_REST_API_TOKEN,
+			env: false
+		})
 		: memoryDriver()
 });
 

@@ -2,8 +2,20 @@
 
 import { Box, Grid, Typography } from '@mui/material';
 import { PageHeader } from '../../components/ui/PageHeader';
+import { useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import WidgetLoading from '../../components/ui/WidgetLoading';
+import useUser from '@auth/useUser';
+import { FaturamentoMensalWidget } from '../../components/widgets/FaturamentoMensalWidget';
+import { MensalidadeMediaWidget } from '../../components/widgets/MensalidadeMediaWidget';
+import { EvolucaoFaturamentoChartWidget } from '../../components/widgets/EvolucaoFaturamentoChartWidget';
+import { FaturamentoPorConvenioChartWidget } from '../../components/widgets/FaturamentoPorConvenioChartWidget';
 
 function FinancialDashboard() {
+  const { data: user } = useUser();
+
+  // Fetch user's favorite widgets
+  const { data: favoriteWidgets, isLoading: isFavoritesLoading } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
+
   return (
     <Box sx={{ width: '100%' }}>
       <PageHeader
@@ -16,14 +28,40 @@ function FinancialDashboard() {
         }
       />
 
-      {/* KPI Cards - Empty for now */}
+      {/* KPI Cards */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3 } }}>
-        {/* Cards will be added here */}
+        <Grid item xs={12} sm={6} md={3}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={160} />
+          ) : (
+            <FaturamentoMensalWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 4 && w.isFavorite)} />
+          )}
+        </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={160} />
+          ) : (
+            <MensalidadeMediaWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 6 && w.isFavorite)} />
+          )}
+        </Grid>
       </Grid>
 
-      {/* Charts Grid - Empty for now */}
+      {/* Charts Grid */}
       <Grid container spacing={{ xs: 2, sm: 3 }}>
-        {/* Charts will be added here */}
+        <Grid item xs={12} md={6}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={350} />
+          ) : (
+            <EvolucaoFaturamentoChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 7 && w.isFavorite)} />
+          )}
+        </Grid>
+        <Grid item xs={12} md={6}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={350} />
+          ) : (
+            <FaturamentoPorConvenioChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 9 && w.isFavorite)} />
+          )}
+        </Grid>
       </Grid>
     </Box>
   );

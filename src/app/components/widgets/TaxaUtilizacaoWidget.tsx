@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
-import { useTotalCpf } from '../../hooks/useDashboard';
+import { useTaxaUtilizacao } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
 
-interface TotalCpfWidgetProps {
+interface TaxaUtilizacaoWidgetProps {
   initialIsFavorite?: boolean;
 }
 
-export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
+export function TaxaUtilizacaoWidget({ initialIsFavorite }: TaxaUtilizacaoWidgetProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -18,24 +18,24 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
     return format(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [selectedDate]);
 
-  const { data: totalCpfData, isLoading } = useTotalCpf(apiDate);
+  const { data: taxaData, isLoading } = useTaxaUtilizacao(apiDate);
 
   const kpiData = useMemo(() => {
-    if (!totalCpfData) return null;
+    if (!taxaData) return null;
 
     return {
-      title: 'Total de Pessoas Físicas',
-      value: totalCpfData.total || 0,
-      subtitle: totalCpfData.message || 'pessoas físicas ativas',
-      icon: 'heroicons-outline:identification',
+      title: 'Taxa de Utilização',
+      value: taxaData.rate ? `${taxaData.rate.toFixed(1)}%` : '0.0%',
+      subtitle: taxaData.message || 'taxa de uso mensal',
+      icon: 'heroicons-outline:chart-bar',
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
       trend: {
-        value: `${totalCpfData.percentageChange > 0 ? '+' : ''}${totalCpfData.percentageChange}% vs mês anterior`,
-        isPositive: totalCpfData.percentageChange >= 0,
+        value: `${taxaData.percentageChange > 0 ? '+' : ''}${taxaData.percentageChange}% vs mês anterior`,
+        isPositive: taxaData.percentageChange >= 0,
       },
-      widgetId: 23,
+      widgetId: 5,
     };
-  }, [totalCpfData, theme]);
+  }, [taxaData, theme]);
 
   if (isLoading) {
     return <WidgetLoading height={160} />;
@@ -48,7 +48,7 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
   return (
     <KPICard
       {...kpiData}
-      value={kpiData.value.toLocaleString('pt-BR')}
+      value={kpiData.value as string}
       showFilter={true}
       filterDate={selectedDate}
       onFilterChange={setSelectedDate}

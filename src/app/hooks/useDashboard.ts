@@ -89,3 +89,38 @@ export const useVidasPorConvenio = (date?: string) => {
     queryFn: () => dashboardService.getVidasPorConvenio(date)
   });
 };
+
+export const useFaturamentoMensal = (date?: string) => {
+  return useQuery({
+    queryKey: ['faturamentoMensal', date],
+    queryFn: () => dashboardService.getFaturamentoMensal(date)
+  });
+};
+
+export const useTaxaUtilizacao = (date?: string) => {
+  return useQuery({
+    queryKey: ['taxaUtilizacao', date],
+    queryFn: () => dashboardService.getTaxaUtilizacao(date)
+  });
+};
+
+export const useMensalidadeMedia = (date?: string) => {
+  return useQuery({
+    queryKey: ['mensalidadeMedia', date],
+    queryFn: () => dashboardService.getMensalidadeMedia(date)
+  });
+};
+
+export const useEvolucaoFaturamento = (year?: number) => {
+  return useQuery({
+    queryKey: ['evolucaoFaturamento', year],
+    queryFn: () => dashboardService.getEvolucaoFaturamento(year)
+  });
+};
+
+export const useFaturamentoPorConvenio = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['faturamentoPorConvenio', startDate, endDate],
+    queryFn: () => dashboardService.getFaturamentoPorConvenio(startDate, endDate)
+  });
+};

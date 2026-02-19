@@ -2,14 +2,14 @@ import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
-import { useTotalCpf } from '../../hooks/useDashboard';
+import { useMensalidadeMedia } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
 
-interface TotalCpfWidgetProps {
+interface MensalidadeMediaWidgetProps {
   initialIsFavorite?: boolean;
 }
 
-export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
+export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWidgetProps) {
   const theme = useTheme();
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
 
@@ -18,24 +18,25 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
     return format(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [selectedDate]);
 
-  const { data: totalCpfData, isLoading } = useTotalCpf(apiDate);
+  const { data: mensalidadeData, isLoading } = useMensalidadeMedia(apiDate);
 
   const kpiData = useMemo(() => {
-    if (!totalCpfData) return null;
+    if (!mensalidadeData) return null;
 
     return {
-      title: 'Total de Pessoas Físicas',
-      value: totalCpfData.total || 0,
-      subtitle: totalCpfData.message || 'pessoas físicas ativas',
-      icon: 'heroicons-outline:identification',
+      title: 'Mensalidade Média',
+      value: mensalidadeData.average || 0,
+      subtitle: mensalidadeData.message || 'média mensal',
+      icon: 'heroicons-outline:currency-dollar',
+      // Using info (blue) as requested
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
       trend: {
-        value: `${totalCpfData.percentageChange > 0 ? '+' : ''}${totalCpfData.percentageChange}% vs mês anterior`,
-        isPositive: totalCpfData.percentageChange >= 0,
+        value: `${mensalidadeData.percentageChange > 0 ? '+' : ''}${mensalidadeData.percentageChange}% vs mês anterior`,
+        isPositive: mensalidadeData.percentageChange >= 0,
       },
-      widgetId: 23,
+      widgetId: 6,
     };
-  }, [totalCpfData, theme]);
+  }, [mensalidadeData, theme]);
 
   if (isLoading) {
     return <WidgetLoading height={160} />;
@@ -48,7 +49,7 @@ export function TotalCpfWidget({ initialIsFavorite }: TotalCpfWidgetProps) {
   return (
     <KPICard
       {...kpiData}
-      value={kpiData.value.toLocaleString('pt-BR')}
+      value={kpiData.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
       showFilter={true}
       filterDate={selectedDate}
       onFilterChange={setSelectedDate}
