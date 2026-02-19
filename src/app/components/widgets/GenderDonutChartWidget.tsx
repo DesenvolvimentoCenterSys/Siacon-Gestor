@@ -39,6 +39,7 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(filterDate);
+  const [isChart, setIsChart] = useState(true);
 
   const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
@@ -211,209 +212,156 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
   if (isLoading) return <WidgetLoading height={350} />;
 
   return (
-    <Card
-      className="w-full shadow-sm rounded-2xl overflow-hidden"
-      elevation={0}
-      sx={{
-        border: `1px solid ${theme.palette.divider}`,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Box className="flex items-center justify-between px-6 py-4 border-b">
-        <Typography className="text-lg font-semibold truncate text-primary">
-          Distribuição por Gênero
-        </Typography>
-        <Box className="flex items-center gap-2">
-          {/* Date Filter */}
-          <Tooltip title="Filtrar por data">
-            <IconButton size="small" onClick={handleClickMenu}>
-              <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
-            </IconButton>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorEl}
-            open={openMenu}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem onClick={() => handleSelectMonth(0)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Mês atual</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleSelectMonth(1)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Mês passado</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleSelectMonth(2)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Há 2 meses</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleSelectMonth(3)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Há 3 meses</ListItemText>
-            </MenuItem>
-            <Divider sx={{ my: 0.5 }} />
-            <MenuItem onClick={handleCustomDateClick}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Selecionar data...</ListItemText>
-            </MenuItem>
-          </Menu>
+    <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+      <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
+        {/* ─── Header ─── */}
+        <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
+          <Box>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
+              Distribuição por Sexo
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+              Visão geral da base de clientes
+            </Typography>
+          </Box>
 
-          {/* Custom Date Picker Dialog */}
-          <Dialog
-            open={datePickerOpen}
-            onClose={handleDatePickerClose}
-            PaperProps={{
-              sx: {
-                borderRadius: 3,
-                minWidth: 320,
-                zIndex: 1400,
-              }
-            }}
-            sx={{
-              zIndex: 1300,
-            }}
-          >
-            <DialogContent sx={{ pt: 3 }}>
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-                <DatePicker
-                  views={['year', 'month']}
-                  label="Selecione o mês e ano"
-                  value={tempDate}
-                  onChange={(newValue) => setTempDate(newValue || filterDate)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: { mb: 2 }
-                    },
-                    popper: {
-                      sx: {
-                        zIndex: 9999,
-                      }
-                    }
-                  }}
-                />
-              </LocalizationProvider>
-            </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-              <Button onClick={handleDatePickerClose} color="inherit">
-                Cancelar
-              </Button>
-              <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">
-                Confirmar
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Favorite Toggle */}
-          <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-            <IconButton onClick={handleToggleFavorite} size="small">
-              <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "inherit" }} size={20}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
+            {/* Filter */}
+            <Tooltip title="Filtrar por data">
+              <IconButton onClick={handleClickMenu} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
+                <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
+              </IconButton>
+            </Tooltip>
+            {/* Favorite */}
+            <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
+              <FuseSvgIcon sx={{ color: isFavorite ? '#FFD700' : 'action.disabled' }} size={20}>
                 {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
               </FuseSvgIcon>
             </IconButton>
-          </Tooltip>
+          </Box>
         </Box>
-      </Box>
 
-      {/* Tabs */}
-      <Tabs
-        value={tabValue}
-        onChange={handleTabChange}
-        textColor="primary"
-        indicatorColor="primary"
-        variant="fullWidth"
-        sx={{
-          borderBottom: 1,
-          borderColor: 'divider',
-          minHeight: 48,
-        }}
-      >
-        <Tab label="Gráfico" sx={{ textTransform: 'none', fontWeight: 600 }} />
-        <Tab label="Painel" sx={{ textTransform: 'none', fontWeight: 600 }} />
-      </Tabs>
+        {/* Tabs */}
+        <Tabs
+          value={tabValue}
+          onChange={handleTabChange}
+          textColor="primary"
+          indicatorColor="primary"
+          variant="fullWidth"
+          sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 48 }}
+        >
+          <Tab label="Gráfico" sx={{ textTransform: 'none', fontWeight: 600, minHeight: 48 }} />
+          <Tab label="Painel" sx={{ textTransform: 'none', fontWeight: 600, minHeight: 48 }} />
+        </Tabs>
 
-      <CardContent className="p-0" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 0, '&:last-child': { pb: 0 } }}>
-        {tabValue === 0 && (
-          <Box sx={{ p: 4, display: 'flex', justifyContent: 'center', alignItems: 'center', height: 350 }}>
-            <ReactApexChart
-              options={chartOptions}
-              series={chartSeries}
-              type="donut"
-              height={320}
-              width="100%"
-            />
-          </Box>
-        )}
-        {tabValue === 1 && (
-          <Box sx={{ p: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
-            {rows.map((row) => (
-              <Box key={row.label} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                  <Box
-                    sx={{
-                      width: 48,
-                      height: 48,
-                      borderRadius: '12px',
-                      backgroundColor: alpha(row.color, 0.1),
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      color: row.color
-                    }}
-                  >
-                    <FuseSvgIcon size={24}>{row.icon}</FuseSvgIcon>
+        {/* Content */}
+        <Box sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
+          {tabValue === 0 && (
+            <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+              <ReactApexChart
+                options={chartOptions}
+                series={chartSeries}
+                type="donut"
+                height={320}
+                width="100%"
+              />
+            </Box>
+          )}
+          {tabValue === 1 && (
+            <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', flexDirection: 'column', gap: 3 }}>
+              {rows.map((row) => (
+                <Box key={row.label} sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <Box
+                      sx={{
+                        width: 48, height: 48, borderRadius: '12px',
+                        backgroundColor: alpha(row.color, 0.1),
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        color: row.color
+                      }}
+                    >
+                      <FuseSvgIcon size={24}>{row.icon}</FuseSvgIcon>
+                    </Box>
+                    <Box>
+                      <Typography variant="body1" sx={{ fontWeight: 500, color: theme.palette.text.secondary }}>
+                        {row.label}
+                      </Typography>
+                      <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                        {row.value.toLocaleString('pt-BR')}
+                      </Typography>
+                    </Box>
                   </Box>
-                  <Box>
-                    <Typography variant="body1" sx={{ fontWeight: 500, color: theme.palette.text.secondary }}>
-                      {row.label}
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {row.value.toLocaleString('pt-BR')}
+
+                  <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', ml: 'auto' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                      <FuseSvgIcon
+                        size={18}
+                        sx={{ color: row.diff >= 0 ? theme.palette.success.main : theme.palette.error.main }}
+                      >
+                        {row.diff >= 0 ? 'heroicons-solid:trending-up' : 'heroicons-solid:trending-down'}
+                      </FuseSvgIcon>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontWeight: 900, color: row.diff >= 0 ? theme.palette.success.main : theme.palette.error.main }}
+                      >
+                        {row.diff > 0 ? '+' : ''}{row.diff}
+                      </Typography>
+                    </Box>
+                    <Typography variant="caption" sx={{ color: theme.palette.text.disabled }}>
+                      vs mês ant.
                     </Typography>
                   </Box>
                 </Box>
+              ))}
+            </Box>
+          )}
+        </Box>
 
-                {/* Trend */}
-                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    <FuseSvgIcon
-                      size={18}
-                      sx={{
-                        color: row.diff >= 0 ? theme.palette.success.main : theme.palette.error.main,
-                      }}
-                    >
-                      {row.diff >= 0 ? 'heroicons-solid:trending-up' : 'heroicons-solid:trending-down'}
-                    </FuseSvgIcon>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        fontWeight: 900,
-                        color: row.diff >= 0 ? theme.palette.success.main : theme.palette.error.main,
-                      }}
-                    >
-                      {row.diff > 0 ? '+' : ''}{row.diff}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.disabled, fontSize: '1.25rem' }}>
-                    vs mês ant.
-                  </Typography>
-                </Box>
-              </Box>
-            ))}
-          </Box>
-        )}
+        {/* Menu & Dialogs */}
+        <Menu
+          anchorEl={anchorEl}
+          open={openMenu}
+          onClose={handleCloseMenu}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        >
+          <MenuItem onClick={() => handleSelectMonth(0)}>
+            <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon></ListItemIcon>
+            <ListItemText>Mês atual</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleSelectMonth(1)}>
+            <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon></ListItemIcon>
+            <ListItemText>Mês passado</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleSelectMonth(2)}>
+            <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon></ListItemIcon>
+            <ListItemText>Há 2 meses</ListItemText>
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem onClick={handleCustomDateClick}>
+            <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon></ListItemIcon>
+            <ListItemText>Selecionar data...</ListItemText>
+          </MenuItem>
+        </Menu>
+
+        <Dialog open={datePickerOpen} onClose={handleDatePickerClose} PaperProps={{ sx: { borderRadius: 3, minWidth: 320 } }}>
+          <DialogContent sx={{ pt: 3 }}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+              <DatePicker
+                views={['year', 'month']}
+                label="Selecione o mês e ano"
+                value={tempDate}
+                onChange={(newValue) => setTempDate(newValue || filterDate)}
+                slotProps={{ textField: { fullWidth: true, sx: { mb: 2 } } }}
+              />
+            </LocalizationProvider>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={handleDatePickerClose} color="inherit">Cancelar</Button>
+            <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">Confirmar</Button>
+          </DialogActions>
+        </Dialog>
+
       </CardContent>
     </Card>
   );

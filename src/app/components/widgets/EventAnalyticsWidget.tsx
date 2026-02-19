@@ -93,20 +93,20 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
   const data = widgetData || [];
 
   return (
-    <Card elevation={0} sx={{ height: '100%', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
-      <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+      <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <Box sx={{ p: 3, pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Box sx={{ p: { xs: 2, md: 3 }, pb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
           <Box>
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.125rem' } }}>
               Análise de Eventos
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
               Performance financeira por evento e grupo
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
             {/* Filter Button */}
             <Button
               size="small"
@@ -118,14 +118,17 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
                 borderRadius: '8px',
                 textTransform: 'none',
                 color: 'text.secondary',
-                borderColor: 'divider'
+                borderColor: 'divider',
+                minHeight: 44,
+                whiteSpace: 'nowrap',
+                flexShrink: 0
               }}
             >
               {getFilterLabel()}
             </Button>
 
             <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-              <IconButton size="small" onClick={handleToggleFavorite}>
+              <IconButton size="small" onClick={handleToggleFavorite} sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon size={20} sx={{ color: isFavorite ? "#FFD700" : "action.disabled" }}>
                   {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
                 </FuseSvgIcon>
@@ -135,17 +138,17 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
         </Box>
 
         {/* Table/List */}
-        <Box sx={{ flex: 1, overflow: 'auto', p: 0 }}>
-          <TableContainer>
+        <Box sx={{ flex: 1, overflow: 'auto', p: 0, maxHeight: { xs: 'none', md: 'auto' } }}>
+          <TableContainer sx={{ maxHeight: { xs: 'none', md: '100%' }, overflowX: 'auto' }}>
             <Table size="small" stickyHeader>
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Evento</TableCell>
-                  <TableCell sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Grupo</TableCell>
+                  <TableCell sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', md: 'table-cell' } }}>Grupo</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Faturamento</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Pago</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Aberto</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Vencido</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', md: 'table-cell' } }}>Pago</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', md: 'table-cell' } }}>Aberto</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', md: 'table-cell' } }}>Vencido</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -156,7 +159,7 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
                         {item.nomeEvento}
                       </Typography>
                     </TableCell>
-                    <TableCell>
+                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                       {item.nomeGrupo ? (
                         <Chip
                           label={item.nomeGrupo}
@@ -177,17 +180,17 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
                         {item.totalFaturamento.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                       <Typography variant="body2" color="success.main" fontWeight={500}>
                         {item.totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                       <Typography variant="body2" color="warning.main" fontWeight={500}>
                         {item.totalAberto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </Typography>
                     </TableCell>
-                    <TableCell align="right">
+                    <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                       <Typography variant="body2" color="error.main" fontWeight={500}>
                         {item.totalVencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                       </Typography>

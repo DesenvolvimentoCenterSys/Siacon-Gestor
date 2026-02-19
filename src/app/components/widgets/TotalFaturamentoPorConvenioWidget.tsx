@@ -5,7 +5,7 @@ import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useTotalFaturamentoPorConvenio, useToggleFavoriteWidget } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
-import { format } from 'date-fns';
+import { format, subMonths } from 'date-fns';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -39,7 +39,7 @@ function SummaryCard({ title, data, icon, color }: { title: string, data: Resumo
       bgcolor: alpha(color, 0.05),
       border: `1px solid ${alpha(color, 0.2)}`,
       flex: 1,
-      minWidth: 200,
+      minWidth: { xs: '100%', sm: 200 },
       display: 'flex',
       flexDirection: 'column',
       gap: 2
@@ -153,55 +153,62 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
   const safeResumo = (resumo?: ResumoFaturamentoDto) => resumo || defaultResumo;
 
   return (
-    <Card elevation={0} sx={{ height: '100%', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
-      <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
+    <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+      <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <Box sx={{ p: 3, pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Box sx={{ p: { xs: 2, md: 3 }, pb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
           <Box>
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Faturamento por Convênio
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Análise financeira detalhada por operadora
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+              {format(filterDate, 'MMM/yyyy', { locale: ptBR })}
             </Typography>
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Filter Button */}
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
+            {/* Filtro Mês */}
             <Button
               size="small"
               variant="outlined"
-              onClick={(e: any) => handleClickMenu(e)}
+              onClick={(e: any) => setAnchorEl(e.currentTarget)}
               startIcon={<FuseSvgIcon size={16}>heroicons-outline:calendar</FuseSvgIcon>}
               endIcon={<FuseSvgIcon size={16}>heroicons-solid:chevron-down</FuseSvgIcon>}
-              sx={{
-                borderRadius: '8px',
-                textTransform: 'none',
-                color: 'text.secondary',
-                borderColor: 'divider'
-              }}
+              sx={{ borderRadius: '8px', textTransform: 'none', color: 'text.secondary', borderColor: theme.palette.divider, minHeight: 44, whiteSpace: 'nowrap', flexShrink: 0 }}
             >
-              {getFilterLabel()}
+              {format(filterDate, 'MMM yyyy', { locale: ptBR })}
             </Button>
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={() => setAnchorEl(null)}
+            >
+              {[0, 1, 2, 3].map(i => {
+                const d = subMonths(new Date(), i);
+                return (
+                  <MenuItem key={i} onClick={() => { setFilterDate(d); setAnchorEl(null); }}>
+                    {format(d, 'MMMM yyyy', { locale: ptBR })}
+                  </MenuItem>
+                );
+              })}
+              <Divider sx={{ my: 0.5 }} />
+              <MenuItem onClick={handleCustomDateClick}>
+                <ListItemIcon>
+                  <FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
+                </ListItemIcon>
+                <ListItemText>Selecionar data...</ListItemText>
+              </MenuItem>
+            </Menu>
 
+            {/* Favorito */}
             <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-              <IconButton size="small" onClick={handleToggleFavorite}>
+              <IconButton size="small" onClick={handleToggleFavorite} sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon size={20} sx={{ color: isFavorite ? "#FFD700" : "action.disabled" }}>
                   {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
                 </FuseSvgIcon>
               </IconButton>
             </Tooltip>
           </Box>
-        </Box>
-
-        {/* Summary Cards */}
-        <Box sx={{ p: 3, display: 'flex', gap: 2, flexWrap: 'wrap', bgcolor: alpha(theme.palette.background.default, 0.5) }}>
-          <SummaryCard
-            title="Consolidado do Mês"
-            data={safeResumo(data.geral)}
-            icon="heroicons-outline:banknotes"
-            color={theme.palette.primary.main}
-          />
         </Box>
 
         <Divider />
@@ -213,11 +220,11 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
               <TableHead>
                 <TableRow>
                   <TableCell sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Convênio</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, width: 100 }}>% Total</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, width: { xs: 80, sm: 100 } }}>% Total</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Faturamento</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Pago</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Aberto</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Vencido</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Pago</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Aberto</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Vencido</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -250,7 +257,7 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
                             variant="determinate"
                             value={item.percentual || 0}
                             sx={{
-                              width: 50,
+                              width: { xs: 30, sm: 50 },
                               height: 6,
                               borderRadius: 1,
                               bgcolor: alpha(theme.palette.primary.main, 0.1),
@@ -259,7 +266,7 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
                               }
                             }}
                           />
-                          <Typography variant="caption" color="text.secondary">
+                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
                             {(item.percentual || 0).toFixed(1)}%
                           </Typography>
                         </Box>
@@ -269,17 +276,17 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
                           {safeFaturamento.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                         <Typography variant="body2" color="success.main" fontWeight={500}>
                           {safeFaturamento.totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                         <Typography variant="body2" color="warning.main" fontWeight={500}>
                           {safeFaturamento.totalAberto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </Typography>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                         <Typography variant="body2" color="error.main" fontWeight={500}>
                           {safeFaturamento.totalVencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </Typography>
@@ -389,6 +396,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
           </DialogActions>
         </Dialog>
       </CardContent>
-    </Card>
+    </Card >
   );
 }

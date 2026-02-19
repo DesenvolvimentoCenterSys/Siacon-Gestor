@@ -143,7 +143,7 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
       <Box
         sx={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          px: 3, py: 2.5,
+          px: { xs: 2, md: 3 }, py: { xs: 2, md: 2.5 },
           borderBottom: `1px solid ${theme.palette.divider}`,
           background: alpha(COLOR_PF, 0.04)
         }}
@@ -153,11 +153,11 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
             <FuseSvgIcon size={22}>heroicons-outline:user-plus</FuseSvgIcon>
           </Avatar>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Novos Cadastros
             </Typography>
             <Typography variant="caption" color="text.secondary">
-              Entradas do período — Pessoa Física e Pessoa Jurídica
+              Entradas do período
             </Typography>
           </Box>
         </Box>
@@ -171,7 +171,7 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
         </Tooltip>
       </Box>
 
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}>
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: { xs: 2, md: 3 } } }}>
 
         {/* ─── Month selector chips ─── */}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
@@ -198,7 +198,7 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
         </Box>
 
         {/* ─── KPI Cards ─── */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Pessoa Física', value: vidasData?.quantidadePF ?? 0, icon: 'heroicons-outline:user', color: COLOR_PF, pct: pctPF },
             { label: 'Pessoa Jurídica', value: vidasData?.quantidadePJ ?? 0, icon: 'heroicons-outline:building-office', color: COLOR_PJ, pct: pctPJ },
@@ -224,13 +224,13 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
         </Box>
 
         {/* ─── Donut chart ─── */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', minHeight: 300 }}>
           <ReactApexChart
             options={chartOptions}
             series={chartSeries}
             type="donut"
             height={300}
-            width={380}
+            width="100%"
           />
         </Box>
       </CardContent>

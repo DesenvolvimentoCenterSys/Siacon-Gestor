@@ -276,14 +276,14 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
         flexDirection: 'column'
       }}
     >
-      <Box className="flex items-center justify-between px-6 py-4 border-b">
-        <Typography className="text-lg font-semibold truncate text-primary">
+      <Box className="flex items-center justify-between border-b" sx={{ p: { xs: 2, md: 3 }, flexWrap: 'wrap', gap: 1 }}>
+        <Typography sx={{ fontSize: { xs: '1rem', md: '1.125rem' }, fontWeight: 600, width: { xs: '100%', sm: 'auto' } }} className="truncate text-primary">
           Impacto Financeiro — Novos vs Desligados
         </Typography>
-        <Box className="flex items-center gap-2">
+        <Box className="flex items-center gap-2" sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
           {/* Date Filter */}
           <Tooltip title="Filtrar por data">
-            <IconButton size="small" onClick={handleClickMenu}>
+            <IconButton size="small" onClick={handleClickMenu} sx={{ minWidth: 44, minHeight: 44 }}>
               <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
             </IconButton>
           </Tooltip>
@@ -334,7 +334,7 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
           </Dialog>
 
           <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-            <IconButton onClick={handleToggleFavorite} size="small">
+            <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
               <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "action.active" }} size={20}>
                 {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
               </FuseSvgIcon>
@@ -352,13 +352,13 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
         variant="fullWidth"
         sx={{ borderBottom: 1, borderColor: 'divider', minHeight: 48 }}
       >
-        <Tab label="Gráfico" sx={{ textTransform: 'none', fontWeight: 600 }} />
-        <Tab label="Painel" sx={{ textTransform: 'none', fontWeight: 600 }} />
+        <Tab label="Gráfico" sx={{ textTransform: 'none', fontWeight: 600, minHeight: 48 }} />
+        <Tab label="Painel" sx={{ textTransform: 'none', fontWeight: 600, minHeight: 48 }} />
       </Tabs>
 
       <CardContent className="p-0" sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 0, '&:last-child': { pb: 0 } }}>
         {tabValue === 0 && (
-          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: 2, minHeight: 500 }}>
+          <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1.5, md: 2 }, minHeight: { xs: 300, md: 500 } }}>
             {widgetData ? (
               <Box sx={{ flex: 1, width: '100%' }}>
                 <ReactApexChart
@@ -374,37 +374,37 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
           </Box>
         )}
         {tabValue === 1 && widgetData && (
-          <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', gap: 2, height: 400, overflowY: 'auto' }}>
+          <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: 2, height: { xs: 350, md: 400 }, overflowY: 'auto' }}>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: alpha(theme.palette.success.main, 0.05), borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', p: 2, gap: 1, bgcolor: alpha(theme.palette.success.main, 0.05), borderRadius: 2 }}>
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Total Ativos</Typography>
                 <Typography variant="h5" fontWeight={700} color="success.main">{widgetData.totalAtivos}</Typography>
               </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" align="right">Faturamento Total</Typography>
+              <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, width: { xs: '100%', sm: 'auto' } }}>
+                <Typography variant="subtitle2" color="text.secondary">Faturamento Total</Typography>
                 <Typography variant="h6" fontWeight={700} color="success.main">{formatCurrency(widgetData.faturamentoTotal)}</Typography>
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', p: 2, gap: 1, bgcolor: alpha(theme.palette.info.main, 0.05), borderRadius: 2 }}>
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Total Novos</Typography>
                 <Typography variant="h5" fontWeight={700} color="info.main">{widgetData.totalNovos}</Typography>
               </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" align="right">Valor Novos</Typography>
+              <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, width: { xs: '100%', sm: 'auto' } }}>
+                <Typography variant="subtitle2" color="text.secondary">Valor Novos</Typography>
                 <Typography variant="h6" fontWeight={700} color="info.main">{formatCurrency(widgetData.valorNovos)}</Typography>
               </Box>
             </Box>
 
-            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', p: 2, bgcolor: alpha(theme.palette.error.main, 0.05), borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, alignItems: { xs: 'flex-start', sm: 'center' }, justifyContent: 'space-between', p: 2, gap: 1, bgcolor: alpha(theme.palette.error.main, 0.05), borderRadius: 2 }}>
               <Box>
                 <Typography variant="subtitle2" color="text.secondary">Total Desligados</Typography>
                 <Typography variant="h5" fontWeight={700} color="error.main">{widgetData.totalDesligados}</Typography>
               </Box>
-              <Box>
-                <Typography variant="subtitle2" color="text.secondary" align="right">Valor Desligados</Typography>
+              <Box sx={{ textAlign: { xs: 'left', sm: 'right' }, width: { xs: '100%', sm: 'auto' } }}>
+                <Typography variant="subtitle2" color="text.secondary">Valor Desligados</Typography>
                 <Typography variant="h6" fontWeight={700} color="error.main">{formatCurrency(widgetData.valorDesligados)}</Typography>
               </Box>
             </Box>

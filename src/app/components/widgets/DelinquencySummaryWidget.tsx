@@ -163,10 +163,12 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
       {/* ─── Header ─── */}
       <Box
         sx={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          px: 3, py: 2.5,
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          px: { xs: 2, md: 3 }, py: 2.5,
           borderBottom: `1px solid ${theme.palette.divider}`,
-          background: alpha('#4A148C', 0.03)
+          background: alpha('#4A148C', 0.03),
+          flexWrap: 'wrap',
+          gap: 1
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -174,7 +176,7 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
             <FuseSvgIcon size={22}>heroicons-outline:chart-pie</FuseSvgIcon>
           </Avatar>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Resumo de Inadimplência
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -184,7 +186,7 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
         </Box>
 
         <Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
-          <IconButton onClick={handleToggleFavorite} size="small">
+          <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
             <FuseSvgIcon sx={{ color: isFavorite ? '#FFD700' : 'action.active' }} size={20}>
               {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
             </FuseSvgIcon>
@@ -192,10 +194,10 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
         </Tooltip>
       </Box>
 
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}>
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>
 
         {/* ─── Date range preset ─── */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3, overflowX: 'auto', pb: 1, '::-webkit-scrollbar': { height: 4 } }}>
           <ButtonGroup size="small" variant="outlined">
             {PRESETS.map((p, i) => (
               <Button
@@ -206,7 +208,10 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
                   bgcolor: preset === i ? alpha('#4A148C', 0.1) : 'transparent',
                   borderColor: alpha('#4A148C', 0.3),
                   color: preset === i ? '#4A148C' : 'text.secondary',
-                  '&:hover': { bgcolor: alpha('#4A148C', 0.08), borderColor: '#4A148C' }
+                  '&:hover': { bgcolor: alpha('#4A148C', 0.08), borderColor: '#4A148C' },
+                  whiteSpace: 'nowrap',
+                  minHeight: 44,
+                  minWidth: 44
                 }}
               >
                 {p.label}
@@ -216,7 +221,7 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
         </Box>
 
         {/* ─── KPI Cards (4 totals) ─── */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Total Faturado', value: formatCurrency(summary?.totalFaturado ?? 0), color: COLOR_FATURADO, icon: 'heroicons-outline:banknotes' },
             { label: 'Inadimplente', value: formatCurrency(summary?.totalInadimplente ?? 0), color: COLOR_INADIMPLENTE, icon: 'heroicons-outline:exclamation-triangle' },
@@ -228,7 +233,7 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
                 <FuseSvgIcon size={18} sx={{ color: c.color }}>{c.icon}</FuseSvgIcon>
                 <Typography sx={{ color: theme.palette.text.secondary, fontWeight: 700, fontSize: '1rem' }}>{c.label}</Typography>
               </Box>
-              <Typography sx={{ fontWeight: 800, color: c.color, fontSize: '1.6rem', lineHeight: 1.1 }}>{c.value}</Typography>
+              <Typography sx={{ fontWeight: 800, color: c.color, fontSize: { xs: '1.5rem', md: '1.6rem' }, lineHeight: 1.1 }}>{c.value}</Typography>
             </Box>
           ))}
         </Box>
@@ -255,13 +260,13 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
         </Box>
 
         {/* ─── Donut chart ─── */}
-        <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <ReactApexChart
             options={chartOptions}
             series={chartSeries}
             type="donut"
             height={320}
-            width={420}
+            width="100%"
           />
         </Box>
       </CardContent>

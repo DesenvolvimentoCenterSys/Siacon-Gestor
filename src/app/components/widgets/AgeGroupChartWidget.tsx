@@ -179,128 +179,85 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
   if (isLoading) return <WidgetLoading height={350} />;
 
   return (
-    <Card
-      className="w-full shadow-sm rounded-2xl overflow-hidden"
-      elevation={0}
-      sx={{
-        border: `1px solid ${theme.palette.divider}`,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
-    >
-      <Box className="flex items-center justify-between px-6 py-4 border-b">
-        <Typography className="text-lg font-semibold truncate text-primary">
-          Clientes por Faixa Etária
-        </Typography>
-        <Box className="flex items-center gap-2">
-          {/* Date Filter */}
-          <Tooltip title="Filtrar por data">
-            <IconButton size="small" onClick={handleClickMenu}>
-              <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
-            </IconButton>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorEl}
-            open={openMenu}
-            onClose={handleCloseMenu}
-          >
-            <MenuItem onClick={() => handleSelectMonth(0)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Mês atual</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleSelectMonth(1)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Mês passado</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleSelectMonth(2)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Há 2 meses</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={() => handleSelectMonth(3)}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Há 3 meses</ListItemText>
-            </MenuItem>
-            <Divider sx={{ my: 0.5 }} />
-            <MenuItem onClick={handleCustomDateClick}>
-              <ListItemIcon>
-                <FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
-              </ListItemIcon>
-              <ListItemText>Selecionar data...</ListItemText>
-            </MenuItem>
-          </Menu>
+    <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
+      <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
+        <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
+          <Box>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
+              Faixa Etária
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
+              Distribuição de clientes por idade
+            </Typography>
+          </Box>
 
-          {/* Custom Date Picker Dialog */}
-          <Dialog
-            open={datePickerOpen}
-            onClose={handleDatePickerClose}
-            PaperProps={{
-              sx: {
-                borderRadius: 3,
-                minWidth: 320,
-                zIndex: 1400, // Ensure dialog is above everything
-              }
-            }}
-            sx={{
-              zIndex: 1300, // Ensure backdrop is also properly layered
-            }}
-          >
-            <DialogContent sx={{ pt: 3 }}>
-              <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-                <DatePicker
-                  views={['year', 'month']}
-                  label="Selecione o mês e ano"
-                  value={tempDate}
-                  onChange={(newValue) => setTempDate(newValue || filterDate)}
-                  slotProps={{
-                    textField: {
-                      fullWidth: true,
-                      sx: { mb: 2 }
-                    },
-                    popper: {
-                      sx: {
-                        zIndex: 9999, // Very high z-index to ensure it's above dialog
-                      }
-                    }
-                  }}
-                />
-              </LocalizationProvider>
-            </DialogContent>
-            <DialogActions sx={{ px: 3, pb: 2 }}>
-              <Button onClick={handleDatePickerClose} color="inherit">
-                Cancelar
-              </Button>
-              <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">
-                Confirmar
-              </Button>
-            </DialogActions>
-          </Dialog>
-
-          {/* Favorite Toggle */}
-          <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-            <IconButton onClick={handleToggleFavorite} size="small">
-              <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "inherit" }} size={20}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
+            {/* Filter */}
+            <Tooltip title="Filtrar por data">
+              <IconButton onClick={handleClickMenu} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
+                <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
+              </IconButton>
+            </Tooltip>
+            {/* Favorite */}
+            <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
+              <FuseSvgIcon sx={{ color: isFavorite ? '#FFD700' : 'action.disabled' }} size={20}>
                 {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
               </FuseSvgIcon>
             </IconButton>
-          </Tooltip>
+          </Box>
         </Box>
-      </Box>
-      <CardContent className="p-6" sx={{ flexGrow: 1 }}>
-        <ReactApexChart
-          options={chartOptions}
-          series={chartSeries}
-          type="bar"
-          height={350}
-        />
+
+        {/* Content */}
+        <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, minHeight: 300 }}>
+          <ReactApexChart
+            options={chartOptions}
+            series={chartSeries}
+            type="bar"
+            height="100%"
+          />
+        </Box>
+
+        {/* Menu & Dialog */}
+        <Menu
+          anchorEl={anchorEl}
+          open={openMenu}
+          onClose={handleCloseMenu}
+        >
+          {[0, 1, 2, 3].map(i => {
+            const d = new Date();
+            d.setMonth(d.getMonth() - i);
+            return (
+              <MenuItem key={i} onClick={() => handleSelectMonth(i)}>
+                <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon></ListItemIcon>
+                <ListItemText>{format(d, 'MMMM yyyy', { locale: ptBR })}</ListItemText>
+              </MenuItem>
+            );
+          })}
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem onClick={handleCustomDateClick}>
+            <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon></ListItemIcon>
+            <ListItemText>Selecionar data...</ListItemText>
+          </MenuItem>
+        </Menu>
+
+        <Dialog open={datePickerOpen} onClose={handleDatePickerClose} PaperProps={{ sx: { borderRadius: 3, minWidth: 320 } }}>
+          <DialogContent sx={{ pt: 3 }}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+              <DatePicker
+                views={['year', 'month']}
+                label="Selecione o mês e ano"
+                value={tempDate}
+                onChange={(newValue) => setTempDate(newValue || filterDate)}
+                slotProps={{ textField: { fullWidth: true } }}
+              />
+            </LocalizationProvider>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={handleDatePickerClose} color="inherit">Cancelar</Button>
+            <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">Confirmar</Button>
+          </DialogActions>
+        </Dialog>
       </CardContent>
     </Card>
   );

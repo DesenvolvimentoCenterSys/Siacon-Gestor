@@ -59,7 +59,7 @@ function Layout2(props: Layout2Props) {
 					id="fuse-main"
 					className="relative flex min-h-full min-w-0 flex-auto flex-col"
 				>
-					<div className="relative z-10 flex min-h-0 flex-auto flex-col">
+					<div className="relative z-10 flex min-h-0 flex-auto flex-col pb-32 md:pb-0">
 						{/* Spacer for fixed top bar on mobile */}
 						{isMobile && <div className="h-48 md:h-64 shrink-0" />}
 						<FuseDialog />

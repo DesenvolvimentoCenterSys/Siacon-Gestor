@@ -39,7 +39,7 @@ function SummaryCard({ title, data, icon, color }: { title: string, data: Resumo
       bgcolor: alpha(color, 0.05),
       border: `1px solid ${alpha(color, 0.2)}`,
       flex: 1,
-      minWidth: 200,
+      minWidth: { xs: '100%', sm: 200 },
       display: 'flex',
       flexDirection: 'column',
       gap: 2
@@ -157,12 +157,12 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
     <Card elevation={0} sx={{ height: '100%', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
         {/* Header */}
-        <Box sx={{ p: 3, pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${theme.palette.divider}` }}>
+        <Box sx={{ p: { xs: 2, md: 3 }, pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${theme.palette.divider}`, gap: 1, flexWrap: 'wrap' }}>
           <Box>
-            <Typography variant="h6" fontWeight={700}>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Total Usuários por Convênio
             </Typography>
-            <Typography variant="body2" color="text.secondary">
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
               Visão geral de vidas, movimentações e faturamento
             </Typography>
           </Box>
@@ -179,14 +179,15 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
                 borderRadius: '8px',
                 textTransform: 'none',
                 color: 'text.secondary',
-                borderColor: 'divider'
+                borderColor: 'divider',
+                minHeight: 44 // Touch target
               }}
             >
               {getFilterLabel()}
             </Button>
 
             <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-              <IconButton size="small" onClick={handleToggleFavorite}>
+              <IconButton size="small" onClick={handleToggleFavorite} sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon size={20} sx={{ color: isFavorite ? "#FFD700" : "action.disabled" }}>
                   {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
                 </FuseSvgIcon>
@@ -196,7 +197,7 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
         </Box>
 
         {/* Summary Cards */}
-        <Box sx={{ p: 3, display: 'flex', gap: 2, flexWrap: 'wrap', bgcolor: alpha(theme.palette.background.default, 0.5) }}>
+        <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap', bgcolor: alpha(theme.palette.background.default, 0.5) }}>
           <SummaryCard
             title="Consolidado Geral"
             data={data.geral || defaultResumo}
@@ -228,8 +229,8 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
                   <TableCell sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Convênio</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Ativos</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Novos</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Desligados</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Faturamento</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Desligados</TableCell>
+                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Faturamento</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -275,14 +276,14 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
                           />
                         ) : '-'}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                         {safeGeral.totalDesligados > 0 ? (
                           <Typography variant="body2" color="error.main" fontWeight={500}>
                             -{safeGeral.totalDesligados}
                           </Typography>
                         ) : '-'}
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                         <Typography variant="body2" fontWeight={500}>
                           {safeGeral.faturamentoTotal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
                         </Typography>

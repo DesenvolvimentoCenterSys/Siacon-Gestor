@@ -177,11 +177,13 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
       <Box
         sx={{
           display: 'flex',
-          alignItems: 'center',
+          alignItems: 'flex-start',
           justifyContent: 'space-between',
-          px: 3, py: 2.5,
+          px: { xs: 2, md: 3 }, py: 2.5,
           borderBottom: `1px solid ${theme.palette.divider}`,
-          background: alpha('#B71C1C', 0.03)
+          background: alpha('#B71C1C', 0.03),
+          flexWrap: 'wrap',
+          gap: 1
         }}
       >
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
@@ -189,7 +191,7 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
             <FuseSvgIcon size={22}>heroicons-outline:clock</FuseSvgIcon>
           </Avatar>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, lineHeight: 1.2, fontSize: { xs: '1rem', md: '1.25rem' } }}>
               Envelhecimento de Inadimplência
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -199,7 +201,7 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
         </Box>
 
         <Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
-          <IconButton onClick={handleToggleFavorite} size="small">
+          <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
             <FuseSvgIcon sx={{ color: isFavorite ? '#FFD700' : 'action.active' }} size={20}>
               {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
             </FuseSvgIcon>
@@ -207,9 +209,9 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
         </Tooltip>
       </Box>
 
-      <CardContent sx={{ display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}>
+      <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>
         {/* ─── KPI Summary ─── */}
-        <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 3 }}>
+        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Total em Aberto', value: formatCurrency(totals.valor), icon: 'heroicons-outline:banknotes', color: '#B71C1C' },
             { label: 'Total de Títulos', value: totals.quantidade.toLocaleString('pt-BR'), icon: 'heroicons-outline:document-text', color: '#EF6C00' }
@@ -272,10 +274,11 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
         {sorted.length > 0 && (
           <Box sx={{ mt: 2, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
             {/* Header */}
-            <Box sx={{ display: 'grid', gridTemplateColumns: '3fr 1fr 2fr 1fr', px: 2, py: 1, bgcolor: alpha('#B71C1C', 0.06), borderBottom: `1px solid ${theme.palette.divider}` }}>
-              {['Faixa', 'Títulos', 'Valor', 'Risco'].map(h => (
-                <Typography key={h} variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary }}>{h}</Typography>
-              ))}
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '3fr 2fr', md: '3fr 1fr 2fr 1fr' }, px: 2, py: 1, bgcolor: alpha('#B71C1C', 0.06), borderBottom: `1px solid ${theme.palette.divider}` }}>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary }}>Faixa</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary, display: { xs: 'none', md: 'block' } }}>Títulos</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary }}>Valor</Typography>
+              <Typography variant="caption" sx={{ fontWeight: 700, color: theme.palette.text.secondary, display: { xs: 'none', md: 'block' } }}>Risco</Typography>
             </Box>
             {sorted.map((row: DelinquencyAgingDto, i) => {
               const color = agingColor(row.diasVencido);
@@ -285,7 +288,7 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
                   key={i}
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: '3fr 1fr 2fr 1fr',
+                    gridTemplateColumns: { xs: '3fr 2fr', md: '3fr 1fr 2fr 1fr' },
                     px: 2, py: 0.9,
                     borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
                     '&:last-child': { borderBottom: 'none' },
@@ -298,17 +301,19 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
                       {row.descricao || `${row.diasVencido} dias`}
                     </Typography>
                   </Box>
-                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 500 }}>
+                  <Typography variant="caption" sx={{ color: theme.palette.text.secondary, fontWeight: 500, display: { xs: 'none', md: 'block' } }}>
                     {row.quantidade}
                   </Typography>
                   <Typography variant="caption" sx={{ color, fontWeight: 700 }}>
                     {formatCurrency(row.valor)}
                   </Typography>
-                  <Chip
-                    label={`${pct}%`}
-                    size="small"
-                    sx={{ bgcolor: alpha(color, 0.1), color, border: `1px solid ${alpha(color, 0.25)}`, fontWeight: 700, fontSize: '0.65rem', height: 20 }}
-                  />
+                  <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                    <Chip
+                      label={`${pct}%`}
+                      size="small"
+                      sx={{ bgcolor: alpha(color, 0.1), color, border: `1px solid ${alpha(color, 0.25)}`, fontWeight: 700, fontSize: '0.65rem', height: 20 }}
+                    />
+                  </Box>
                 </Box>
               );
             })}

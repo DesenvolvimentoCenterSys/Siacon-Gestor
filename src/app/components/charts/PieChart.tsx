@@ -111,7 +111,32 @@ export default function PieChart({
       position: 'bottom',
       labels: { colors: theme.palette.text.primary },
       markers: { size: 12 },
+      itemMargin: { horizontal: 5, vertical: 5 },
     },
+    responsive: [
+      {
+        breakpoint: 600,
+        options: {
+          legend: {
+            position: 'bottom',
+          },
+          plotOptions: {
+            pie: {
+              donut: {
+                labels: {
+                  value: {
+                    fontSize: '16px',
+                  },
+                  name: {
+                    fontSize: '12px',
+                  }
+                }
+              }
+            }
+          }
+        },
+      },
+    ],
     tooltip: {
       theme: theme.palette.mode,
       style: { fontSize: '12px' },
@@ -120,16 +145,16 @@ export default function PieChart({
 
   return (
     <Card elevation={3} sx={{ height: '100%' }}>
-      <CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <CardContent sx={{ p: { xs: 2, md: 3 }, height: '100%', display: 'flex', flexDirection: 'column' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
           {title && (
-            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+            <Typography variant="h6" sx={{ fontWeight: 700, fontSize: { xs: '1rem', md: '1.25rem' } }}>
               {title}
             </Typography>
           )}
           {widgetId && (
             <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-              <IconButton onClick={handleToggleFavorite} size="small">
+              <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "inherit" }}>
                   {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
                 </FuseSvgIcon>
@@ -137,7 +162,7 @@ export default function PieChart({
             </Tooltip>
           )}
         </Box>
-        <Box sx={{ flex: 1, minHeight: height, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <Box sx={{ flex: 1, minHeight: { xs: 300, md: height }, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <Chart options={chartOptions} series={series} type={chartType} height="100%" width="100%" />
         </Box>
       </CardContent>
