@@ -225,6 +225,16 @@ export interface DelinquencyAgingDto {
   valor: number;
 }
 
+export interface DelinquencySummaryDto {
+  totalFaturado: number;
+  totalInadimplente: number;
+  totalAdimplente: number;
+  totalAReceber: number;
+  percentualInadimplencia: number;
+  percentualAdimplencia: number;
+  percentualAReceber: number;
+}
+
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
     return dashboardClient.post('api/UsuarioDashboardWidgets/favorite', {
@@ -379,6 +389,12 @@ export const dashboardService = {
   },
   getDelinquencyAging: async (): Promise<DelinquencyAgingDto[]> => {
     return dashboardClient.get('api/Dashboard/delinquency-aging').json<DelinquencyAgingDto[]>();
+  },
+  getDelinquencySummary: async (startDate?: string, endDate?: string): Promise<DelinquencySummaryDto> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    return dashboardClient.get('api/Dashboard/delinquency-summary', { searchParams }).json<DelinquencySummaryDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

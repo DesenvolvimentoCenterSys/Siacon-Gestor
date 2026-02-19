@@ -187,3 +187,10 @@ export const useDelinquencyAging = () => {
     queryFn: () => dashboardService.getDelinquencyAging()
   });
 };
+
+export const useDelinquencySummary = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['delinquencySummary', startDate, endDate],
+    queryFn: () => dashboardService.getDelinquencySummary(startDate, endDate)
+  });
+};

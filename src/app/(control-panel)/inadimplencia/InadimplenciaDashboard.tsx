@@ -9,6 +9,7 @@ import useUser from '@auth/useUser';
 import { AccumulatedDelinquencyWidget } from '../../components/widgets/AccumulatedDelinquencyWidget';
 import { DailyDelinquencyWidget } from '../../components/widgets/DailyDelinquencyWidget';
 import { DelinquencyAgingWidget } from '../../components/widgets/DelinquencyAgingWidget';
+import { DelinquencySummaryWidget } from '../../components/widgets/DelinquencySummaryWidget';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 
 function TabPanel({ children, value, index }: { children: React.ReactNode; value: number; index: number }) {
@@ -22,7 +23,8 @@ function TabPanel({ children, value, index }: { children: React.ReactNode; value
 const TABS = [
   { label: 'Acumulada Mensal', icon: 'heroicons-outline:chart-bar', color: '#B71C1C' },
   { label: 'Diária', icon: 'heroicons-outline:calendar-days', color: '#1565C0' },
-  { label: 'Envelhecimento', icon: 'heroicons-outline:clock', color: '#EF6C00' }
+  { label: 'Envelhecimento', icon: 'heroicons-outline:clock', color: '#EF6C00' },
+  { label: 'Resumo', icon: 'heroicons-outline:chart-pie', color: '#4A148C' }
 ];
 
 function InadimplenciaDashboard() {
@@ -115,6 +117,14 @@ function InadimplenciaDashboard() {
         {isFavoritesLoading ? <WidgetLoading height={480} /> : (
           <DelinquencyAgingWidget
             initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 21 && w.isFavorite)}
+          />
+        )}
+      </TabPanel>
+
+      <TabPanel value={activeTab} index={3}>
+        {isFavoritesLoading ? <WidgetLoading height={480} /> : (
+          <DelinquencySummaryWidget
+            initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 22 && w.isFavorite)}
           />
         )}
       </TabPanel>
