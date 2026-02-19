@@ -216,6 +216,15 @@ function HealthPlanDashboard() {
                 </Grid>
               );
             }
+            if (widget.dashboardWidgetId === 17) {
+              return (
+                <Grid item xs={12} md={12} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={500} />}>
+                    <CashFlowEvolutionWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
             return null;
           })}
         </Grid>

@@ -256,23 +256,23 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
       <Box sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column', gap: 3 }}>
         {/* Summary Metrics */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.success.main, 0.05), border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#2E7D32', 0.08), border: `1px solid ${alpha('#2E7D32', 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: alpha('#2E7D32', 0.2), color: '#1B5E20' }}>
               <FuseSvgIcon>heroicons-outline:arrow-trending-up</FuseSvgIcon>
             </Avatar>
-            <MetricItem label="Total Entradas" value={processedData.totals.entrada} color="success.main" money bold />
+            <MetricItem label="Total Entradas" value={processedData.totals.entrada} color="#1B5E20" money bold />
           </Box>
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.error.main, 0.05), border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#C62828', 0.08), border: `1px solid ${alpha('#C62828', 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: alpha('#C62828', 0.2), color: '#B71C1C' }}>
               <FuseSvgIcon>heroicons-outline:arrow-trending-down</FuseSvgIcon>
             </Avatar>
-            <MetricItem label="Total Saídas" value={processedData.totals.saida} color="error.main" money bold />
+            <MetricItem label="Total Saídas" value={processedData.totals.saida} color="#B71C1C" money bold />
           </Box>
-          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.05), border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
-            <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
+          <Box sx={{ p: 2, borderRadius: 2, bgcolor: alpha('#F57F17', 0.08), border: `1px solid ${alpha('#F57F17', 0.3)}`, display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Avatar sx={{ bgcolor: alpha('#F57F17', 0.2), color: '#E65100' }}>
               <FuseSvgIcon>heroicons-outline:scale</FuseSvgIcon>
             </Avatar>
-            <MetricItem label="Resultado do Período" value={processedData.totals.saldo} color="text.primary" money bold />
+            <MetricItem label="Resultado do Período" value={processedData.totals.saldo} color="#E65100" money bold />
           </Box>
         </Box>
 
