@@ -197,6 +197,15 @@ export interface UsuarioDashboardWidgetDto {
   isFavorite: boolean;
 }
 
+export interface FinancialEvolutionDto {
+  data: string;
+  nomeBanco: string;
+  totalReceber: number;
+  totalPagar: number;
+  saldoDoDia: number;
+  saldoAcumulado: number;
+}
+
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
     return dashboardClient.post('api/UsuarioDashboardWidgets/favorite', {
@@ -323,6 +332,14 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/evolucao-fluxo-caixa', {
       searchParams
     }).json<CashFlowEvolutionDto[]>();
+  },
+  getFinancialEvolution: async (date?: string): Promise<FinancialEvolutionDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (date) searchParams.date = date;
+
+    return dashboardClient.get('api/Dashboard/financial-evolution', {
+      searchParams
+    }).json<FinancialEvolutionDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

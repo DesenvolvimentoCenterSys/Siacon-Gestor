@@ -159,3 +159,10 @@ export const useCashFlowEvolution = (startDate?: string, endDate?: string) => {
     queryFn: () => dashboardService.getCashFlowEvolution(startDate, endDate)
   });
 };
+
+export const useFinancialEvolution = (date?: string) => {
+  return useQuery({
+    queryKey: ['financialEvolution', date],
+    queryFn: () => dashboardService.getFinancialEvolution(date)
+  });
+};

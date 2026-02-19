@@ -61,9 +61,34 @@ const navigationConfig: FuseNavItemType[] = [
 		id: 'financeiro',
 		title: 'Financeiro',
 		translate: 'Financeiro',
-		type: 'item',
+		type: 'collapse',
 		icon: 'heroicons-outline:currency-dollar',
-		url: 'financeiro'
+		children: [
+			{
+				id: 'faturamento',
+				title: 'Faturamento',
+				translate: 'Faturamento',
+				type: 'item',
+				icon: 'heroicons-outline:document-currency-dollar',
+				url: 'financeiro'
+			},
+			{
+				id: 'caixa',
+				title: 'Caixa',
+				translate: 'Caixa',
+				type: 'item',
+				icon: 'heroicons-outline:archive-box',
+				url: 'caixa'
+			},
+			{
+				id: 'bancos',
+				title: 'Bancos',
+				translate: 'Bancos',
+				type: 'item',
+				icon: 'heroicons-outline:building-library',
+				url: 'bancos'
+			}
+		]
 	},
 	{
 		id: 'eventos',
@@ -72,14 +97,6 @@ const navigationConfig: FuseNavItemType[] = [
 		type: 'item',
 		icon: 'heroicons-outline:ticket',
 		url: 'eventos'
-	},
-	{
-		id: 'caixa',
-		title: 'Caixa',
-		translate: 'Caixa',
-		type: 'item',
-		icon: 'heroicons-outline:archive-box',
-		url: 'caixa'
 	}
 ];
 
