@@ -74,33 +74,25 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
     [widgetData]
   );
 
-  // Aggregated Data for Chart (10-day buckets)
+  // Aggregated Data for Chart (Cumulative 10+, 20+...)
   const chartBuckets = useMemo(() => {
     if (!widgetData) return [];
 
-    const buckets = [
-      { label: '10 dias', max: 10, valor: 0, qtd: 0, color: agingColor(10) },
-      { label: '20 dias', max: 20, valor: 0, qtd: 0, color: agingColor(20) },
-      { label: '30 dias', max: 30, valor: 0, qtd: 0, color: agingColor(30) },
-      { label: '40 dias', max: 40, valor: 0, qtd: 0, color: agingColor(40) },
-      { label: '50 dias', max: 50, valor: 0, qtd: 0, color: agingColor(50) },
-      { label: '60 dias', max: 60, valor: 0, qtd: 0, color: agingColor(60) },
-      { label: '90 dias', max: 90, valor: 0, qtd: 0, color: agingColor(90) },
-      { label: '90+ dias', max: Infinity, valor: 0, qtd: 0, color: agingColor(180) }
-    ];
+    const thresholds = [10, 20, 30, 40, 50, 60, 90];
 
-    widgetData.forEach(d => {
-      if (d.valor <= 0) return;
+    return thresholds.map(t => {
+      // Cumulative: Include all debts with diasVencido >= t
+      const filtered = widgetData.filter(d => d.valor > 0 && d.diasVencido >= t);
+      const valor = filtered.reduce((acc, d) => acc + d.valor, 0);
+      const qtd = filtered.reduce((acc, d) => acc + d.quantidade, 0);
 
-      // Find the correct bucket
-      const bucket = buckets.find(b => d.diasVencido <= b.max);
-      if (bucket) {
-        bucket.valor += d.valor;
-        bucket.qtd += d.quantidade;
-      }
-    });
-
-    return buckets.filter(b => b.valor > 0);
+      return {
+        label: `${t}+ dias`,
+        valor,
+        qtd,
+        color: agingColor(t)
+      };
+    }).filter(b => b.valor > 0);
   }, [widgetData]);
 
   const totals = useMemo(() => ({

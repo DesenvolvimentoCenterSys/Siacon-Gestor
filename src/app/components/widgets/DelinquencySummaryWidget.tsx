@@ -197,8 +197,20 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
       <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>
 
         {/* ─── Date range preset ─── */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3, overflowX: 'auto', pb: 1, '::-webkit-scrollbar': { height: 4 } }}>
-          <ButtonGroup size="small" variant="outlined">
+        <Box
+          sx={{
+            display: 'flex',
+            justifyContent: { xs: 'flex-start', md: 'flex-end' }, // Left align on mobile for natural scroll start
+            mb: 3,
+            overflowX: 'auto',
+            pb: 1,
+            mx: { xs: -2, md: 0 }, // Negative margin to scroll edge-to-edge on mobile
+            px: { xs: 2, md: 0 },  // Padding to compensate negative margin
+            '::-webkit-scrollbar': { height: 4, display: 'none' }, // Hide scrollbar for cleaner mobile look
+            scrollbarWidth: 'none' // Firefox
+          }}
+        >
+          <ButtonGroup size="small" variant="outlined" sx={{ minWidth: 'max-content' }}>
             {PRESETS.map((p, i) => (
               <Button
                 key={p.label}
@@ -210,8 +222,8 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
                   color: preset === i ? '#4A148C' : 'text.secondary',
                   '&:hover': { bgcolor: alpha('#4A148C', 0.08), borderColor: '#4A148C' },
                   whiteSpace: 'nowrap',
-                  minHeight: 44,
-                  minWidth: 44
+                  height: 40,
+                  px: 2
                 }}
               >
                 {p.label}
