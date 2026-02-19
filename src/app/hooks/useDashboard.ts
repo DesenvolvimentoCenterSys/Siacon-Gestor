@@ -138,3 +138,10 @@ export const useTotalUsuariosConvenio = (date?: string) => {
     queryFn: () => dashboardService.getTotalUsuariosConvenio(date)
   });
 };
+
+export const useTotalFaturamentoPorConvenio = (date?: string) => {
+  return useQuery({
+    queryKey: ['totalFaturamentoPorConvenio', date],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenio(date)
+  });
+};

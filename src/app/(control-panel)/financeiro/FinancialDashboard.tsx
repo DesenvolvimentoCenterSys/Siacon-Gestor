@@ -9,6 +9,7 @@ import { FaturamentoMensalWidget } from '../../components/widgets/FaturamentoMen
 import { MensalidadeMediaWidget } from '../../components/widgets/MensalidadeMediaWidget';
 import { EvolucaoFaturamentoChartWidget } from '../../components/widgets/EvolucaoFaturamentoChartWidget';
 import { FaturamentoPorConvenioChartWidget } from '../../components/widgets/FaturamentoPorConvenioChartWidget';
+import { TotalFaturamentoPorConvenioWidget } from '../../components/widgets/TotalFaturamentoPorConvenioWidget';
 
 function FinancialDashboard() {
   const { data: user } = useUser();
@@ -60,6 +61,17 @@ function FinancialDashboard() {
             <WidgetLoading height={350} />
           ) : (
             <FaturamentoPorConvenioChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 9 && w.isFavorite)} />
+          )}
+        </Grid>
+      </Grid>
+
+      {/* Detailed Billing Table */}
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 2.5, sm: 3 } }}>
+        <Grid item xs={12}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={400} />
+          ) : (
+            <TotalFaturamentoPorConvenioWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 15 && w.isFavorite)} />
           )}
         </Grid>
       </Grid>
