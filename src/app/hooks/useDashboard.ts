@@ -124,3 +124,10 @@ export const useFaturamentoPorConvenio = (startDate?: string, endDate?: string) 
     queryFn: () => dashboardService.getFaturamentoPorConvenio(startDate, endDate)
   });
 };
+
+export const useDependentesTitularesCount = (date?: string) => {
+  return useQuery({
+    queryKey: ['dependentesTitulares', date],
+    queryFn: () => dashboardService.getDependentesTitularesCount(date)
+  });
+};

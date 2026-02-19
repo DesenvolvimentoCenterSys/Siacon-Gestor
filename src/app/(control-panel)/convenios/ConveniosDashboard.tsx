@@ -6,6 +6,7 @@ import { useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
 import useUser from '@auth/useUser';
 import { TaxaUtilizacaoWidget } from '../../components/widgets/TaxaUtilizacaoWidget';
+import { DependentesTitularesWidget } from '../../components/widgets/DependentesTitularesWidget';
 
 function ConveniosDashboard() {
   const { data: user } = useUser();
@@ -33,7 +34,17 @@ function ConveniosDashboard() {
             <TaxaUtilizacaoWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 5 && w.isFavorite)} />
           )}
         </Grid>
+        <Grid item xs={12} sm={6} md={3}>
+          {isFavoritesLoading ? (
+            <WidgetLoading height={160} />
+          ) : (
+            <DependentesTitularesWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 11 && w.isFavorite)} />
+          )}
+        </Grid>
       </Grid>
+
+      {/* Other Widgets */}
+
 
       {/* Charts Grid - Empty for now */}
       <Grid container spacing={{ xs: 2, sm: 3 }}>

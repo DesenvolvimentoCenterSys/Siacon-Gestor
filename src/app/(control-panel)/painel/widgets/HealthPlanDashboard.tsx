@@ -132,7 +132,7 @@ function HealthPlanDashboard() {
           {chartWidgets.map((widget) => {
             if (widget.dashboardWidgetId === 7) {
               return (
-                <Grid item xs={12} md={12} key={widget.id}>
+                <Grid item xs={12} md={6} key={widget.id}>
                   <Suspense fallback={<WidgetLoader height={400} />}>
                     <EvolucaoFaturamentoChartWidget initialIsFavorite={widget.isFavorite} />
                   </Suspense>
@@ -141,7 +141,7 @@ function HealthPlanDashboard() {
             }
             if (widget.dashboardWidgetId === 9) {
               return (
-                <Grid item xs={12} md={12} key={widget.id}>
+                <Grid item xs={12} md={6} key={widget.id}>
                   <Suspense fallback={<WidgetLoader height={400} />}>
                     <FaturamentoPorConvenioChartWidget initialIsFavorite={widget.isFavorite} />
                   </Suspense>

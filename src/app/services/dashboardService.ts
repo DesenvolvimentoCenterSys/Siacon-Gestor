@@ -91,6 +91,15 @@ export interface FaturamentoPorConvenioDto {
   valorTotalTaxaAdm: number;
 }
 
+export interface DependentesTitularesDto {
+  titulares: number;
+  dependentes: number;
+  titularesLastMonth: number;
+  dependentesLastMonth: number;
+  titularesGrowth: number;
+  dependentesGrowth: number;
+}
+
 export interface TotalFiliadosDto {
   totalAtivos: number;
   totalDesligados: number;
@@ -217,6 +226,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/faturamento-por-convenio', {
       searchParams
     }).json<FaturamentoPorConvenioDto[]>();
+  },
+  getDependentesTitularesCount: async (date?: string): Promise<DependentesTitularesDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/dependentes-titulares', {
+      searchParams
+    }).json<DependentesTitularesDto>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};
