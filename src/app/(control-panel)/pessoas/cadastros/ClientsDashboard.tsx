@@ -11,6 +11,7 @@ import useUser from '@auth/useUser';
 import { AgeGroupChartWidget } from '../../../components/widgets/AgeGroupChartWidget';
 import { GenderDonutChartWidget } from '../../../components/widgets/GenderDonutChartWidget';
 import { NovasVidasWidget } from '../../../components/widgets/NovasVidasWidget';
+import { NovasCadastroPainelWidget } from '../../../components/widgets/NovasCadastroPainelWidget';
 
 
 function ClientsDashboard() {
@@ -83,6 +84,17 @@ function ClientsDashboard() {
           )}
         </Grid>
       </Grid>
+
+      {/* Novos Cadastros — Painel Detalhado */}
+      <Box sx={{ mt: { xs: 2, sm: 3 } }}>
+        {isFavoritesLoading ? (
+          <WidgetLoading height={480} />
+        ) : (
+          <NovasCadastroPainelWidget
+            initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 12 && w.isFavorite)}
+          />
+        )}
+      </Box>
     </Box >
   );
 }
