@@ -15,6 +15,7 @@ import { FaturamentoMensalWidget } from '../../../components/widgets/Faturamento
 import { TaxaUtilizacaoWidget } from '../../../components/widgets/TaxaUtilizacaoWidget';
 import { MensalidadeMediaWidget } from '../../../components/widgets/MensalidadeMediaWidget';
 import { TotalFaturamentoPorConvenioWidget } from '../../../components/widgets/TotalFaturamentoPorConvenioWidget';
+import { EventAnalyticsWidget } from '../../../components/widgets/EventAnalyticsWidget';
 import { EvolucaoFaturamentoChartWidget } from '../../../components/widgets/EvolucaoFaturamentoChartWidget';
 import { FaturamentoPorConvenioChartWidget } from '../../../components/widgets/FaturamentoPorConvenioChartWidget';
 import { TotalUsuariosConvenioWidget } from '../../../components/widgets/TotalUsuariosConvenioWidget';
@@ -41,7 +42,7 @@ function HealthPlanDashboard() {
   );
 
   const kpiWidgetIds = [2, 3, 4, 5, 6, 13, 23, 11];
-  const chartWidgetIds = [7, 9, 8, 10, 24, 14, 15];
+  const chartWidgetIds = [7, 9, 8, 10, 24, 14, 15, 16];
 
   const kpiWidgets = favoriteWidgets?.filter(w => kpiWidgetIds.includes(w.dashboardWidgetId)) || [];
   const chartWidgets = favoriteWidgets?.filter(w => chartWidgetIds.includes(w.dashboardWidgetId)) || [];
@@ -201,6 +202,15 @@ function HealthPlanDashboard() {
                 <Grid item xs={12} md={12} key={widget.id}>
                   <Suspense fallback={<WidgetLoader height={400} />}>
                     <TotalFaturamentoPorConvenioWidget initialIsFavorite={widget.isFavorite} />
+                  </Suspense>
+                </Grid>
+              );
+            }
+            if (widget.dashboardWidgetId === 16) {
+              return (
+                <Grid item xs={12} md={12} key={widget.id}>
+                  <Suspense fallback={<WidgetLoader height={400} />}>
+                    <EventAnalyticsWidget initialIsFavorite={widget.isFavorite} />
                   </Suspense>
                 </Grid>
               );

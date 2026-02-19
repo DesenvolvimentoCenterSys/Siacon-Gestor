@@ -145,6 +145,15 @@ export interface TotalFaturamentoPorConvenioDto {
   porConvenio: FaturamentoDetalhadoConvenioDto[];
 }
 
+export interface EventAnalyticsDto {
+  nomeEvento: string;
+  nomeGrupo?: string;
+  totalFaturamento: number;
+  totalPago: number;
+  totalAberto: number;
+  totalVencido: number;
+}
+
 export interface TotalFiliadosDto {
   totalAtivos: number;
   totalDesligados: number;
@@ -289,6 +298,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/total-faturamento-convenio', {
       searchParams
     }).json<TotalFaturamentoPorConvenioDto>();
+  },
+  getEventAnalytics: async (date?: string): Promise<EventAnalyticsDto[]> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/analise-eventos', {
+      searchParams
+    }).json<EventAnalyticsDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

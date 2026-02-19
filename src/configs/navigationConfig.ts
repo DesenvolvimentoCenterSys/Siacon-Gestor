@@ -65,6 +65,14 @@ const navigationConfig: FuseNavItemType[] = [
 		icon: 'heroicons-outline:currency-dollar',
 		url: 'financeiro'
 	},
+	{
+		id: 'eventos',
+		title: 'Eventos',
+		translate: 'Eventos',
+		type: 'item',
+		icon: 'heroicons-outline:ticket',
+		url: 'eventos'
+	}
 ];
 
 export default navigationConfig;
