@@ -180,3 +180,10 @@ export const useDailyDelinquency = (startDate?: string, endDate?: string) => {
     queryFn: () => dashboardService.getDailyDelinquency(startDate, endDate)
   });
 };
+
+export const useDelinquencyAging = () => {
+  return useQuery({
+    queryKey: ['delinquencyAging'],
+    queryFn: () => dashboardService.getDelinquencyAging()
+  });
+};

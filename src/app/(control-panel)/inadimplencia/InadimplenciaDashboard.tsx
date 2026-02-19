@@ -8,6 +8,7 @@ import WidgetLoading from '../../components/ui/WidgetLoading';
 import useUser from '@auth/useUser';
 import { AccumulatedDelinquencyWidget } from '../../components/widgets/AccumulatedDelinquencyWidget';
 import { DailyDelinquencyWidget } from '../../components/widgets/DailyDelinquencyWidget';
+import { DelinquencyAgingWidget } from '../../components/widgets/DelinquencyAgingWidget';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 
 function TabPanel({ children, value, index }: { children: React.ReactNode; value: number; index: number }) {
@@ -18,6 +19,12 @@ function TabPanel({ children, value, index }: { children: React.ReactNode; value
   );
 }
 
+const TABS = [
+  { label: 'Acumulada Mensal', icon: 'heroicons-outline:chart-bar', color: '#B71C1C' },
+  { label: 'Diária', icon: 'heroicons-outline:calendar-days', color: '#1565C0' },
+  { label: 'Envelhecimento', icon: 'heroicons-outline:clock', color: '#EF6C00' }
+];
+
 function InadimplenciaDashboard() {
   const theme = useTheme();
   const { data: user } = useUser();
@@ -26,6 +33,7 @@ function InadimplenciaDashboard() {
   );
 
   const [activeTab, setActiveTab] = useState(0);
+  const activeColor = TABS[activeTab].color;
 
   return (
     <Box sx={{ width: '100%' }}>
@@ -43,7 +51,7 @@ function InadimplenciaDashboard() {
         <Box>
           <Typography variant="h5" fontWeight={700}>Inadimplência</Typography>
           <Typography variant="caption" color="text.secondary">
-            Acompanhamento de valores inadimplentes — acumulado mensal e evolução diária
+            Acompanhamento de valores inadimplentes — acumulado mensal, evolução diária e aging
           </Typography>
         </Box>
       </Box>
@@ -53,7 +61,6 @@ function InadimplenciaDashboard() {
         sx={{
           borderBottom: 1,
           borderColor: 'divider',
-          mb: 0,
           bgcolor: theme.palette.background.paper,
           borderRadius: '12px 12px 0 0',
           px: 2
@@ -64,43 +71,32 @@ function InadimplenciaDashboard() {
           onChange={(_, v) => setActiveTab(v)}
           textColor="inherit"
           TabIndicatorProps={{
-            style: { backgroundColor: '#B71C1C', height: 3, borderRadius: 3 }
+            style: { backgroundColor: activeColor, height: 3, borderRadius: 3 }
           }}
         >
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FuseSvgIcon size={16}>heroicons-outline:chart-bar</FuseSvgIcon>
-                <span>Acumulada Mensal</span>
-              </Box>
-            }
-            sx={{
-              fontWeight: 600,
-              color: activeTab === 0 ? '#B71C1C' : 'text.secondary',
-              minHeight: 48
-            }}
-          />
-          <Tab
-            label={
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                <FuseSvgIcon size={16}>heroicons-outline:calendar-days</FuseSvgIcon>
-                <span>Diária</span>
-              </Box>
-            }
-            sx={{
-              fontWeight: 600,
-              color: activeTab === 1 ? '#1565C0' : 'text.secondary',
-              minHeight: 48
-            }}
-          />
+          {TABS.map((tab, i) => (
+            <Tab
+              key={tab.label}
+              label={
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <FuseSvgIcon size={16}>{tab.icon}</FuseSvgIcon>
+                  <span>{tab.label}</span>
+                </Box>
+              }
+              sx={{
+                fontWeight: 600,
+                color: activeTab === i ? tab.color : 'text.secondary',
+                minHeight: 48,
+                transition: 'color 0.2s'
+              }}
+            />
+          ))}
         </Tabs>
       </Box>
 
       {/* Tab panels */}
       <TabPanel value={activeTab} index={0}>
-        {isFavoritesLoading ? (
-          <WidgetLoading height={520} />
-        ) : (
+        {isFavoritesLoading ? <WidgetLoading height={520} /> : (
           <AccumulatedDelinquencyWidget
             initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 19 && w.isFavorite)}
           />
@@ -108,11 +104,17 @@ function InadimplenciaDashboard() {
       </TabPanel>
 
       <TabPanel value={activeTab} index={1}>
-        {isFavoritesLoading ? (
-          <WidgetLoading height={480} />
-        ) : (
+        {isFavoritesLoading ? <WidgetLoading height={480} /> : (
           <DailyDelinquencyWidget
             initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 20 && w.isFavorite)}
+          />
+        )}
+      </TabPanel>
+
+      <TabPanel value={activeTab} index={2}>
+        {isFavoritesLoading ? <WidgetLoading height={480} /> : (
+          <DelinquencyAgingWidget
+            initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 21 && w.isFavorite)}
           />
         )}
       </TabPanel>

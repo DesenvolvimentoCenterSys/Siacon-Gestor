@@ -218,6 +218,13 @@ export interface DailyDelinquencyDto {
   valorAcumulado: number;
 }
 
+export interface DelinquencyAgingDto {
+  diasVencido: number;
+  descricao: string;
+  quantidade: number;
+  valor: number;
+}
+
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
     return dashboardClient.post('api/UsuarioDashboardWidgets/favorite', {
@@ -369,6 +376,9 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/daily-delinquency', {
       searchParams
     }).json<DailyDelinquencyDto[]>();
+  },
+  getDelinquencyAging: async (): Promise<DelinquencyAgingDto[]> => {
+    return dashboardClient.get('api/Dashboard/delinquency-aging').json<DelinquencyAgingDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};
