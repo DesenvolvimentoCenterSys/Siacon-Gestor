@@ -72,6 +72,14 @@ const navigationConfig: FuseNavItemType[] = [
 		type: 'item',
 		icon: 'heroicons-outline:ticket',
 		url: 'eventos'
+	},
+	{
+		id: 'caixa',
+		title: 'Caixa',
+		translate: 'Caixa',
+		type: 'item',
+		icon: 'heroicons-outline:archive-box',
+		url: 'caixa'
 	}
 ];
 

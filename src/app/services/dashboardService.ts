@@ -154,6 +154,16 @@ export interface EventAnalyticsDto {
   totalVencido: number;
 }
 
+export interface CashFlowEvolutionDto {
+  data: string;
+  nomeBanco: string;
+  nomeMovimentacao: string;
+  totalEntrada: number;
+  totalSaida: number;
+  saldoDoDia: number;
+  saldoAcumulado: number;
+}
+
 export interface TotalFiliadosDto {
   totalAtivos: number;
   totalDesligados: number;
@@ -304,6 +314,15 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/analise-eventos', {
       searchParams
     }).json<EventAnalyticsDto[]>();
+  },
+  getCashFlowEvolution: async (startDate?: string, endDate?: string): Promise<CashFlowEvolutionDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
+    return dashboardClient.get('api/Dashboard/evolucao-fluxo-caixa', {
+      searchParams
+    }).json<CashFlowEvolutionDto[]>();
   },
   getAllWidgets: async (codUsu?: number, widgetId?: number, isFavorite?: boolean): Promise<UsuarioDashboardWidgetDto[]> => {
     const searchParams: Record<string, string | number | boolean> = {};

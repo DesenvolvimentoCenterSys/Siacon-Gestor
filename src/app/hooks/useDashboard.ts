@@ -152,3 +152,10 @@ export const useEventAnalytics = (date?: string) => {
     queryFn: () => dashboardService.getEventAnalytics(date)
   });
 };
+
+export const useCashFlowEvolution = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['cashFlowEvolution', startDate, endDate],
+    queryFn: () => dashboardService.getCashFlowEvolution(startDate, endDate)
+  });
+};
