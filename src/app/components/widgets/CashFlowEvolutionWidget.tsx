@@ -138,6 +138,12 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 	const getFilterLabel = () => {
 		const start = startDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 		const end = endDate.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+
+		if (startDate.getDate() === 1 && endDate.getDate() === new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate()) {
+			const month = startDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+			return (month.charAt(0).toUpperCase() + month.slice(1)).replace(' de ', ' ');
+		}
+
 		return `${start} - ${end}`;
 	};
 
@@ -311,51 +317,51 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 		},
 		yaxis: isMobile
 			? {
-					// Single Y-Axis for Mobile
-					labels: {
-						formatter: (value) => {
-							if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
+				// Single Y-Axis for Mobile
+				labels: {
+					formatter: (value) => {
+						if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
 
-							return value.toFixed(0);
-						},
-						style: { fontSize: '10px' }
+						return value.toFixed(0);
+					},
+					style: { fontSize: '10px' }
+				}
+			}
+			: [
+				{
+					seriesName: 'Entradas',
+					min: 0,
+					forceNiceScale: true,
+					title: { text: 'Movimentação', style: { color: theme.palette.text.secondary } },
+					labels: {
+						style: { colors: theme.palette.text.secondary },
+						formatter: (value) => {
+							if (value >= 1000) return `R$${(value / 1000).toFixed(0)}k`;
+
+							return `R$${value.toFixed(0)}`;
+						}
+					}
+				},
+				{
+					seriesName: 'Saídas',
+					show: false,
+					min: 0,
+					forceNiceScale: true
+				},
+				{
+					seriesName: 'Saldo Acumulado',
+					opposite: true,
+					title: { text: 'Saldo Acumulado', style: { color: colorSaldo } },
+					labels: {
+						style: { colors: colorSaldo },
+						formatter: (value) => {
+							if (Math.abs(value) >= 1000) return `R$${(value / 1000).toFixed(0)}k`;
+
+							return `R$${value.toFixed(0)}`;
+						}
 					}
 				}
-			: [
-					{
-						seriesName: 'Entradas',
-						min: 0,
-						forceNiceScale: true,
-						title: { text: 'Movimentação', style: { color: theme.palette.text.secondary } },
-						labels: {
-							style: { colors: theme.palette.text.secondary },
-							formatter: (value) => {
-								if (value >= 1000) return `R$${(value / 1000).toFixed(0)}k`;
-
-								return `R$${value.toFixed(0)}`;
-							}
-						}
-					},
-					{
-						seriesName: 'Saídas',
-						show: false,
-						min: 0,
-						forceNiceScale: true
-					},
-					{
-						seriesName: 'Saldo Acumulado',
-						opposite: true,
-						title: { text: 'Saldo Acumulado', style: { color: colorSaldo } },
-						labels: {
-							style: { colors: colorSaldo },
-							formatter: (value) => {
-								if (Math.abs(value) >= 1000) return `R$${(value / 1000).toFixed(0)}k`;
-
-								return `R$${value.toFixed(0)}`;
-							}
-						}
-					}
-				],
+			],
 		tooltip: {
 			y: {
 				formatter: (value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -390,7 +396,7 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 			elevation={0}
 			sx={{
 				height: { xs: 'auto', md: '100%' },
-				overflow: 'hidden',
+				overflow: { xs: 'visible', md: 'hidden' },
 				border: `1px solid ${theme.palette.divider}`
 			}}
 		>

@@ -67,8 +67,9 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
   };
 
   const getFilterLabel = () => {
-    const month = filterDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
-    return month.charAt(0).toUpperCase() + month.slice(1);
+    const month = filterDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }); // e.g., "fev. de 2026"
+    // Remove "de " for shorter label: "Fev. 2026"
+    return (month.charAt(0).toUpperCase() + month.slice(1)).replace(' de ', ' ');
   };
 
   // Data Fetching

@@ -263,56 +263,56 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 		},
 		yaxis: isMobile
 			? {
-					labels: {
-						formatter: (v) => {
-							if (Math.abs(v) >= 1000) return `${(v / 1000).toFixed(1)}k`;
+				labels: {
+					formatter: (v) => {
+						if (Math.abs(v) >= 1000) return `${(v / 1000).toFixed(1)}k`;
 
-							return v.toFixed(0);
-						},
-						style: { fontSize: '10px' }
+						return v.toFixed(0);
+					},
+					style: { fontSize: '10px' }
+				}
+			}
+			: [
+				{
+					seriesName: 'A Receber',
+					min: 0,
+					forceNiceScale: true,
+					title: {
+						text: 'Movimentação',
+						style: { color: theme.palette.text.secondary }
+					},
+					labels: {
+						style: { colors: theme.palette.text.secondary },
+						formatter: (v) => {
+							if (v >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
+
+							return `R$${v.toFixed(0)}`;
+						}
+					}
+				},
+				{
+					seriesName: 'A Pagar',
+					show: false,
+					min: 0,
+					forceNiceScale: true
+				},
+				{
+					seriesName: 'Saldo Acumulado',
+					opposite: true,
+					title: {
+						text: 'Saldo Acumulado',
+						style: { color: colorSaldo }
+					},
+					labels: {
+						style: { colors: colorSaldo },
+						formatter: (v) => {
+							if (Math.abs(v) >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
+
+							return `R$${v.toFixed(0)}`;
+						}
 					}
 				}
-			: [
-					{
-						seriesName: 'A Receber',
-						min: 0,
-						forceNiceScale: true,
-						title: {
-							text: 'Movimentação',
-							style: { color: theme.palette.text.secondary }
-						},
-						labels: {
-							style: { colors: theme.palette.text.secondary },
-							formatter: (v) => {
-								if (v >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
-
-								return `R$${v.toFixed(0)}`;
-							}
-						}
-					},
-					{
-						seriesName: 'A Pagar',
-						show: false,
-						min: 0,
-						forceNiceScale: true
-					},
-					{
-						seriesName: 'Saldo Acumulado',
-						opposite: true,
-						title: {
-							text: 'Saldo Acumulado',
-							style: { color: colorSaldo }
-						},
-						labels: {
-							style: { colors: colorSaldo },
-							formatter: (v) => {
-								if (Math.abs(v) >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
-
-								return `R$${v.toFixed(0)}`;
-							}
-						}
-					}
-				],
+			],
 		tooltip: {
 			y: {
 				formatter: (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
@@ -373,11 +373,12 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 
 	return (
 		<Card
-			className="w-full shadow-sm rounded-2xl overflow-hidden"
+			className="w-full shadow-sm rounded-2xl"
 			elevation={0}
 			sx={{
 				border: `1px solid ${theme.palette.divider}`,
-				height: '100%',
+				height: { xs: 'auto', md: '100%' },
+				overflow: { xs: 'visible', md: 'hidden' },
 				display: 'flex',
 				flexDirection: 'column'
 			}}
