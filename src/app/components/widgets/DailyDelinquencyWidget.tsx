@@ -16,8 +16,15 @@ import {
 	ListItemText,
 	Avatar,
 	Tabs,
-	Tab
+	Tab,
+	Dialog,
+	DialogContent,
+	DialogActions,
+	Button
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import useUser from '@auth/useUser';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -33,14 +40,15 @@ interface DailyDelinquencyWidgetProps {
 
 const WIDGET_ID = 20;
 
-type RangePreset = '7d' | '30d' | '90d' | 'currentMonth' | 'lastMonth';
+type RangePreset = '7d' | '30d' | '90d' | 'currentMonth' | 'lastMonth' | 'custom';
 
 const PRESET_LABELS: Record<RangePreset, string> = {
 	'7d': 'Últimos 7 dias',
 	'30d': 'Últimos 30 dias',
 	'90d': 'Últimos 90 dias',
 	currentMonth: 'Mês atual',
-	lastMonth: 'Mês passado'
+	lastMonth: 'Mês passado',
+	custom: 'Personalizado'
 };
 
 function getRange(preset: RangePreset): { start: Date; end: Date } {
@@ -58,6 +66,8 @@ function getRange(preset: RangePreset): { start: Date; end: Date } {
 			const prev = subMonths(today, 1);
 			return { start: startOfMonth(prev), end: endOfMonth(prev) };
 		}
+		case 'custom':
+			return { start: today, end: today }; // overwritten by state
 		default:
 			return { start: subDays(today, 29), end: today };
 	}
@@ -79,10 +89,23 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 		setTabIndex(newValue);
 	};
 
+	// Custom Date Picker State
+	const [customStart, setCustomStart] = useState<Date | null>(subDays(new Date(), 30));
+	const [customEnd, setCustomEnd] = useState<Date | null>(new Date());
+	const [tempStart, setTempStart] = useState<Date | null>(customStart);
+	const [tempEnd, setTempEnd] = useState<Date | null>(customEnd);
+	const [datePickerOpen, setDatePickerOpen] = useState(false);
+
 	// Mobile Series Toggle
 	const [activeSeries, setActiveSeries] = useState<string>('diario');
 
-	const { start, end } = useMemo(() => getRange(preset), [preset]);
+	const { start, end } = useMemo(() => {
+		if (preset === 'custom') {
+			return { start: customStart || new Date(), end: customEnd || new Date() };
+		}
+		return getRange(preset);
+	}, [preset, customStart, customEnd]);
+
 	const apiStart = useMemo(() => format(start, 'yyyy-MM-dd'), [start]);
 	const apiEnd = useMemo(() => format(end, 'yyyy-MM-dd'), [end]);
 
@@ -400,7 +423,13 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 								key={p}
 								selected={p === preset}
 								onClick={() => {
-									setPreset(p);
+									if (p === 'custom') {
+										setTempStart(customStart);
+										setTempEnd(customEnd);
+										setDatePickerOpen(true);
+									} else {
+										setPreset(p);
+									}
 									setAnchorEl(null);
 								}}
 							>
@@ -584,6 +613,45 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 					</Box>
 				)}
 			</CardContent>
+
+			{/* Date Picker Dialog */}
+			<Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)} maxWidth="xs" fullWidth>
+				<LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+					<Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+						<Typography variant="h6" sx={{ fontWeight: 600 }}>Período Personalizado</Typography>
+						<DatePicker
+							label="Data Inicial"
+							value={tempStart}
+							onChange={(date) => setTempStart(date)}
+							format="dd/MM/yyyy"
+							slotProps={{ textField: { fullWidth: true } }}
+						/>
+						<DatePicker
+							label="Data Final"
+							value={tempEnd}
+							onChange={(date) => setTempEnd(date)}
+							format="dd/MM/yyyy"
+							slotProps={{ textField: { fullWidth: true } }}
+							minDate={tempStart || undefined}
+						/>
+					</Box>
+				</LocalizationProvider>
+				<DialogActions sx={{ p: 2, pt: 0 }}>
+					<Button onClick={() => setDatePickerOpen(false)} color="inherit">Cancelar</Button>
+					<Button
+						variant="contained"
+						onClick={() => {
+							setCustomStart(tempStart);
+							setCustomEnd(tempEnd);
+							setPreset('custom');
+							setDatePickerOpen(false);
+						}}
+						color="primary"
+					>
+						Aplicar
+					</Button>
+				</DialogActions>
+			</Dialog>
 		</Card>
 	);
 }

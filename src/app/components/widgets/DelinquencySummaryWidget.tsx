@@ -5,8 +5,12 @@ import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import {
-  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip, Button, ButtonGroup, Tabs, Tab
+  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip, Button, ButtonGroup, Tabs, Tab,
+  Dialog, DialogContent, DialogActions
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useDelinquencySummary, useDelinquencySummaryReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
@@ -30,7 +34,8 @@ const PRESETS = [
   { label: '7 dias', days: 7 },
   { label: '30 dias', days: 30 },
   { label: 'Mês atual', days: -1 },
-  { label: 'Mês anterior', days: -2 }
+  { label: 'Mês anterior', days: -2 },
+  { label: 'Personalizado', days: -3 }
 ];
 
 function toISO(d: Date) { return format(d, "yyyy-MM-dd'T'HH:mm:ss"); }
@@ -41,8 +46,18 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
 
   // Date range
   const [preset, setPreset] = useState(2); // 30 dias default
+  const [customStart, setCustomStart] = useState<Date | null>(subDays(new Date(), 30));
+  const [customEnd, setCustomEnd] = useState<Date | null>(new Date());
+
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [tempStart, setTempStart] = useState<Date | null>(customStart);
+  const [tempEnd, setTempEnd] = useState<Date | null>(customEnd);
+
   const { startDate, endDate } = useMemo(() => {
     const today = new Date();
+    if (PRESETS[preset].days === -3) {
+      return { startDate: toISO(customStart || today), endDate: toISO(customEnd || today) };
+    }
     if (PRESETS[preset].days === 0) {
       return { startDate: toISO(today), endDate: toISO(today) };
     }
@@ -232,7 +247,15 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
             {PRESETS.map((p, i) => (
               <Button
                 key={p.label}
-                onClick={() => setPreset(i)}
+                onClick={() => {
+                  if (p.days === -3) {
+                    setTempStart(customStart);
+                    setTempEnd(customEnd);
+                    setDatePickerOpen(true);
+                  } else {
+                    setPreset(i);
+                  }
+                }}
                 sx={{
                   fontWeight: preset === i ? 700 : 400,
                   bgcolor: preset === i ? alpha('#4A148C', 0.1) : 'transparent',
@@ -300,6 +323,46 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
           />
         </Box>
       </CardContent>
+
+      {/* Date Picker Dialog */}
+      <Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)} maxWidth="xs" fullWidth>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>Período Personalizado</Typography>
+            <DatePicker
+              label="Data Inicial"
+              value={tempStart}
+              onChange={(date) => setTempStart(date)}
+              format="dd/MM/yyyy"
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+            <DatePicker
+              label="Data Final"
+              value={tempEnd}
+              onChange={(date) => setTempEnd(date)}
+              format="dd/MM/yyyy"
+              slotProps={{ textField: { fullWidth: true } }}
+              minDate={tempStart || undefined}
+            />
+          </Box>
+        </LocalizationProvider>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setDatePickerOpen(false)} color="inherit">Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setCustomStart(tempStart);
+              setCustomEnd(tempEnd);
+              const customIndex = PRESETS.findIndex(p => p.days === -3);
+              if (customIndex !== -1) setPreset(customIndex);
+              setDatePickerOpen(false);
+            }}
+            color="primary"
+          >
+            Aplicar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
