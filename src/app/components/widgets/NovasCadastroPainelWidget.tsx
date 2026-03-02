@@ -5,8 +5,12 @@ import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import {
-  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip
+  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip,
+  Dialog, DialogContent, DialogActions, Button
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useNovasVidas, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
@@ -27,23 +31,40 @@ const MONTHS_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', '
 
 function buildMonthOptions() {
   const now = new Date();
-  return Array.from({ length: 6 }, (_, i) => {
+  const options = Array.from({ length: 6 }, (_, i) => {
     const d = subMonths(now, i);
     return {
       label: `${MONTHS_LABELS[d.getMonth()]}/${d.getFullYear()}`,
-      date: format(startOfMonth(d), 'yyyy-MM-dd')
+      date: format(startOfMonth(d), 'yyyy-MM-dd'),
+      isCustom: false
     };
   });
+  options.push({ label: 'Personalizado', date: '', isCustom: true });
+  return options;
 }
 
 export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCadastroPainelWidgetProps) {
   const theme = useTheme();
   const { data: user } = useUser();
 
-  const monthOptions = useMemo(() => buildMonthOptions(), []);
+  const [monthOptions, setMonthOptions] = useState(() => buildMonthOptions());
   const [selectedMonth, setSelectedMonth] = useState(0); // index 0 = mês atual
 
-  const { data: vidasData, isLoading } = useNovasVidas(monthOptions[selectedMonth].date);
+  // Custom Date logic
+  const [customDate, setCustomDate] = useState<Date | null>(new Date());
+  const [tempDate, setTempDate] = useState<Date | null>(customDate);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+
+  const selectedApiDate = useMemo(() => {
+    const currentOption = monthOptions[selectedMonth];
+    if (currentOption?.isCustom) {
+      if (!customDate) return format(startOfMonth(new Date()), 'yyyy-MM-dd');
+      return format(startOfMonth(customDate), 'yyyy-MM-dd');
+    }
+    return currentOption?.date || format(startOfMonth(new Date()), 'yyyy-MM-dd');
+  }, [selectedMonth, monthOptions, customDate]);
+
+  const { data: vidasData, isLoading } = useNovasVidas(selectedApiDate);
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -178,8 +199,17 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
           {monthOptions.map((m, i) => (
             <Chip
               key={m.date}
-              label={m.label}
-              onClick={() => setSelectedMonth(i)}
+              label={m.isCustom && customDate && selectedMonth === i
+                ? `${format(customDate, 'MM/yyyy')}`
+                : m.label}
+              onClick={() => {
+                if (m.isCustom) {
+                  setTempDate(customDate || new Date());
+                  setDatePickerOpen(true);
+                } else {
+                  setSelectedMonth(i);
+                }
+              }}
               sx={{
                 fontWeight: selectedMonth === i ? 700 : 500,
                 bgcolor: selectedMonth === i ? COLOR_PF : alpha(COLOR_PF, 0.07),
@@ -234,6 +264,38 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
           />
         </Box>
       </CardContent>
+
+      {/* Date Picker Dialog */}
+      <Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)} maxWidth="xs" fullWidth>
+        <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+          <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 600 }}>Escolha um Mês</Typography>
+            <DatePicker
+              label="Mês/Ano"
+              views={['year', 'month']}
+              value={tempDate}
+              onChange={(date) => setTempDate(date)}
+              format="MM/yyyy"
+              slotProps={{ textField: { fullWidth: true } }}
+            />
+          </Box>
+        </LocalizationProvider>
+        <DialogActions sx={{ p: 2, pt: 0 }}>
+          <Button onClick={() => setDatePickerOpen(false)} color="inherit">Cancelar</Button>
+          <Button
+            variant="contained"
+            onClick={() => {
+              setCustomDate(tempDate);
+              const customIndex = monthOptions.findIndex(m => m.isCustom);
+              if (customIndex !== -1) setSelectedMonth(customIndex);
+              setDatePickerOpen(false);
+            }}
+            color="primary"
+          >
+            Aplicar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }
