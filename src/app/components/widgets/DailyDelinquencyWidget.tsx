@@ -24,7 +24,7 @@ import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import WidgetLoading from '../ui/WidgetLoading';
-import { useDailyDelinquency, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import { useDailyDelinquency, useDailyDelinquencyReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import { useChartDataAggregation, SeriesData } from '../../hooks/useChartDataAggregation';
 
 interface DailyDelinquencyWidgetProps {
@@ -73,6 +73,12 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
 
+	// Tabs State
+	const [tabIndex, setTabIndex] = useState(0);
+	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+		setTabIndex(newValue);
+	};
+
 	// Mobile Series Toggle
 	const [activeSeries, setActiveSeries] = useState<string>('diario');
 
@@ -81,7 +87,11 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 	const apiEnd = useMemo(() => format(end, 'yyyy-MM-dd'), [end]);
 
 	// Data
-	const { data: widgetData, isLoading } = useDailyDelinquency(apiStart, apiEnd);
+	const { data: vencimentoData, isLoading: isLoadingVencimento } = useDailyDelinquency(apiStart, apiEnd);
+	const { data: competenciaData, isLoading: isLoadingCompetencia } = useDailyDelinquencyReferencia(apiStart, apiEnd);
+
+	const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
+	const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
 	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
 	const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -227,42 +237,42 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 		},
 		yaxis: isMobile
 			? {
-					labels: {
-						formatter: (v) => {
-							if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;
+				labels: {
+					formatter: (v) => {
+						if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;
 
-							return v.toFixed(0);
-						},
-						style: { fontSize: '10px' }
+						return v.toFixed(0);
+					},
+					style: { fontSize: '10px' }
+				}
+			}
+			: [
+				{
+					seriesName: 'Diário',
+					min: 0,
+					forceNiceScale: true,
+					title: {
+						text: 'Valor Diário',
+						style: { color: colorDiario, fontSize: '11px' }
+					},
+					labels: {
+						style: { colors: colorDiario },
+						formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(1)}k` : `R$${v.toFixed(0)}`)
+					}
+				},
+				{
+					seriesName: 'Acumulado',
+					opposite: true,
+					title: {
+						text: 'Acumulado',
+						style: { color: colorAcumulado, fontSize: '11px' }
+					},
+					labels: {
+						style: { colors: colorAcumulado },
+						formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(1)}k` : `R$${v.toFixed(0)}`)
 					}
 				}
-			: [
-					{
-						seriesName: 'Diário',
-						min: 0,
-						forceNiceScale: true,
-						title: {
-							text: 'Valor Diário',
-							style: { color: colorDiario, fontSize: '11px' }
-						},
-						labels: {
-							style: { colors: colorDiario },
-							formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(1)}k` : `R$${v.toFixed(0)}`)
-						}
-					},
-					{
-						seriesName: 'Acumulado',
-						opposite: true,
-						title: {
-							text: 'Acumulado',
-							style: { color: colorAcumulado, fontSize: '11px' }
-						},
-						labels: {
-							style: { colors: colorAcumulado },
-							formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(1)}k` : `R$${v.toFixed(0)}`)
-						}
-					}
-				],
+			],
 		tooltip: {
 			shared: true,
 			intersect: false,
@@ -414,6 +424,14 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 						</IconButton>
 					</Tooltip>
 				</Box>
+			</Box>
+
+			{/* Tabs */}
+			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="daily delinquency tabs">
+					<Tab label="Por Vencimento" />
+					<Tab label="Por Competência" />
+				</Tabs>
 			</Box>
 
 			<CardContent sx={{ display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}>

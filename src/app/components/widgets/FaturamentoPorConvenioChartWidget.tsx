@@ -2,9 +2,13 @@ import { useMemo, useState, useEffect } from 'react';
 import { useTheme } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
-import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Checkbox } from '@mui/material';
+import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Checkbox, Tabs, Tab, Dialog, DialogContent, DialogActions, Button, Divider } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useFaturamentoPorConvenio, useToggleFavoriteWidget } from '../../hooks/useDashboard';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ptBR } from 'date-fns/locale';
+import { useFaturamentoPorConvenio, useFaturamentoPorConvenioReferencia, useToggleFavoriteWidget } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
 import { format, subMonths, startOfMonth, endOfMonth } from 'date-fns';
@@ -25,12 +29,45 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
 
+  // Tab State
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
   const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
   const handleCloseMenu = () => {
     setAnchorEl(null);
+  };
+
+  // Date Picker State
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [tempDate, setTempDate] = useState<Date>(new Date());
+
+  const handleCustomDateClick = () => {
+    handleCloseMenu();
+    setDatePickerOpen(true);
+  };
+
+  const handleDatePickerClose = () => {
+    setDatePickerOpen(false);
+    // Note: To parse YYYY-MM-DD reliably assuming local timezone at midnight,
+    // new Date(`${dateRange.startDate}T00:00:00`) is safer, but new Date() is fine for temp state if it fails.
+    setTempDate(new Date(`${dateRange.startDate}T00:00:00`));
+  };
+
+  const handleDatePickerConfirm = () => {
+    if (tempDate) {
+      setDateRange({
+        startDate: format(startOfMonth(tempDate), 'yyyy-MM-dd'),
+        endDate: format(endOfMonth(tempDate), 'yyyy-MM-dd')
+      });
+    }
+    setDatePickerOpen(false);
   };
 
   const handleSelectPeriod = (months: number) => {
@@ -46,7 +83,11 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
   };
 
   // Data Fetching
-  const { data: chartData, isLoading } = useFaturamentoPorConvenio(dateRange.startDate, dateRange.endDate);
+  const { data: vencimentoData, isLoading: isVencimentoLoading } = useFaturamentoPorConvenio(dateRange.startDate, dateRange.endDate);
+  const { data: competenciaData, isLoading: isCompetenciaLoading } = useFaturamentoPorConvenioReferencia(dateRange.startDate, dateRange.endDate);
+
+  const chartData = tabIndex === 0 ? vencimentoData : competenciaData;
+  const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
 
   // Favorite Logic
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -215,6 +256,10 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
             <MenuItem onClick={() => handleSelectPeriod(11)}>
               <ListItemText>Último Ano</ListItemText>
             </MenuItem>
+            <Divider sx={{ my: 0.5 }} />
+            <MenuItem onClick={handleCustomDateClick}>
+              <ListItemText>Selecionar data...</ListItemText>
+            </MenuItem>
           </Menu>
 
           {/* Favorite Toggle */}
@@ -227,6 +272,15 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
           </Tooltip>
         </Box>
       </Box>
+
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 6 }}>
+        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="faturamento tabs">
+          <Tab label="Por Vencimento" />
+          <Tab label="Por Competência" />
+        </Tabs>
+      </Box>
+
       <CardContent className="p-6" sx={{ flexGrow: 1 }}>
         <ReactApexChart
           options={chartOptions}
@@ -235,6 +289,48 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
           height={320}
         />
       </CardContent>
+
+      {/* Custom Date Picker Dialog */}
+      <Dialog
+        open={datePickerOpen}
+        onClose={handleDatePickerClose}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            minWidth: 320,
+          }
+        }}
+      >
+        <DialogContent sx={{ pt: 3 }}>
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+            <DatePicker
+              views={['year', 'month']}
+              label="Selecione o mês e ano"
+              value={tempDate}
+              onChange={(newValue) => setTempDate(newValue || new Date())}
+              slotProps={{
+                textField: {
+                  fullWidth: true,
+                  sx: { mb: 2 }
+                },
+                popper: {
+                  sx: {
+                    zIndex: 99999,
+                  }
+                }
+              }}
+            />
+          </LocalizationProvider>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={handleDatePickerClose} color="inherit">
+            Cancelar
+          </Button>
+          <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">
+            Confirmar
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 }

@@ -5,10 +5,10 @@ import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import {
-  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip
+  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip, Tabs, Tab
 } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useDelinquencyAging, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import { useDelinquencyAging, useDelinquencyAgingReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import { DelinquencyAgingDto } from '../../services/dashboardService';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
@@ -40,7 +40,17 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
   const theme = useTheme();
   const { data: user } = useUser();
 
-  const { data: widgetData, isLoading } = useDelinquencyAging();
+  // Tabs State
+  const [tabIndex, setTabIndex] = useState(0);
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
+  const { data: vencimentoData, isLoading: isLoadingVencimento } = useDelinquencyAging();
+  const { data: competenciaData, isLoading: isLoadingCompetencia } = useDelinquencyAgingReferencia();
+
+  const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
+  const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -228,6 +238,14 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
             </FuseSvgIcon>
           </IconButton>
         </Tooltip>
+      </Box>
+
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="delinquency aging tabs">
+          <Tab label="Por Vencimento" />
+          <Tab label="Por Competência" />
+        </Tabs>
       </Box>
 
       <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>

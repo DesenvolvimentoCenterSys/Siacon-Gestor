@@ -91,6 +91,12 @@ export interface FaturamentoPorConvenioDto {
   valorTotalTaxaAdm: number;
 }
 
+export interface FaturamentoPorConvenioReferenciaDto {
+  nomeConvenio: string;
+  valorTotalFaturado: number;
+  valorTotalTaxaAdm: number;
+}
+
 export interface DependentesTitularesDto {
   titulares: number;
   dependentes: number;
@@ -293,8 +299,18 @@ export const dashboardService = {
     }).json<VidasPorConvenioDto[]>();
   },
   getFaturamentoMensal: async (date?: string): Promise<FaturamentoMensalDto> => {
-    const searchParams = date ? { date } : undefined;
+    const searchParams: Record<string, string> = {};
+    if (date) searchParams.date = date;
+
     return dashboardClient.get('api/Dashboard/faturamento-mensal', {
+      searchParams
+    }).json<FaturamentoMensalDto>();
+  },
+  getFaturamentoMensalReferencia: async (date?: string): Promise<FaturamentoMensalDto> => {
+    const searchParams: Record<string, string> = {};
+    if (date) searchParams.date = date;
+
+    return dashboardClient.get('api/Dashboard/faturamento-mensal-referencia', {
       searchParams
     }).json<FaturamentoMensalDto>();
   },
@@ -316,6 +332,12 @@ export const dashboardService = {
       searchParams
     }).json<EvolucaoFaturamentoDto>();
   },
+  getEvolucaoFaturamentoReferencia: async (year?: number): Promise<EvolucaoFaturamentoDto> => {
+    const searchParams = year ? { year } : undefined;
+    return dashboardClient.get('api/Dashboard/evolucao-faturamento-referencia', {
+      searchParams
+    }).json<EvolucaoFaturamentoDto>();
+  },
   getFaturamentoPorConvenio: async (startDate?: string, endDate?: string): Promise<FaturamentoPorConvenioDto[]> => {
     const searchParams: Record<string, string> = {};
     if (startDate) searchParams.startDate = startDate;
@@ -324,6 +346,15 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/faturamento-por-convenio', {
       searchParams
     }).json<FaturamentoPorConvenioDto[]>();
+  },
+  getFaturamentoPorConvenioReferencia: async (startDate?: string, endDate?: string): Promise<FaturamentoPorConvenioReferenciaDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
+    return dashboardClient.get('api/Dashboard/faturamento-por-convenio-referencia', {
+      searchParams
+    }).json<FaturamentoPorConvenioReferenciaDto[]>();
   },
   getDependentesTitularesCount: async (date?: string): Promise<DependentesTitularesDto> => {
     const searchParams = date ? { date } : undefined;
@@ -340,6 +371,12 @@ export const dashboardService = {
   getTotalFaturamentoPorConvenio: async (date?: string): Promise<TotalFaturamentoPorConvenioDto> => {
     const searchParams = date ? { date } : undefined;
     return dashboardClient.get('api/Dashboard/total-faturamento-convenio', {
+      searchParams
+    }).json<TotalFaturamentoPorConvenioDto>();
+  },
+  getTotalFaturamentoPorConvenioReferencia: async (date?: string): Promise<TotalFaturamentoPorConvenioDto> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/total-faturamento-convenio-referencia', {
       searchParams
     }).json<TotalFaturamentoPorConvenioDto>();
   },
@@ -366,11 +403,27 @@ export const dashboardService = {
       searchParams
     }).json<FinancialEvolutionDto[]>();
   },
+  getFinancialEvolutionReferencia: async (date?: string): Promise<FinancialEvolutionDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (date) searchParams.date = date;
+
+    return dashboardClient.get('api/Dashboard/financial-evolution-referencia', {
+      searchParams
+    }).json<FinancialEvolutionDto[]>();
+  },
   getAccumulatedDelinquency: async (year?: number): Promise<AccumulatedDelinquencyDto[]> => {
     const searchParams: Record<string, string> = {};
     if (year) searchParams.year = year.toString();
 
     return dashboardClient.get('api/Dashboard/accumulated-delinquency', {
+      searchParams
+    }).json<AccumulatedDelinquencyDto[]>();
+  },
+  getAccumulatedDelinquencyReferencia: async (year?: number): Promise<AccumulatedDelinquencyDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (year) searchParams.year = year.toString();
+
+    return dashboardClient.get('api/Dashboard/accumulated-delinquency-referencia', {
       searchParams
     }).json<AccumulatedDelinquencyDto[]>();
   },
@@ -383,14 +436,32 @@ export const dashboardService = {
       searchParams
     }).json<DailyDelinquencyDto[]>();
   },
+  getDailyDelinquencyReferencia: async (startDate?: string, endDate?: string): Promise<DailyDelinquencyDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
+    return dashboardClient.get('api/Dashboard/daily-delinquency-referencia', {
+      searchParams
+    }).json<DailyDelinquencyDto[]>();
+  },
   getDelinquencyAging: async (): Promise<DelinquencyAgingDto[]> => {
     return dashboardClient.get('api/Dashboard/delinquency-aging').json<DelinquencyAgingDto[]>();
+  },
+  getDelinquencyAgingReferencia: async (): Promise<DelinquencyAgingDto[]> => {
+    return dashboardClient.get('api/Dashboard/delinquency-aging-referencia').json<DelinquencyAgingDto[]>();
   },
   getDelinquencySummary: async (startDate?: string, endDate?: string): Promise<DelinquencySummaryDto> => {
     const searchParams: Record<string, string> = {};
     if (startDate) searchParams.startDate = startDate;
     if (endDate) searchParams.endDate = endDate;
     return dashboardClient.get('api/Dashboard/delinquency-summary', { searchParams }).json<DelinquencySummaryDto>();
+  },
+  getDelinquencySummaryReferencia: async (startDate?: string, endDate?: string): Promise<DelinquencySummaryDto> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    return dashboardClient.get('api/Dashboard/delinquency-summary-referencia', { searchParams }).json<DelinquencySummaryDto>();
   },
   getNovasVidas: async (date?: string): Promise<NovasVidasDto> => {
     const searchParams: Record<string, string> = {};

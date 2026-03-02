@@ -119,6 +119,13 @@ export const useFaturamentoMensal = (date?: string) => {
   });
 };
 
+export const useFaturamentoMensalReferencia = (date?: string) => {
+  return useQuery({
+    queryKey: ['faturamentoMensalReferencia', date],
+    queryFn: () => dashboardService.getFaturamentoMensalReferencia(date)
+  });
+};
+
 export const useTaxaUtilizacao = (date?: string) => {
   return useQuery({
     queryKey: ['taxaUtilizacao', date],
@@ -140,10 +147,24 @@ export const useEvolucaoFaturamento = (year?: number) => {
   });
 };
 
+export const useEvolucaoFaturamentoReferencia = (year?: number) => {
+  return useQuery({
+    queryKey: ['evolucaoFaturamentoReferencia', year],
+    queryFn: () => dashboardService.getEvolucaoFaturamentoReferencia(year)
+  });
+};
+
 export const useFaturamentoPorConvenio = (startDate?: string, endDate?: string) => {
   return useQuery({
     queryKey: ['faturamentoPorConvenio', startDate, endDate],
     queryFn: () => dashboardService.getFaturamentoPorConvenio(startDate, endDate)
+  });
+};
+
+export const useFaturamentoPorConvenioReferencia = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['faturamentoPorConvenioReferencia', startDate, endDate],
+    queryFn: () => dashboardService.getFaturamentoPorConvenioReferencia(startDate, endDate)
   });
 };
 
@@ -168,6 +189,13 @@ export const useTotalFaturamentoPorConvenio = (date?: string) => {
   });
 };
 
+export const useTotalFaturamentoPorConvenioReferencia = (date?: string) => {
+  return useQuery({
+    queryKey: ['totalFaturamentoPorConvenioReferencia', date],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioReferencia(date)
+  });
+};
+
 export const useEventAnalytics = (date?: string) => {
   return useQuery({
     queryKey: ['eventAnalytics', date],
@@ -189,10 +217,24 @@ export const useFinancialEvolution = (date?: string) => {
   });
 };
 
+export const useFinancialEvolutionReferencia = (date?: string) => {
+  return useQuery({
+    queryKey: ['financialEvolutionReferencia', date],
+    queryFn: () => dashboardService.getFinancialEvolutionReferencia(date)
+  });
+};
+
 export const useAccumulatedDelinquency = (year?: number) => {
   return useQuery({
     queryKey: ['accumulatedDelinquency', year],
     queryFn: () => dashboardService.getAccumulatedDelinquency(year)
+  });
+};
+
+export const useAccumulatedDelinquencyReferencia = (year?: number) => {
+  return useQuery({
+    queryKey: ['accumulatedDelinquencyReferencia', year],
+    queryFn: () => dashboardService.getAccumulatedDelinquencyReferencia(year)
   });
 };
 
@@ -203,6 +245,13 @@ export const useDailyDelinquency = (startDate?: string, endDate?: string) => {
   });
 };
 
+export const useDailyDelinquencyReferencia = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['dailyDelinquencyReferencia', startDate, endDate],
+    queryFn: () => dashboardService.getDailyDelinquencyReferencia(startDate, endDate)
+  });
+};
+
 export const useDelinquencyAging = () => {
   return useQuery({
     queryKey: ['delinquencyAging'],
@@ -210,9 +259,23 @@ export const useDelinquencyAging = () => {
   });
 };
 
+export const useDelinquencyAgingReferencia = () => {
+  return useQuery({
+    queryKey: ['delinquencyAgingReferencia'],
+    queryFn: () => dashboardService.getDelinquencyAgingReferencia()
+  });
+};
+
 export const useDelinquencySummary = (startDate?: string, endDate?: string) => {
   return useQuery({
     queryKey: ['delinquencySummary', startDate, endDate],
     queryFn: () => dashboardService.getDelinquencySummary(startDate, endDate)
+  });
+};
+
+export const useDelinquencySummaryReferencia = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['delinquencySummaryReferencia', startDate, endDate],
+    queryFn: () => dashboardService.getDelinquencySummaryReferencia(startDate, endDate)
   });
 };

@@ -1,8 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useTheme, alpha } from '@mui/material/styles';
-import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, LinearProgress } from '@mui/material';
+import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, LinearProgress, Tabs, Tab } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useTotalFaturamentoPorConvenio, useToggleFavoriteWidget } from '../../hooks/useDashboard';
+import { useTotalFaturamentoPorConvenio, useTotalFaturamentoPorConvenioReferencia, useToggleFavoriteWidget } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
 import { format, subMonths } from 'date-fns';
@@ -79,6 +79,13 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(filterDate);
 
+  // Tab State
+  const [tabIndex, setTabIndex] = useState(0);
+
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
   const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
     setAnchorEl(event.currentTarget);
@@ -118,7 +125,11 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
   };
 
   // Data Fetching
-  const { data: widgetData, isLoading } = useTotalFaturamentoPorConvenio(apiDate);
+  const { data: vencimentoData, isLoading: isVencimentoLoading } = useTotalFaturamentoPorConvenio(apiDate);
+  const { data: competenciaData, isLoading: isCompetenciaLoading } = useTotalFaturamentoPorConvenioReferencia(apiDate);
+
+  const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
+  const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
 
   // Favorite Logic
   const toggleFavoriteMutation = useToggleFavoriteWidget();
@@ -178,27 +189,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
             >
               {format(filterDate, 'MMM yyyy', { locale: ptBR })}
             </Button>
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={() => setAnchorEl(null)}
-            >
-              {[0, 1, 2, 3].map(i => {
-                const d = subMonths(new Date(), i);
-                return (
-                  <MenuItem key={i} onClick={() => { setFilterDate(d); setAnchorEl(null); }}>
-                    {format(d, 'MMMM yyyy', { locale: ptBR })}
-                  </MenuItem>
-                );
-              })}
-              <Divider sx={{ my: 0.5 }} />
-              <MenuItem onClick={handleCustomDateClick}>
-                <ListItemIcon>
-                  <FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
-                </ListItemIcon>
-                <ListItemText>Selecionar data...</ListItemText>
-              </MenuItem>
-            </Menu>
 
             {/* Favorito */}
             <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
@@ -212,6 +202,14 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
         </Box>
 
         <Divider />
+
+        {/* Tabs */}
+        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+          <Tabs value={tabIndex} onChange={handleTabChange} aria-label="faturamento tabs">
+            <Tab label="Por Vencimento" />
+            <Tab label="Por Competência" />
+          </Tabs>
+        </Box>
 
         {/* Table/List */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 0 }}>

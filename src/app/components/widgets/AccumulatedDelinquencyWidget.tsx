@@ -15,12 +15,14 @@ import {
 	MenuItem,
 	ListItemText,
 	Chip,
-	Avatar
+	Avatar,
+	Tabs,
+	Tab
 } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import useUser from '@auth/useUser';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
-import { useAccumulatedDelinquency, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import { useAccumulatedDelinquency, useAccumulatedDelinquencyReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import { AccumulatedDelinquencyDto } from '../../services/dashboardService';
 import WidgetLoading from '../ui/WidgetLoading';
 
@@ -51,8 +53,19 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 		handleCloseMenu();
 	};
 
+	// Tabs State
+	const [tabIndex, setTabIndex] = useState(0);
+	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+		setTabIndex(newValue);
+	};
+
 	// Data
-	const { data: widgetData, isLoading } = useAccumulatedDelinquency(selectedYear);
+	const { data: vencimentoData, isLoading: isLoadingVencimento } = useAccumulatedDelinquency(selectedYear);
+	const { data: competenciaData, isLoading: isLoadingCompetencia } = useAccumulatedDelinquencyReferencia(selectedYear);
+
+	const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
+	const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
+
 	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
 	const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -167,42 +180,42 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 		},
 		yaxis: isMobile
 			? {
-					labels: {
-						formatter: (v) => {
-							if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;
+				labels: {
+					formatter: (v) => {
+						if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;
 
-							return v.toFixed(0);
-						},
-						style: { fontSize: '10px' }
+						return v.toFixed(0);
+					},
+					style: { fontSize: '10px' }
+				}
+			}
+			: [
+				{
+					seriesName: 'Mensal',
+					min: 0,
+					forceNiceScale: true,
+					title: {
+						text: 'Inadimplência Mensal',
+						style: { color: colorMensal, fontSize: '11px' }
+					},
+					labels: {
+						style: { colors: colorMensal },
+						formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v.toFixed(0)}`)
+					}
+				},
+				{
+					seriesName: 'Acumulado',
+					opposite: true,
+					title: {
+						text: 'Acumulado',
+						style: { color: colorAcumulado, fontSize: '11px' }
+					},
+					labels: {
+						style: { colors: colorAcumulado },
+						formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v.toFixed(0)}`)
 					}
 				}
-			: [
-					{
-						seriesName: 'Mensal',
-						min: 0,
-						forceNiceScale: true,
-						title: {
-							text: 'Inadimplência Mensal',
-							style: { color: colorMensal, fontSize: '11px' }
-						},
-						labels: {
-							style: { colors: colorMensal },
-							formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v.toFixed(0)}`)
-						}
-					},
-					{
-						seriesName: 'Acumulado',
-						opposite: true,
-						title: {
-							text: 'Acumulado',
-							style: { color: colorAcumulado, fontSize: '11px' }
-						},
-						labels: {
-							style: { colors: colorAcumulado },
-							formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v.toFixed(0)}`)
-						}
-					}
-				],
+			],
 		tooltip: {
 			shared: true,
 			intersect: false,
@@ -346,6 +359,14 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 						</IconButton>
 					</Tooltip>
 				</Box>
+			</Box>
+
+			{/* Tabs */}
+			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="accumulated delinquency tabs">
+					<Tab label="Por Vencimento" />
+					<Tab label="Por Competência" />
+				</Tabs>
 			</Box>
 
 			<CardContent

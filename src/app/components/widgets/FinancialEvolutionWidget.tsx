@@ -34,7 +34,7 @@ import { ptBR } from 'date-fns/locale';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 import WidgetLoading from '../ui/WidgetLoading';
 import { FinancialEvolutionDto } from '../../services/dashboardService';
-import { useFinancialEvolution, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import { useFinancialEvolution, useFinancialEvolutionReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import { useChartDataAggregation, SeriesData } from '../../hooks/useChartDataAggregation';
 
 interface FinancialEvolutionWidgetProps {
@@ -58,6 +58,13 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 
 	// Mobile Series Toggle
 	const [activeSeries, setActiveSeries] = useState<string>('receber');
+
+	// Tab State
+	const [tabIndex, setTabIndex] = useState(0);
+
+	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+		setTabIndex(newValue);
+	};
 
 	const apiDate = useMemo(() => {
 		return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
@@ -91,7 +98,11 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 	};
 
 	// Data
-	const { data: widgetData, isLoading } = useFinancialEvolution(apiDate);
+	const { data: vencimentoData, isLoading: isVencimentoLoading } = useFinancialEvolution(apiDate);
+	const { data: competenciaData, isLoading: isCompetenciaLoading } = useFinancialEvolutionReferencia(apiDate);
+
+	const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
+	const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
 	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
 	const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -149,35 +160,50 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 		if (!filteredData || filteredData.length === 0)
 			return { dates: [], series: [], totals: { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 } };
 
-		const dates = filteredData.map((d: FinancialEvolutionDto) => d.data.split('T')[0]);
+		// Group by date to avoid duplicate days when 'Todos' is selected
+		const groupedByDate = filteredData.reduce((acc: Record<string, FinancialEvolutionDto>, curr: FinancialEvolutionDto) => {
+			const date = curr.data.split('T')[0];
+			if (!acc[date]) {
+				acc[date] = { ...curr, totalReceber: 0, totalPagar: 0, saldoDoDia: 0, saldoAcumulado: 0 };
+			}
+			acc[date].totalReceber += curr.totalReceber;
+			acc[date].totalPagar += curr.totalPagar;
+			acc[date].saldoDoDia += curr.saldoDoDia;
+			acc[date].saldoAcumulado += curr.saldoAcumulado;
+			return acc;
+		}, {});
+
+		const sortedData = Object.values(groupedByDate).sort((a, b) => a.data.localeCompare(b.data));
+
+		const dates = sortedData.map((d) => d.data.split('T')[0]);
 
 		const seriesList: SeriesData[] = [
 			{
 				name: 'A Receber',
-				data: filteredData.map((d) => Math.abs(d.totalReceber)),
+				data: sortedData.map((d) => Math.abs(d.totalReceber)),
 				type: 'column',
 				aggregation: 'sum'
 			},
 			{
 				name: 'A Pagar',
-				data: filteredData.map((d) => Math.abs(d.totalPagar)),
+				data: sortedData.map((d) => Math.abs(d.totalPagar)),
 				type: 'column',
 				aggregation: 'sum'
 			},
 			{
 				name: 'Saldo Acumulado',
-				data: filteredData.map((d) => d.saldoAcumulado),
+				data: sortedData.map((d) => d.saldoAcumulado),
 				type: 'line',
 				aggregation: 'last'
 			}
 		];
 
-		const totals = filteredData.reduce(
-			(acc, d: FinancialEvolutionDto) => ({
+		const totals = sortedData.reduce(
+			(acc, d) => ({
 				receber: acc.receber + Math.abs(d.totalReceber),
 				pagar: acc.pagar + Math.abs(d.totalPagar),
-				saldoDia: filteredData.length > 0 ? filteredData[filteredData.length - 1].saldoDoDia : 0,
-				saldoAcumulado: filteredData.length > 0 ? filteredData[filteredData.length - 1].saldoAcumulado : 0
+				saldoDia: sortedData.length > 0 ? sortedData[sortedData.length - 1].saldoDoDia : 0,
+				saldoAcumulado: sortedData.length > 0 ? sortedData[sortedData.length - 1].saldoAcumulado : 0
 			}),
 			{ receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 }
 		);
@@ -256,9 +282,12 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 			axisBorder: { show: false },
 			axisTicks: { show: false },
 			tooltip: { enabled: false },
+			tickAmount: aggregatedData.categories.length > 15 ? (isMobile ? 6 : 12) : undefined,
 			labels: {
-				show: !isMobile || aggregatedData.categories.length < 8,
-				style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '10px' : '12px' }
+				show: true,
+				rotate: -45,
+				hideOverlappingLabels: true,
+				style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '10px' : '11px' }
 			}
 		},
 		yaxis: isMobile
@@ -494,6 +523,14 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 						</IconButton>
 					</Tooltip>
 				</Box>
+			</Box>
+
+			{/* Tabs */}
+			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="faturamento tabs">
+					<Tab label="Por Vencimento" />
+					<Tab label="Por Competência" />
+				</Tabs>
 			</Box>
 
 			<CardContent

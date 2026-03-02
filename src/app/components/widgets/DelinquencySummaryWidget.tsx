@@ -5,10 +5,10 @@ import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
 import {
-  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip, Button, ButtonGroup
+  Card, CardContent, Typography, Box, IconButton, Tooltip, Avatar, Chip, Button, ButtonGroup, Tabs, Tab
 } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useDelinquencySummary, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
+import { useDelinquencySummary, useDelinquencySummaryReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
 import { format, subDays, startOfMonth, endOfMonth, subMonths } from 'date-fns';
@@ -56,7 +56,17 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
     return { startDate: toISO(subDays(today, PRESETS[preset].days)), endDate: toISO(today) };
   }, [preset]);
 
-  const { data: summary, isLoading } = useDelinquencySummary(startDate, endDate);
+  // Tabs State
+  const [tabIndex, setTabIndex] = useState(0);
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
+
+  const { data: vencimentoData, isLoading: isLoadingVencimento } = useDelinquencySummary(startDate, endDate);
+  const { data: competenciaData, isLoading: isLoadingCompetencia } = useDelinquencySummaryReferencia(startDate, endDate);
+
+  const summary = tabIndex === 0 ? vencimentoData : competenciaData;
+  const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -192,6 +202,14 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
             </FuseSvgIcon>
           </IconButton>
         </Tooltip>
+      </Box>
+
+      {/* Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+        <Tabs value={tabIndex} onChange={handleTabChange} aria-label="delinquency summary tabs">
+          <Tab label="Por Vencimento" />
+          <Tab label="Por Competência" />
+        </Tabs>
       </Box>
 
       <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>

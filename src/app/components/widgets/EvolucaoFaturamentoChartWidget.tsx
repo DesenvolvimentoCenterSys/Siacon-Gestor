@@ -19,7 +19,7 @@ import {
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import useUser from '@auth/useUser';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
-import { useEvolucaoFaturamento, useToggleFavoriteWidget } from '../../hooks/useDashboard';
+import { useEvolucaoFaturamento, useEvolucaoFaturamentoReferencia, useToggleFavoriteWidget } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
 import { useChartDataAggregation, SeriesData } from '../../hooks/useChartDataAggregation';
 
@@ -39,6 +39,13 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 	// Year Filter Menu
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
+
+	// Tabs State
+	const [tabIndex, setTabIndex] = useState(0);
+
+	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+		setTabIndex(newValue);
+	};
 
 	const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
 		setAnchorEl(event.currentTarget);
@@ -60,7 +67,11 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 	}, []);
 
 	// Data Fetching
-	const { data: chartData, isLoading } = useEvolucaoFaturamento(selectedYear);
+	const { data: vencimentoData, isLoading: isLoadingVencimento } = useEvolucaoFaturamento(selectedYear);
+	const { data: competenciaData, isLoading: isLoadingCompetencia } = useEvolucaoFaturamentoReferencia(selectedYear);
+
+	const chartData = tabIndex === 0 ? vencimentoData : competenciaData;
+	const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
 
 	// Favorite Logic
 	const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -172,32 +183,32 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 		},
 		yaxis: isMobile
 			? {
-					labels: {
-						formatter: (value) => {
-							if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+				labels: {
+					formatter: (value) => {
+						if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
 
-							if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+						if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
 
-							return value.toFixed(0);
-						},
-						style: { fontSize: '10px' }
+						return value.toFixed(0);
+					},
+					style: { fontSize: '10px' }
+				}
+			}
+			: {
+				labels: {
+					style: {
+						colors: theme.palette.text.secondary,
+						fontSize: '12px'
+					},
+					formatter: (value) => {
+						if (value >= 1000000) return `R$ ${(value / 1000000).toFixed(1)}M`;
+
+						if (value >= 1000) return `R$ ${(value / 1000).toFixed(0)}k`;
+
+						return `R$ ${value.toFixed(0)}`;
 					}
 				}
-			: {
-					labels: {
-						style: {
-							colors: theme.palette.text.secondary,
-							fontSize: '12px'
-						},
-						formatter: (value) => {
-							if (value >= 1000000) return `R$ ${(value / 1000000).toFixed(1)}M`;
-
-							if (value >= 1000) return `R$ ${(value / 1000).toFixed(0)}k`;
-
-							return `R$ ${value.toFixed(0)}`;
-						}
-					}
-				},
+			},
 		grid: {
 			borderColor: theme.palette.divider,
 			strokeDashArray: 4,
@@ -312,6 +323,14 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 						</IconButton>
 					</Tooltip>
 				</Box>
+			</Box>
+
+			{/* Tabs */}
+			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
+				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="evolucao faturamento tabs">
+					<Tab label="Por Vencimento" />
+					<Tab label="Por Competência" />
+				</Tabs>
 			</Box>
 
 			<CardContent
