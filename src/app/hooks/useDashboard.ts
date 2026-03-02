@@ -136,6 +136,13 @@ export const useMensalidadeMedia = (date?: string) => {
   });
 };
 
+export const useMensalidadeMediaPorConvenio = (date?: string) => {
+  return useQuery({
+    queryKey: ['mensalidadeMediaPorConvenio', date],
+    queryFn: () => dashboardService.getMensalidadeMediaPorConvenio(date)
+  });
+};
+
 export const useEvolucaoFaturamento = (year?: number) => {
   return useQuery({
     queryKey: ['evolucaoFaturamento', year],

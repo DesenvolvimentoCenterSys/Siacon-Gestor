@@ -24,6 +24,7 @@ type KPICardProps = {
   showFilter?: boolean;
   filterDate?: Date | null;
   onFilterChange?: (date: Date | null) => void;
+  actionNode?: React.ReactNode;
 };
 
 function KPICard({
@@ -37,7 +38,8 @@ function KPICard({
   initialIsFavorite = false,
   showFilter = false,
   filterDate,
-  onFilterChange
+  onFilterChange,
+  actionNode
 }: KPICardProps) {
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
@@ -189,6 +191,7 @@ function KPICard({
                 </Box>
               </Tooltip>
             )}
+            {actionNode}
           </Box>
 
           <Box sx={{ display: 'flex', gap: 0.5 }}>

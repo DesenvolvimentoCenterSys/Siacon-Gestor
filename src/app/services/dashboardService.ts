@@ -70,6 +70,12 @@ export interface MensalidadeMediaDto {
   message: string;
 }
 
+export interface MensalidadeMediaPorConvenioDto {
+  nomeConvenio: string;
+  average: number;
+  percentageChange: number;
+}
+
 export interface MesFaturamentoDto {
   mes: number;
   valorPago: number;
@@ -324,6 +330,12 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/mensalidade-media', {
       searchParams
     }).json<MensalidadeMediaDto>();
+  },
+  getMensalidadeMediaPorConvenio: async (date?: string): Promise<MensalidadeMediaPorConvenioDto[]> => {
+    const searchParams = date ? { date } : undefined;
+    return dashboardClient.get('api/Dashboard/mensalidade-media-por-convenio', {
+      searchParams
+    }).json<MensalidadeMediaPorConvenioDto[]>();
   },
   getEvolucaoFaturamento: async (year?: number): Promise<EvolucaoFaturamentoDto> => {
     const searchParams = year ? { year } : undefined;
