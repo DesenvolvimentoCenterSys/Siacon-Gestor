@@ -143,55 +143,59 @@ function KPICard({
                 opacity: 0.9,
                 fontWeight: 600,
                 fontSize: { xs: '1.25rem', sm: '1.375rem' },
-                mb: showFilter ? 1.5 : 0,
+                mb: (showFilter || actionNode) ? 1.5 : 0,
               }}
             >
               {title}
             </Typography>
 
-            {showFilter && (
-              <Tooltip title="Alterar período" placement="top">
-                <Box
-                  onClick={handleFilterClick}
-                  sx={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 0.75,
-                    px: 2.25,
-                    py: 0.875,
-                    borderRadius: '14px',
-                    background: alpha('#ffffff', 0.15),
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${alpha('#ffffff', 0.2)}`,
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease-in-out',
-                    '&:hover': {
-                      background: alpha('#ffffff', 0.25),
-                      transform: 'translateY(-1px)',
-                    },
-                  }}
-                >
-                  <FuseSvgIcon size={20} sx={{ opacity: 0.9 }}>
-                    heroicons-outline:calendar
-                  </FuseSvgIcon>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      fontSize: '1rem',
-                      fontWeight: 600,
-                      opacity: 0.95,
-                      letterSpacing: '0.02em',
-                    }}
-                  >
-                    {getFilterLabel()}
-                  </Typography>
-                  <FuseSvgIcon size={18} sx={{ opacity: 0.7 }}>
-                    heroicons-solid:chevron-down
-                  </FuseSvgIcon>
-                </Box>
-              </Tooltip>
+            {(showFilter || actionNode) && (
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, alignItems: 'center', mt: 0.5 }}>
+                {showFilter && (
+                  <Tooltip title="Alterar período" placement="top">
+                    <Box
+                      onClick={handleFilterClick}
+                      sx={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 0.75,
+                        px: 2.25,
+                        py: 0.875,
+                        borderRadius: '14px',
+                        background: alpha('#ffffff', 0.15),
+                        backdropFilter: 'blur(10px)',
+                        border: `1px solid ${alpha('#ffffff', 0.2)}`,
+                        cursor: 'pointer',
+                        transition: 'all 0.2s ease-in-out',
+                        '&:hover': {
+                          background: alpha('#ffffff', 0.25),
+                          transform: 'translateY(-1px)',
+                        },
+                      }}
+                    >
+                      <FuseSvgIcon size={20} sx={{ opacity: 0.9 }}>
+                        heroicons-outline:calendar
+                      </FuseSvgIcon>
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          fontSize: '1rem',
+                          fontWeight: 600,
+                          opacity: 0.95,
+                          letterSpacing: '0.02em',
+                        }}
+                      >
+                        {getFilterLabel()}
+                      </Typography>
+                      <FuseSvgIcon size={18} sx={{ opacity: 0.7 }}>
+                        heroicons-solid:chevron-down
+                      </FuseSvgIcon>
+                    </Box>
+                  </Tooltip>
+                )}
+                {actionNode}
+              </Box>
             )}
-            {actionNode}
           </Box>
 
           <Box sx={{ display: 'flex', gap: 0.5 }}>

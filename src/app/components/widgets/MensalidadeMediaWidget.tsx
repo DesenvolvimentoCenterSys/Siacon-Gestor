@@ -71,7 +71,7 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
   }, [convenioData]);
 
   const actionNode = (
-    <Box sx={{ display: 'inline-flex', ml: { xs: 0, sm: 1 }, mt: { xs: 1, sm: 0 }, verticalAlign: 'top' }}>
+    <Box>
       <Select
         size="small"
         value={selectedConvenio}
