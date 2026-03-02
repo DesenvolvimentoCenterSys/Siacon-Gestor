@@ -82,7 +82,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 	const [startDate, setStartDate] = useState<Date>(startOfMonth(new Date()));
 	const [endDate, setEndDate] = useState<Date>(endOfMonth(new Date()));
 
-	// Mobile Series Toggle
 	const [activeSeries, setActiveSeries] = useState<string>('entradas');
 
 	const apiStartDate = useMemo(() => format(startDate, 'yyyy-MM-dd'), [startDate]);
@@ -164,12 +163,10 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 		);
 	};
 
-	// Cores metálicas
-	const colorEntradas = '#2E7D32'; // Verde metálico escuro
-	const colorSaidas = '#C62828'; // Vermelho metálico escuro
-	const colorSaldo = theme.palette.secondary.main; // Saldo
+	const colorEntradas = '#2E7D32';
+	const colorSaidas = '#C62828';
+	const colorSaldo = theme.palette.secondary.main;
 
-	// 1. Process Raw Data
 	const rawData = useMemo(() => {
 		if (!widgetData || widgetData.length === 0)
 			return { dates: [], series: [], totals: { entrada: 0, saida: 0, saldo: 0 } };
@@ -199,7 +196,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 
 		const sortedDates = Object.keys(groupedByDate).sort();
 
-		// Prepare series for hook
 		const seriesList: SeriesData[] = [
 			{
 				name: 'Entradas',
@@ -233,15 +229,13 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 		return { dates: sortedDates, series: seriesList, totals };
 	}, [widgetData]);
 
-	// 2. Aggregate Data using Hook
 	const aggregatedData = useChartDataAggregation({
 		dates: rawData.dates,
 		series: rawData.series,
 		isMobile,
-		maxPoints: 12 // Reduced for mobile
+		maxPoints: 12
 	});
 
-	// 3. Filter Series for Mobile (Single Series View)
 	const finalSeries = useMemo(() => {
 		if (!isMobile) return aggregatedData.series;
 
@@ -264,18 +258,17 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 	}, [aggregatedData.series, isMobile, activeSeries, colorEntradas, colorSaidas, colorSaldo]);
 
 	const maxBarValue = useMemo(() => {
-		// Find max value in displayed series to set nice scale
 		return Math.max(...finalSeries.flatMap((s) => s.data), 1);
 	}, [finalSeries]);
 
 	const chartOptions: ApexOptions = {
 		chart: {
-			type: 'line', // Base type
+			type: 'line',
 			stacked: false,
 			toolbar: { show: false },
 			zoom: { enabled: false },
 			fontFamily: 'inherit',
-			animations: { enabled: !isMobile } // Disable animations on mobile
+			animations: { enabled: !isMobile }
 		},
 		colors: isMobile
 			? [activeSeries === 'entradas' ? colorEntradas : activeSeries === 'saidas' ? colorSaidas : colorSaldo]
@@ -309,7 +302,7 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 			axisTicks: { show: false },
 			tooltip: { enabled: false },
 			labels: {
-				show: !isMobile || aggregatedData.categories.length < 8, // Hide dense labels on mobile
+				show: !isMobile || aggregatedData.categories.length < 8,
 				style: {
 					fontSize: isMobile ? '10px' : '12px'
 				}
@@ -317,7 +310,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 		},
 		yaxis: isMobile
 			? {
-				// Single Y-Axis for Mobile
 				labels: {
 					formatter: (value) => {
 						if (Math.abs(value) >= 1000) return `${(value / 1000).toFixed(1)}k`;
@@ -375,7 +367,7 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 			}
 		},
 		legend: {
-			show: !isMobile, // Hide default legend on mobile
+			show: !isMobile,
 			position: 'top',
 			horizontalAlign: 'center'
 		},
@@ -401,7 +393,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 			}}
 		>
 			<CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
-				{/* Header */}
 				<Box
 					sx={{
 						p: { xs: 2, md: 3 },
@@ -485,7 +476,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 						gap: { xs: 2, md: 3 }
 					}}
 				>
-					{/* Mobile Series Selector */}
 					{isMobile && (
 						<Tabs
 							value={activeSeries}
@@ -523,7 +513,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 						</Tabs>
 					)}
 
-					{/* Summary Metrics - Only show relevant metric in mobile based on selection or all in desktop */}
 					<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1fr 1fr 1fr' }, gap: 2 }}>
 						{(!isMobile || activeSeries === 'entradas') && (
 							<Box
@@ -613,7 +602,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 				</Box>
 			</CardContent>
 
-			{/* Filter Menu */}
 			<Menu
 				anchorEl={anchorEl}
 				open={openMenu}
@@ -654,7 +642,6 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 				</MenuItem>
 			</Menu>
 
-			{/* Date Range Dialog */}
 			<Dialog
 				open={dateRangeOpen}
 				onClose={handleDateRangeClose}

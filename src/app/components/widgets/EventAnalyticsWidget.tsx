@@ -20,14 +20,12 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  // Filter State
   const [filterDate, setFilterDate] = useState<Date>(new Date());
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -67,15 +65,12 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
   };
 
   const getFilterLabel = () => {
-    const month = filterDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' }); // e.g., "fev. de 2026"
-    // Remove "de " for shorter label: "Fev. 2026"
+    const month = filterDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
     return (month.charAt(0).toUpperCase() + month.slice(1)).replace(' de ', ' ');
   };
 
-  // Data Fetching
   const { data: widgetData, isLoading } = useEventAnalytics(apiDate);
 
-  // Favorite Logic
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -108,7 +103,6 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-            {/* Filter Button */}
             <Button
               size="small"
               variant="outlined"
@@ -138,7 +132,6 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
           </Box>
         </Box>
 
-        {/* Table/List */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 0, maxHeight: { xs: 'none', md: 'auto' } }}>
           <TableContainer sx={{ maxHeight: { xs: 'none', md: '100%' }, overflowX: 'auto' }}>
             <Table size="small" stickyHeader>
@@ -213,7 +206,6 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
           </TableContainer>
         </Box>
 
-        {/* Filter Menu */}
         <Menu
           anchorEl={anchorEl}
           open={openMenu}
@@ -258,7 +250,6 @@ export function EventAnalyticsWidget({ initialIsFavorite = false }: EventAnalyti
           </MenuItem>
         </Menu>
 
-        {/* Custom Date Picker Dialog */}
         <Dialog
           open={datePickerOpen}
           onClose={handleDatePickerClose}

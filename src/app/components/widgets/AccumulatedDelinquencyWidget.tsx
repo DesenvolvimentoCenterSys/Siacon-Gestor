@@ -39,7 +39,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 	const { data: user } = useUser();
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
-	// Year filter
 	const currentYear = new Date().getFullYear();
 	const availableYears = useMemo(() => Array.from({ length: 5 }, (_, i) => currentYear - i), [currentYear]);
 	const [selectedYear, setSelectedYear] = useState<number>(currentYear);
@@ -53,13 +52,11 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 		handleCloseMenu();
 	};
 
-	// Tabs State
 	const [tabIndex, setTabIndex] = useState(0);
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTabIndex(newValue);
 	};
 
-	// Data
 	const { data: vencimentoData, isLoading: isLoadingVencimento } = useAccumulatedDelinquency(selectedYear);
 	const { data: competenciaData, isLoading: isLoadingCompetencia } = useAccumulatedDelinquencyReferencia(selectedYear);
 
@@ -69,7 +66,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
 	const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-	// Favorite logic
 	const backendIsFavorite = useMemo(() => {
 		if (!favoriteWidgets) return initialIsFavorite;
 
@@ -98,7 +94,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 		);
 	};
 
-	// Processed chart data
 	const processedData = useMemo(() => {
 		if (!widgetData || widgetData.length === 0) return null;
 
@@ -112,7 +107,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 		const peakMonth = sorted.reduce((max, d) => (d.valorMensal > max.valorMensal ? d : max), sorted[0]);
 		const avgMensal = totalMensal / sorted.length;
 
-		// Month-over-month variation
 		const lastTwo = sorted.slice(-2);
 		const variation =
 			lastTwo.length === 2 && lastTwo[0].valorMensal !== 0
@@ -133,9 +127,8 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 
 	const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-	// Colors — inadimplência = vermelho/laranja escuro
-	const colorMensal = '#B71C1C'; // Vermelho escuro profundo
-	const colorAcumulado = '#FF6F00'; // Âmbar escuro
+	const colorMensal = '#B71C1C';
+	const colorAcumulado = '#FF6F00';
 	const colorGrid = theme.palette.divider;
 
 	const chartOptions: ApexOptions = {
@@ -272,7 +265,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 						: `linear-gradient(145deg, ${alpha('#B71C1C', 0.03)} 0%, ${theme.palette.background.paper} 40%)`
 			}}
 		>
-			{/* ─── Header ─── */}
 			<Box
 				sx={{
 					display: 'flex',
@@ -312,7 +304,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 				</Box>
 
 				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-					{/* Year filter */}
 					<Tooltip title="Filtrar por ano">
 						<Chip
 							label={selectedYear}
@@ -344,7 +335,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 						))}
 					</Menu>
 
-					{/* Favorite */}
 					<Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
 						<IconButton
 							onClick={handleToggleFavorite}
@@ -361,7 +351,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 				</Box>
 			</Box>
 
-			{/* Tabs */}
 			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
 				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="accumulated delinquency tabs">
 					<Tab label="Por Vencimento" />
@@ -372,7 +361,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 			<CardContent
 				sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}
 			>
-				{/* ─── KPI Cards ─── */}
 				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
 					{[
 						{
@@ -448,7 +436,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 					))}
 				</Box>
 
-				{/* ─── Chart ─── */}
 				{!processedData ? (
 					<Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 						<Box sx={{ textAlign: 'center' }}>
@@ -478,7 +465,6 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 					</Box>
 				)}
 
-				{/* ─── Footer table (monthly breakdown) ─── */}
 				{processedData && widgetData && widgetData.length > 0 && !isMobile && (
 					<Box
 						sx={{

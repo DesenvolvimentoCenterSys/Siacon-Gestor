@@ -112,7 +112,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
 
   const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
-  // Chart — horizontal bars by bucket
   const chartOptions: ApexOptions = {
     chart: {
       type: 'bar',
@@ -204,7 +203,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
           : `linear-gradient(145deg, ${alpha('#F9A825', 0.04)} 0%, ${theme.palette.background.paper} 40%)`
       }}
     >
-      {/* ─── Header ─── */}
       <Box
         sx={{
           display: 'flex',
@@ -240,7 +238,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
         </Tooltip>
       </Box>
 
-      {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
         <Tabs value={tabIndex} onChange={handleTabChange} aria-label="delinquency aging tabs">
           <Tab label="Por Vencimento" />
@@ -249,7 +246,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
       </Box>
 
       <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>
-        {/* ─── KPI Summary ─── */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Total em Aberto', value: formatCurrency(totals.valor), icon: 'heroicons-outline:banknotes', color: '#B71C1C' },
@@ -265,7 +261,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
           ))}
         </Box>
 
-        {/* ─── Legend chips ─── */}
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 2 }}>
           {[
             { label: 'Baixo (≤30 dias)', color: '#F57F17' },
@@ -288,7 +283,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
           ))}
         </Box>
 
-        {/* ─── Chart ─── */}
         {sorted.length === 0 ? (
           <Box sx={{ minHeight: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Box sx={{ textAlign: 'center' }}>
@@ -309,7 +303,6 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
           </Box>
         )}
 
-        {/* ─── Detail table ─── */}
         {sorted.length > 0 && (
           <Box sx={{ mt: 2, borderRadius: 2, border: `1px solid ${theme.palette.divider}`, overflow: 'hidden' }}>
             {/* Header */}

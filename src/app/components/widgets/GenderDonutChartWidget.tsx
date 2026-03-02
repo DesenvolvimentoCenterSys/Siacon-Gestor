@@ -28,13 +28,10 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Tab State
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -53,7 +50,7 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
     const newDate = new Date();
     newDate.setMonth(newDate.getMonth() - monthsAgo);
     setFilterDate(newDate);
-    setRefetchCounter(prev => prev + 1); // Force refetch
+    setRefetchCounter(prev => prev + 1);
     handleCloseMenu();
   };
 
@@ -70,20 +67,15 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
   const handleDatePickerConfirm = () => {
     if (tempDate) {
       setFilterDate(tempDate);
-      setRefetchCounter(prev => prev + 1); // Force refetch
+      setRefetchCounter(prev => prev + 1);
     }
     setDatePickerOpen(false);
   };
 
-  // Sync tempDate with filterDate when it changes
   useEffect(() => {
     setTempDate(filterDate);
   }, [filterDate]);
-
-  // Data Fetching
   const { data: chartData, isLoading } = useClientesPorSexo(apiDate + `-${refetchCounter}`);
-
-  // Favorite Logic
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -115,9 +107,9 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
     },
     labels: ['Masculino', 'Feminino', 'Outros'],
     colors: [
-      '#1e88e5', // Blue 600 - Masculine
-      '#42a5f5', // Blue 400 - Feminine
-      '#90caf9', // Blue 200 - Others
+      '#1e88e5',
+      '#42a5f5',
+      '#90caf9',
     ],
     dataLabels: {
       enabled: true,
@@ -180,7 +172,6 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
     }
   };
 
-  // List View Rows
   const rows = useMemo(() => {
     if (!chartData) return [];
     return [
@@ -188,21 +179,21 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
         label: 'Masculino',
         value: chartData.quantidadeMasculino,
         diff: chartData.diferencaMasculino,
-        color: '#1e88e5', // Blue 600
+        color: '#1e88e5',
         icon: 'heroicons-outline:user'
       },
       {
         label: 'Feminino',
         value: chartData.quantidadeFeminino,
         diff: chartData.diferencaFeminino,
-        color: '#42a5f5', // Blue 400
+        color: '#42a5f5',
         icon: 'heroicons-outline:user'
       },
       {
         label: 'Outros',
         value: chartData.quantidadeOutros,
         diff: chartData.diferencaOutros,
-        color: '#90caf9', // Blue 200
+        color: '#90caf9',
         icon: 'heroicons-outline:users'
       }
     ];
@@ -214,7 +205,6 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
   return (
     <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
-        {/* ─── Header ─── */}
         <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
           <Box>
             <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
@@ -226,13 +216,11 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-            {/* Filter */}
             <Tooltip title="Filtrar por data">
               <IconButton onClick={handleClickMenu} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
               </IconButton>
             </Tooltip>
-            {/* Favorite */}
             <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
               <FuseSvgIcon sx={{ color: isFavorite ? '#FFD700' : 'action.disabled' }} size={20}>
                 {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
@@ -241,7 +229,6 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
           </Box>
         </Box>
 
-        {/* Tabs */}
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -254,7 +241,6 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
           <Tab label="Painel" sx={{ textTransform: 'none', fontWeight: 600, minHeight: 48 }} />
         </Tabs>
 
-        {/* Content */}
         <Box sx={{ flexGrow: 1, overflow: 'auto', p: 0 }}>
           {tabValue === 0 && (
             <Box sx={{ p: { xs: 2, md: 4 }, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
@@ -317,7 +303,6 @@ export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonu
           )}
         </Box>
 
-        {/* Menu & Dialogs */}
         <Menu
           anchorEl={anchorEl}
           open={openMenu}

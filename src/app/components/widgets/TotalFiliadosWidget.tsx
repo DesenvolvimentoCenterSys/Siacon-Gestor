@@ -28,13 +28,12 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Tab State
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  // Filter Menu State
+
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -52,7 +51,7 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
     const newDate = new Date();
     newDate.setMonth(newDate.getMonth() - monthsAgo);
     setFilterDate(newDate);
-    setRefetchCounter(prev => prev + 1); // Force refetch
+    setRefetchCounter(prev => prev + 1);
     handleCloseMenu();
   };
 
@@ -69,28 +68,24 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
   const handleDatePickerConfirm = () => {
     if (tempDate) {
       setFilterDate(tempDate);
-      setRefetchCounter(prev => prev + 1); // Force refetch
+      setRefetchCounter(prev => prev + 1);
     }
     setDatePickerOpen(false);
   };
 
-  // Sync tempDate with filterDate when it changes
   useEffect(() => {
     setTempDate(filterDate);
   }, [filterDate]);
 
-  // Data Fetching
   const { data: widgetData, isLoading } = useTotalFiliados(apiDate);
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-  // Derive backend status
   const backendIsFavorite = useMemo(() => {
     if (!favoriteWidgets) return initialIsFavorite;
     return favoriteWidgets.some((w: any) => w.dashboardWidgetId === widgetId && w.isFavorite);
   }, [favoriteWidgets, widgetId, initialIsFavorite]);
 
-  // Local state initialized with backend status
   const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(null);
   const isFavorite = optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
 
@@ -105,13 +100,13 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
     if (!user?.id || !widgetId) return;
 
     const newStatus = !isFavorite;
-    setOptimisticStatus(newStatus); // Optimistic UI update
+    setOptimisticStatus(newStatus);
 
     toggleFavoriteMutation.mutate(
       { codUsu: Number(user.id), widgetId, isFavorite: newStatus },
       {
         onError: () => {
-          setOptimisticStatus(null); // Revert on error
+          setOptimisticStatus(null);
         }
       }
     );
@@ -160,17 +155,16 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
       bar: {
         columnWidth: '50%',
         borderRadius: 8,
-        distributed: true // Use distributed colors for bars
+        distributed: true
       }
     },
-    // Colors: Bar1 (Light Blue), Bar2 (Dark Blue), Line (Orange)
     colors: [
-      '#42A5F5', // Bar 1: Novos - Light Blue
-      '#0D47A1', // Bar 2: Desligados - Deep Blue
-      '#FF9800'  // Line: Valor - Orange
+      '#42A5F5',
+      '#0D47A1',
+      '#FF9800'
     ],
     fill: {
-      type: ['gradient', 'solid'], // Gradient for bars, solid for line? Default assumes gradient for all if single string
+      type: ['gradient', 'solid'],
       gradient: {
         shade: 'light',
         type: 'vertical',
@@ -250,10 +244,10 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
       intersect: false,
       y: {
         formatter: (val, opts) => {
-          if (opts.seriesIndex === 0) { // Column series
+          if (opts.seriesIndex === 0) {
             return val.toString() + ' pessoas';
           }
-          return formatCurrency(val); // Line series
+          return formatCurrency(val);
         }
       }
     }

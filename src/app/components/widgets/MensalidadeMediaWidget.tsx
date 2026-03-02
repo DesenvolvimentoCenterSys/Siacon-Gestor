@@ -28,7 +28,6 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
       value: mensalidadeData.average || 0,
       subtitle: mensalidadeData.message || 'média mensal',
       icon: 'heroicons-outline:currency-dollar',
-      // Using info (blue) as requested
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
       trend: {
         value: `${mensalidadeData.percentageChange > 0 ? '+' : ''}${mensalidadeData.percentageChange}% vs mês anterior`,

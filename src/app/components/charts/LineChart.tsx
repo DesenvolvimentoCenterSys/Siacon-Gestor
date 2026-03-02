@@ -51,13 +51,13 @@ export default function LineChart({
     if (!user?.id || !widgetId) return;
 
     const newStatus = !isFavorite;
-    setIsFavorite(newStatus); // Optimistic update
+    setIsFavorite(newStatus);
 
     toggleFavoriteMutation.mutate(
       { codUsu: Number(user.id), widgetId, isFavorite: newStatus },
       {
         onError: () => {
-          setIsFavorite(!newStatus); // Revert on error
+          setIsFavorite(!newStatus);
         }
       }
     );

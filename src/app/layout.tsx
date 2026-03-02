@@ -10,7 +10,6 @@ import { auth } from '@auth/authJs';
 import generateMetadata from '../utils/generateMetadata';
 import App from './App';
 
-// eslint-disable-next-line react-refresh/only-export-components
 export const metadata = await generateMetadata({
 	title: 'Dashboard',
 	description: 'Dashboard',
@@ -47,10 +46,6 @@ export default async function RootLayout({
 					content="#000000"
 				/>
 				<base href="/" />
-				{/*
-					manifest.json provides metadata used when your web app is added to the
-					homescreen on Android. See https://developers.google.com/web/fundamentals/engage-and-retain/web-app-manifest/
-				*/}
 				<link
 					rel="manifest"
 					href="/manifest.json"

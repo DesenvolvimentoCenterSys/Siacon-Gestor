@@ -10,7 +10,6 @@ export const useToggleFavoriteWidget = () => {
     mutationFn: ({ codUsu, widgetId, isFavorite }: { codUsu: number; widgetId: number; isFavorite: boolean }) =>
       dashboardService.toggleFavoriteWidget(codUsu, widgetId, isFavorite),
     onSuccess: (data, variables) => {
-      // Invalidate and refetch favorite widgets to update the UI
       queryClient.invalidateQueries({ queryKey: ['userFavoriteWidgets', variables.codUsu] });
       queryClient.invalidateQueries({ queryKey: ['allWidgets'] });
     },
@@ -18,8 +17,6 @@ export const useToggleFavoriteWidget = () => {
       console.error('Erro ao atualizar favorito', error);
 
       let mensagem = 'Não foi possível atualizar o favorito. Tente novamente.';
-
-      // Tenta extrair a mensagem de erro do corpo da resposta HTTP (ky / fetch)
       if (error && typeof error === 'object' && 'response' in error) {
         try {
           const body = await (error as { response: Response }).response.json();
@@ -27,7 +24,6 @@ export const useToggleFavoriteWidget = () => {
             mensagem = body.message;
           }
         } catch {
-          // ignora erros ao ler o corpo
         }
       }
 
@@ -44,7 +40,7 @@ export const useUserFavoriteWidgets = (codUsu?: number) => {
   return useQuery({
     queryKey: ['userFavoriteWidgets', codUsu],
     queryFn: () => dashboardService.getUserFavoriteWidgets(codUsu!),
-    enabled: !!codUsu, // Only run if codUsu is defined
+    enabled: !!codUsu,
   });
 };
 
@@ -87,7 +83,7 @@ export const useAllWidgets = (codUsu?: number, widgetId?: number, isFavorite?: b
   return useQuery({
     queryKey: ['allWidgets', codUsu, widgetId, isFavorite],
     queryFn: () => dashboardService.getAllWidgets(codUsu, widgetId, isFavorite),
-    enabled: !!codUsu // Ensure we at least have the user ID
+    enabled: !!codUsu
   });
 };
 

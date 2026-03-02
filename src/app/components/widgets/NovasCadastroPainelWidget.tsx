@@ -23,9 +23,9 @@ interface NovasCadastroPainelWidgetProps {
 }
 
 const WIDGET_ID = 12;
-const COLOR_PF = '#1565C0'; // azul escuro (PF)
-const COLOR_PJ = '#0D47A1'; // azul mais escuro (PJ)
-const COLOR_TOTAL = '#1976D2'; // azul médio (total)
+const COLOR_PF = '#1565C0';
+const COLOR_PJ = '#0D47A1';
+const COLOR_TOTAL = '#1976D2';
 
 const MONTHS_LABELS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -48,9 +48,8 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
   const { data: user } = useUser();
 
   const [monthOptions, setMonthOptions] = useState(() => buildMonthOptions());
-  const [selectedMonth, setSelectedMonth] = useState(0); // index 0 = mês atual
+  const [selectedMonth, setSelectedMonth] = useState(0);
 
-  // Custom Date logic
   const [customDate, setCustomDate] = useState<Date | null>(new Date());
   const [tempDate, setTempDate] = useState<Date | null>(customDate);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -68,7 +67,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-  // Favorite
   const backendIsFavorite = useMemo(() => {
     if (!favoriteWidgets) return initialIsFavorite;
     return favoriteWidgets.some((w: any) => w.dashboardWidgetId === WIDGET_ID && w.isFavorite);
@@ -92,7 +90,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
     );
   };
 
-  // Chart
   const chartOptions: ApexOptions = {
     chart: {
       type: 'donut',
@@ -160,7 +157,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
           : `linear-gradient(145deg, ${alpha(COLOR_PF, 0.04)} 0%, ${theme.palette.background.paper} 40%)`
       }}
     >
-      {/* ─── Header ─── */}
       <Box
         sx={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -194,7 +190,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
 
       <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: { xs: 2, md: 3 } } }}>
 
-        {/* ─── Month selector chips ─── */}
         <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 3 }}>
           {monthOptions.map((m, i) => (
             <Chip
@@ -227,7 +222,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
           ))}
         </Box>
 
-        {/* ─── KPI Cards ─── */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(3, 1fr)' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Pessoa Física', value: vidasData?.quantidadePF ?? 0, icon: 'heroicons-outline:user', color: COLOR_PF, pct: pctPF },
@@ -253,7 +247,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
           ))}
         </Box>
 
-        {/* ─── Donut chart ─── */}
         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%', minHeight: 300 }}>
           <ReactApexChart
             options={chartOptions}
@@ -265,7 +258,6 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
         </Box>
       </CardContent>
 
-      {/* Date Picker Dialog */}
       <Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)} maxWidth="xs" fullWidth>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
           <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>

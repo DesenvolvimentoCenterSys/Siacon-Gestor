@@ -29,10 +29,9 @@ export function NovasVidasWidget({ initialIsFavorite }: NovasVidasWidgetProps) {
       subtitle: `PF: ${novasVidasData.quantidadePF} | PJ: ${novasVidasData.quantidadePJ}`,
       icon: 'heroicons-outline:user-plus',
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
-      // No trend data provided in DTO
       trend: {
         value: 'novos cadastros',
-        isPositive: true, // Neutral/Positive indicator
+        isPositive: true,
       },
       widgetId: 13,
     };

@@ -66,20 +66,17 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  // Filter State
   const [filterDate, setFilterDate] = useState<Date>(new Date());
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(filterDate);
 
-  // Tab State
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -124,14 +121,12 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
     return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
-  // Data Fetching
   const { data: vencimentoData, isLoading: isVencimentoLoading } = useTotalFaturamentoPorConvenio(apiDate);
   const { data: competenciaData, isLoading: isCompetenciaLoading } = useTotalFaturamentoPorConvenioReferencia(apiDate);
 
   const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
   const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
 
-  // Favorite Logic
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -160,13 +155,11 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
     porConvenio: []
   };
 
-  // Safe Access Helper
   const safeResumo = (resumo?: ResumoFaturamentoDto) => resumo || defaultResumo;
 
   return (
     <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
         <Box sx={{ p: { xs: 2, md: 3 }, pb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
           <Box>
             <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
@@ -178,7 +171,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-            {/* Filtro Mês */}
             <Button
               size="small"
               variant="outlined"
@@ -190,7 +182,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
               {format(filterDate, 'MMM yyyy', { locale: ptBR })}
             </Button>
 
-            {/* Favorito */}
             <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
               <IconButton size="small" onClick={handleToggleFavorite} sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon size={20} sx={{ color: isFavorite ? "#FFD700" : "action.disabled" }}>
@@ -203,7 +194,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
 
         <Divider />
 
-        {/* Tabs */}
         <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
           <Tabs value={tabIndex} onChange={handleTabChange} aria-label="faturamento tabs">
             <Tab label="Por Vencimento" />
@@ -211,7 +201,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
           </Tabs>
         </Box>
 
-        {/* Table/List */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 0 }}>
           <TableContainer>
             <Table size="small" stickyHeader>
@@ -307,7 +296,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
           </TableContainer>
         </Box>
 
-        {/* Filter Menu */}
         <Menu
           anchorEl={anchorEl}
           open={openMenu}
@@ -352,7 +340,6 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
           </MenuItem>
         </Menu>
 
-        {/* Custom Date Picker Dialog */}
         <Dialog
           open={datePickerOpen}
           onClose={handleDatePickerClose}

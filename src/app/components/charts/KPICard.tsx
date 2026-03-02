@@ -21,7 +21,6 @@ type KPICardProps = {
   subtitle?: string;
   widgetId?: number;
   initialIsFavorite?: boolean;
-  // Filter props
   showFilter?: boolean;
   filterDate?: Date | null;
   onFilterChange?: (date: Date | null) => void;
@@ -134,7 +133,6 @@ function KPICard({
       elevation={3}
     >
       <CardContent sx={{ position: 'relative', zIndex: 1, p: { xs: 2, sm: 3 } }}>
-        {/* Header with actions */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Box sx={{ flex: 1 }}>
             <Typography
@@ -149,7 +147,6 @@ function KPICard({
               {title}
             </Typography>
 
-            {/* Elegant Filter Button - INCREASED SIZE */}
             {showFilter && (
               <Tooltip title="Alterar período" placement="top">
                 <Box
@@ -224,7 +221,6 @@ function KPICard({
           </Box>
         </Box>
 
-        {/* Filter Menu */}
         <Menu
           anchorEl={filterAnchorEl}
           open={Boolean(filterAnchorEl)}
@@ -275,7 +271,6 @@ function KPICard({
           </MenuItem>
         </Menu>
 
-        {/* Custom Date Picker Dialog */}
         <Dialog
           open={datePickerOpen}
           onClose={handleDatePickerClose}
@@ -317,7 +312,6 @@ function KPICard({
           </DialogActions>
         </Dialog>
 
-        {/* Main Value */}
         <Typography
           variant="h3"
           sx={{
@@ -342,7 +336,6 @@ function KPICard({
           </Typography>
         )}
 
-        {/* Trend Indicator */}
         {trend && (
           <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 0.5 }}>
             <FuseSvgIcon
@@ -366,8 +359,6 @@ function KPICard({
           </Box>
         )}
       </CardContent>
-
-      {/* Background decoration */}
       <Box
         sx={{
           position: 'absolute',

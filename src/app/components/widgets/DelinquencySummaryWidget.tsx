@@ -44,8 +44,7 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
   const theme = useTheme();
   const { data: user } = useUser();
 
-  // Date range
-  const [preset, setPreset] = useState(2); // 30 dias default
+  const [preset, setPreset] = useState(2);
   const [customStart, setCustomStart] = useState<Date | null>(subDays(new Date(), 30));
   const [customEnd, setCustomEnd] = useState<Date | null>(new Date());
 
@@ -71,7 +70,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
     return { startDate: toISO(subDays(today, PRESETS[preset].days)), endDate: toISO(today) };
   }, [preset]);
 
-  // Tabs State
   const [tabIndex, setTabIndex] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -85,7 +83,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-  // Favorite
   const backendIsFavorite = useMemo(() => {
     if (!favoriteWidgets) return initialIsFavorite;
     return favoriteWidgets.some((w: any) => w.dashboardWidgetId === WIDGET_ID && w.isFavorite);
@@ -113,7 +110,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
     (v ?? 0).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const formatPct = (v: number) => `${(v ?? 0).toFixed(1)}%`;
 
-  // Donut chart
   const chartOptions: ApexOptions = {
     chart: {
       type: 'donut',
@@ -185,7 +181,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
           : `linear-gradient(145deg, ${alpha('#4A148C', 0.03)} 0%, ${theme.palette.background.paper} 40%)`
       }}
     >
-      {/* ─── Header ─── */}
       <Box
         sx={{
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
@@ -219,7 +214,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
         </Tooltip>
       </Box>
 
-      {/* Tabs */}
       <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
         <Tabs value={tabIndex} onChange={handleTabChange} aria-label="delinquency summary tabs">
           <Tab label="Por Vencimento" />
@@ -228,19 +222,17 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
       </Box>
 
       <CardContent sx={{ display: 'flex', flexDirection: 'column', p: { xs: 2, md: 3 }, '&:last-child': { pb: 3 } }}>
-
-        {/* ─── Date range preset ─── */}
         <Box
           sx={{
             display: 'flex',
-            justifyContent: { xs: 'flex-start', md: 'flex-end' }, // Left align on mobile for natural scroll start
+            justifyContent: { xs: 'flex-start', md: 'flex-end' },
             mb: 3,
             overflowX: 'auto',
             pb: 1,
-            mx: { xs: -2, md: 0 }, // Negative margin to scroll edge-to-edge on mobile
-            px: { xs: 2, md: 0 },  // Padding to compensate negative margin
-            '::-webkit-scrollbar': { height: 4, display: 'none' }, // Hide scrollbar for cleaner mobile look
-            scrollbarWidth: 'none' // Firefox
+            mx: { xs: -2, md: 0 },
+            px: { xs: 2, md: 0 },
+            '::-webkit-scrollbar': { height: 4, display: 'none' },
+            scrollbarWidth: 'none'
           }}
         >
           <ButtonGroup size="small" variant="outlined" sx={{ minWidth: 'max-content' }}>
@@ -273,7 +265,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
           </ButtonGroup>
         </Box>
 
-        {/* ─── KPI Cards (4 totals) ─── */}
         <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
           {[
             { label: 'Total Faturado', value: formatCurrency(summary?.totalFaturado ?? 0), color: COLOR_FATURADO, icon: 'heroicons-outline:banknotes' },
@@ -291,7 +282,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
           ))}
         </Box>
 
-        {/* ─── Percentage chips ─── */}
         <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap', mb: 3 }}>
           {[
             { label: `Inadimplência: ${formatPct(summary?.percentualInadimplencia ?? 0)}`, color: COLOR_INADIMPLENTE },
@@ -312,7 +302,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
           ))}
         </Box>
 
-        {/* ─── Donut chart ─── */}
         <Box sx={{ display: 'flex', justifyContent: 'center', width: '100%' }}>
           <ReactApexChart
             options={chartOptions}
@@ -324,7 +313,6 @@ export function DelinquencySummaryWidget({ initialIsFavorite = false }: Delinque
         </Box>
       </CardContent>
 
-      {/* Date Picker Dialog */}
       <Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)} maxWidth="xs" fullWidth>
         <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
           <Box sx={{ p: 2, display: 'flex', flexDirection: 'column', gap: 3, mt: 2 }}>

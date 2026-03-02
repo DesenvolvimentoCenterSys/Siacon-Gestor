@@ -155,12 +155,10 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 		return widgetData.filter((d: FinancialEvolutionDto) => d.nomeBanco === selectedBank);
 	}, [widgetData, selectedBank]);
 
-	// 1. Process Raw Data
 	const rawData = useMemo(() => {
 		if (!filteredData || filteredData.length === 0)
 			return { dates: [], series: [], totals: { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 } };
 
-		// Group by date to avoid duplicate days when 'Todos' is selected
 		const groupedByDate = filteredData.reduce((acc: Record<string, FinancialEvolutionDto>, curr: FinancialEvolutionDto) => {
 			const date = curr.data.split('T')[0];
 			if (!acc[date]) {
@@ -211,7 +209,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 		return { dates, series: seriesList, totals };
 	}, [filteredData]);
 
-	// 2. Aggregate Data using Hook
 	const aggregatedData = useChartDataAggregation({
 		dates: rawData.dates,
 		series: rawData.series,
@@ -219,7 +216,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 		maxPoints: 12
 	});
 
-	// 3. Filter Series for Mobile
 	const finalSeries = useMemo(() => {
 		if (!isMobile) return aggregatedData.series;
 
@@ -412,7 +408,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 				flexDirection: 'column'
 			}}
 		>
-			{/* Header */}
 			<Box className="flex items-center justify-between px-6 py-4 border-b">
 				<Typography className="text-lg font-semibold truncate text-primary">
 					{isMobile && aggregatedData.period !== 'daily'
@@ -420,7 +415,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 						: 'Evolução Financeira por Banco'}
 				</Typography>
 				<Box className="flex items-center gap-2">
-					{/* Date filter */}
 					<Tooltip title="Filtrar por data">
 						<IconButton
 							size="small"
@@ -466,8 +460,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 							<ListItemText>Selecionar data...</ListItemText>
 						</MenuItem>
 					</Menu>
-
-					{/* Date Picker Dialog */}
 					<Dialog
 						open={datePickerOpen}
 						onClose={handleDatePickerClose}
@@ -508,7 +500,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 						</DialogActions>
 					</Dialog>
 
-					{/* Favorite toggle */}
 					<Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
 						<IconButton
 							onClick={handleToggleFavorite}
@@ -553,7 +544,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 					</Box>
 				)}
 
-				{/* Mobile Series Selector */}
 				{isMobile && (
 					<Tabs
 						value={activeSeries}
@@ -587,7 +577,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 					</Tabs>
 				)}
 
-				{/* Metric summary cards */}
 				<Box
 					sx={{
 						display: 'grid',
@@ -597,14 +586,7 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 					}}
 				>
 					{metricCards.map((m) => {
-						// On mobile, show only the selected series metric + default ones if needed, or just show all in a stack?
-						// The request says "Se houver mais de uma linha: Exibir apenas uma por vez".
-						// But for KPI cards, it's useful to see context.
-						// Let's filtering matching cards to handle screen space if needed.
-						// However, metric cards are valuable summary.
-						// Let's keep them all but ensure they stack nicely (handled by grid).
-						// Optionally highlight the active one.
-						if (isMobile && m.key !== 'saldo_dia' && m.key !== activeSeries) return null; // Experimental: show only active + saldo do dia
+						if (isMobile && m.key !== 'saldo_dia' && m.key !== activeSeries) return null;
 
 						return (
 							<Box
@@ -640,8 +622,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 						);
 					})}
 				</Box>
-
-				{/* Chart */}
 				{filteredData.length === 0 ? (
 					<Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
 						<Typography color="text.secondary">
@@ -659,7 +639,6 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 					</Box>
 				)}
 
-				{/* Footer info */}
 				<Box sx={{ mt: 1, textAlign: 'right' }}>
 					<Typography
 						variant="caption"

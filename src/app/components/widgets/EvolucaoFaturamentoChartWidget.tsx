@@ -33,14 +33,11 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 	const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
-	// Mobile Series Toggle
 	const [activeSeries, setActiveSeries] = useState<string>('pago');
 
-	// Year Filter Menu
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
 
-	// Tabs State
 	const [tabIndex, setTabIndex] = useState(0);
 
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -60,20 +57,17 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 		handleCloseMenu();
 	};
 
-	// Generate last 5 years for filter
 	const availableYears = useMemo(() => {
 		const currentYear = new Date().getFullYear();
 		return Array.from({ length: 5 }, (_, i) => currentYear - i);
 	}, []);
 
-	// Data Fetching
 	const { data: vencimentoData, isLoading: isLoadingVencimento } = useEvolucaoFaturamento(selectedYear);
 	const { data: competenciaData, isLoading: isLoadingCompetencia } = useEvolucaoFaturamentoReferencia(selectedYear);
 
 	const chartData = tabIndex === 0 ? vencimentoData : competenciaData;
 	const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
 
-	// Favorite Logic
 	const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 	const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -88,17 +82,14 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 		);
 	};
 
-	// 1. Process Raw Data
 	const rawData = useMemo(() => {
 		if (!chartData?.meses) return { dates: [], series: [] };
 
 		const sortedData = [...chartData.meses].sort((a, b) => a.mes - b.mes);
 
-		// Convert month numbers to dates (using current year or selected year)
-		// We treat the "mes" field as 1-12. Construct a dummy date YYYY-MM-01
 		const dates = sortedData.map((item) => {
 			const d = new Date(selectedYear, item.mes - 1, 1);
-			return d.toISOString().split('T')[0]; // YYYY-MM-DD
+			return d.toISOString().split('T')[0];
 		});
 
 		const seriesList: SeriesData[] = [
@@ -114,7 +105,6 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 		return { dates, series: seriesList };
 	}, [chartData, selectedYear]);
 
-	// 2. Aggregate Data using Hook (even for monthly data to handle layout/interactions consistently)
 	const aggregatedData = useChartDataAggregation({
 		dates: rawData.dates,
 		series: rawData.series,
@@ -122,7 +112,6 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 		maxPoints: 12
 	});
 
-	// 3. Filter Series for Mobile
 	const finalSeries = useMemo(() => {
 		if (!isMobile) return aggregatedData.series;
 
@@ -265,7 +254,6 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 			<Box className="flex items-center justify-between px-6 py-4 border-b">
 				<Typography className="text-lg font-semibold truncate text-primary">Evolução do Faturamento</Typography>
 				<Box className="flex items-center gap-2">
-					{/* Year Filter */}
 					<Tooltip title="Filtrar por ano">
 						<Button
 							size="small"
@@ -307,8 +295,6 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 							</MenuItem>
 						))}
 					</Menu>
-
-					{/* Favorite Toggle */}
 					<Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
 						<IconButton
 							onClick={handleToggleFavorite}
@@ -325,7 +311,6 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 				</Box>
 			</Box>
 
-			{/* Tabs */}
 			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
 				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="evolucao faturamento tabs">
 					<Tab label="Por Vencimento" />
@@ -337,7 +322,6 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 				className="p-6"
 				sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}
 			>
-				{/* Mobile Series Selector */}
 				{isMobile && (
 					<Tabs
 						value={activeSeries}

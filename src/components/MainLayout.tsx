@@ -20,7 +20,7 @@ function MainLayout({
 	footer,
 	leftSidePanel,
 	rightSidePanel,
-	settings = {}, // Default to an empty object if settings is undefined
+	settings = {},
 	...rest
 }: MainLayoutProps) {
 	const mergedSettings = useMemo(() => {

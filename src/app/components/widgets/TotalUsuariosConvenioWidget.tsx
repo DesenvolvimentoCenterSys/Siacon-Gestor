@@ -66,14 +66,12 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  // Filter State
   const [filterDate, setFilterDate] = useState<Date>(new Date());
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -117,10 +115,8 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
     return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
-  // Data Fetching
   const { data: widgetData, isLoading } = useTotalUsuariosConvenio(apiDate);
 
-  // Favorite Logic
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -156,7 +152,6 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
   return (
     <Card elevation={0} sx={{ height: '100%', overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <CardContent sx={{ p: 0, height: '100%', display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
         <Box sx={{ p: { xs: 2, md: 3 }, pb: 2, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: `1px solid ${theme.palette.divider}`, gap: 1, flexWrap: 'wrap' }}>
           <Box>
             <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
@@ -168,7 +163,6 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {/* Filter Button */}
             <Button
               size="small"
               variant="outlined"
@@ -180,7 +174,7 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
                 textTransform: 'none',
                 color: 'text.secondary',
                 borderColor: 'divider',
-                minHeight: 44 // Touch target
+                minHeight: 44
               }}
             >
               {getFilterLabel()}
@@ -196,7 +190,6 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
           </Box>
         </Box>
 
-        {/* Summary Cards */}
         <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 2, flexWrap: 'wrap', bgcolor: alpha(theme.palette.background.default, 0.5) }}>
           <SummaryCard
             title="Consolidado Geral"
@@ -220,7 +213,6 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
 
         <Divider />
 
-        {/* Table/List */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 0 }}>
           <TableContainer>
             <Table size="small" stickyHeader>
@@ -306,7 +298,6 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
           </TableContainer>
         </Box>
 
-        {/* Filter Menu */}
         <Menu
           anchorEl={anchorEl}
           open={openMenu}
@@ -351,7 +342,6 @@ export function TotalUsuariosConvenioWidget({ initialIsFavorite = false }: Total
           </MenuItem>
         </Menu>
 
-        {/* Custom Date Picker Dialog */}
         <Dialog
           open={datePickerOpen}
           onClose={handleDatePickerClose}

@@ -28,7 +28,6 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -46,7 +45,7 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
     const newDate = new Date();
     newDate.setMonth(newDate.getMonth() - monthsAgo);
     setFilterDate(newDate);
-    setRefetchCounter(prev => prev + 1); // Force refetch
+    setRefetchCounter(prev => prev + 1);
     handleCloseMenu();
   };
 
@@ -63,20 +62,17 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
   const handleDatePickerConfirm = () => {
     if (tempDate) {
       setFilterDate(tempDate);
-      setRefetchCounter(prev => prev + 1); // Force refetch
+      setRefetchCounter(prev => prev + 1);
     }
     setDatePickerOpen(false);
   };
 
-  // Sync tempDate with filterDate when it changes
   useEffect(() => {
     setTempDate(filterDate);
   }, [filterDate]);
 
-  // Data Fetching - include counter in key to force refetch
   const { data: chartData, isLoading } = useClientesPorFaixaEtaria(apiDate + `-${refetchCounter}`);
 
-  // Favorite Logic
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -114,20 +110,20 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
       bar: {
         borderRadius: 4,
         columnWidth: '40%',
-        distributed: true // Use different colors for each bar
+        distributed: true
       }
     },
     colors: [
-      '#BBDEFB', // Blue 100
-      '#90CAF9', // Blue 200
-      '#64B5F6', // Blue 300
-      '#42A5F5', // Blue 400
-      '#2196F3', // Blue 500
-      '#1E88E5', // Blue 600
-      '#1976D2', // Blue 700
-      '#1565C0', // Blue 800
-      '#0D47A1', // Blue 900
-      '#01579B', // Light Blue 900 (Deep rich blue)
+      '#BBDEFB',
+      '#90CAF9',
+      '#64B5F6',
+      '#42A5F5',
+      '#2196F3',
+      '#1E88E5',
+      '#1976D2',
+      '#1565C0',
+      '#0D47A1',
+      '#01579B',
     ],
     dataLabels: {
       enabled: false
@@ -159,7 +155,7 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
       }
     },
     legend: {
-      show: false // Hide legend as bars are labeled on x-axis
+      show: false
     },
     fill: {
       type: 'gradient',
@@ -167,7 +163,6 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
         shade: 'light',
         type: 'vertical',
         shadeIntensity: 0.5,
-        // gradientToColors: removed to allow intrinsic color gradients
         inverseColors: true,
         opacityFrom: 0.85,
         opacityTo: 0.85,
@@ -181,7 +176,6 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
   return (
     <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
       <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
         <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
           <Box>
             <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
@@ -193,13 +187,11 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-            {/* Filter */}
             <Tooltip title="Filtrar por data">
               <IconButton onClick={handleClickMenu} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
                 <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
               </IconButton>
             </Tooltip>
-            {/* Favorite */}
             <IconButton onClick={handleToggleFavorite} size="small" sx={{ minWidth: 44, minHeight: 44 }}>
               <FuseSvgIcon sx={{ color: isFavorite ? '#FFD700' : 'action.disabled' }} size={20}>
                 {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
@@ -208,7 +200,6 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
           </Box>
         </Box>
 
-        {/* Content */}
         <Box sx={{ flexGrow: 1, p: { xs: 2, md: 3 }, minHeight: 300 }}>
           <ReactApexChart
             options={chartOptions}
@@ -218,7 +209,6 @@ export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChart
           />
         </Box>
 
-        {/* Menu & Dialog */}
         <Menu
           anchorEl={anchorEl}
           open={openMenu}

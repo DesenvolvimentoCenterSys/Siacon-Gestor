@@ -33,13 +33,10 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Tab State
   const [tabValue, setTabValue] = useState(0);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -83,16 +80,13 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     setTempDate(filterDate);
   }, [filterDate]);
 
-  // Data Fetching
   const { data: conveniosData, isLoading } = useVidasPorConvenio(apiDate);
 
-  // Derive backend status
   const backendIsFavorite = useMemo(() => {
     if (!favoriteWidgets) return initialIsFavorite;
     return favoriteWidgets.some((w: any) => w.dashboardWidgetId === widgetId && w.isFavorite);
   }, [favoriteWidgets, widgetId, initialIsFavorite]);
 
-  // Local state initialized with backend status
   const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(null);
   const isFavorite = optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
 
@@ -119,34 +113,26 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     );
   };
 
-  // --- DATA FILTERING & PREPARATION ---
 
-  // 1. Overview Filtering (Total > 0)
   const vidasPFData = useMemo(() => conveniosData?.filter(c => c.quantidadeVidasPF > 0) || [], [conveniosData]);
   const empresasData = useMemo(() => conveniosData?.filter(c => c.quantidadeEmpresas > 0) || [], [conveniosData]);
 
-  // 2. Crescimento Filtering (Difference != 0)
   const crescimentoPFData = useMemo(() => conveniosData?.filter(c => c.diferencaVidasPF !== 0) || [], [conveniosData]);
   const crescimentoEmpresasData = useMemo(() => conveniosData?.filter(c => c.diferencaEmpresas !== 0) || [], [conveniosData]);
 
-  // --- CHARTS CONFIGURATION ---
-
-  // Blue Palettes
   const bluePalettePF = [
     '#90CAF9', '#64B5F6', '#42A5F5', '#2196F3', '#1E88E5', '#1976D2', '#1565C0', '#0D47A1'
-  ]; // Light to Medium Blue
+  ];
 
   const bluePaletteEmpresas = [
     '#81D4FA', '#4FC3F7', '#29B6F6', '#039BE5', '#0288D1', '#0277BD', '#01579B'
-  ]; // Cyan/Light Blue to Deep Blue (Distinct tone)
+  ];
 
-  // Chart 1A: Overview - Vidas PF
   const overviewVidasPFSeries = useMemo(() => [{
     name: 'Vidas PF',
     data: vidasPFData.map(c => c.quantidadeVidasPF)
   }], [vidasPFData]);
 
-  // Chart 1B: Overview - Empresas
   const overviewEmpresasSeries = useMemo(() => [{
     name: 'Empresas',
     data: empresasData.map(c => c.quantidadeEmpresas)
@@ -159,7 +145,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         horizontal: true,
         borderRadius: 4,
         barHeight: '60%',
-        distributed: true, // Enable distributed colors like the example
+        distributed: true,
         dataLabels: { position: 'right' }
       }
     },
@@ -167,7 +153,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       type: 'gradient',
       gradient: {
         shade: 'light',
-        type: 'horizontal', // Horizontal for horizontal bars
+        type: 'horizontal',
         shadeIntensity: 0.5,
         inverseColors: true,
         opacityFrom: 0.85,
@@ -200,7 +186,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
       padding: { top: 0, right: 0, bottom: 0, left: 10 }
     },
     stroke: { show: false },
-    legend: { show: false } // Hide legend for distributed
+    legend: { show: false }
   };
 
   const overviewVidasPFOptions: ApexOptions = {
@@ -223,13 +209,11 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     tooltip: { y: { formatter: (val) => `${val.toLocaleString('pt-BR')} Empresas` } }
   };
 
-  // Chart 2A: Crescimento PF
   const crescimentoPFSeries = useMemo(() => [{
     name: 'Diferença Vidas PF',
     data: crescimentoPFData.map(c => c.diferencaVidasPF)
   }], [crescimentoPFData]);
 
-  // Chart 2B: Crescimento Empresas
   const crescimentoEmpresasSeries = useMemo(() => [{
     name: 'Diferença Empresas',
     data: crescimentoEmpresasData.map(c => c.diferencaEmpresas)
@@ -245,7 +229,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         colors: {
           ranges: [
             { from: -10000, to: -0.01, color: theme.palette.error.main },
-            { from: 0.01, to: 10000, color: theme.palette.info.main }, // Blue for positive
+            { from: 0.01, to: 10000, color: theme.palette.info.main },
             { from: -0.0001, to: 0.0001, color: theme.palette.text.disabled }
           ]
         }
@@ -310,7 +294,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     }
   };
 
-  // Chart 3: Tendência
   const conveniosComMudancaSignificativa = useMemo(() => {
     if (!conveniosData) return [];
     const THRESHOLD_VIDAS_PF = 10;
@@ -349,7 +332,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
 
   const tendenciaOptions: ApexOptions = {
     chart: { type: 'line', fontFamily: 'inherit', toolbar: { show: false }, zoom: { enabled: false } },
-    stroke: { width: 3, curve: 'smooth' }, // Smoother line
+    stroke: { width: 3, curve: 'smooth' },
     xaxis: {
       categories: ['Anterior', 'Atual'],
       labels: { style: { colors: theme.palette.text.secondary, fontSize: '13px', fontWeight: 600 } }
@@ -364,18 +347,18 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
     },
     markers: { size: 6, hover: { size: 8 } },
     colors: [
-      '#2196F3', // Blue
-      '#9C27B0', // Purple
-      '#4CAF50', // Green
-      '#FF9800', // Orange
-      '#F44336', // Red
-      '#00BCD4', // Cyan
-      '#E91E63', // Pink
-      '#8BC34A', // Light Green
-      '#FF5722', // Deep Orange
-      '#673AB7', // Deep Purple
-      '#009688', // Teal
-      '#FFC107', // Amber
+      '#2196F3',
+      '#9C27B0',
+      '#4CAF50',
+      '#FF9800',
+      '#F44336',
+      '#00BCD4',
+      '#E91E63',
+      '#8BC34A',
+      '#FF5722',
+      '#673AB7',
+      '#009688',
+      '#FFC107',
     ]
   };
 
@@ -384,7 +367,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
   return (
     <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}`, display: 'flex', flexDirection: 'column' }}>
       <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
-        {/* Header */}
         <Box sx={{
           p: { xs: 2, md: 3 },
           pb: 2,
@@ -424,7 +406,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
           </Box>
         </Box>
 
-        {/* Tabs */}
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -456,9 +437,7 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
           <Tab label="Painel" />
         </Tabs>
 
-        {/* Content */}
         <Box sx={{ flex: 1, overflow: 'auto', p: 0, display: 'flex', flexDirection: 'column' }}>
-          {/* Tab 0: Overview - Vidas PF */}
           {tabValue === 0 && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1.5, md: 3 }, minHeight: { xs: 300, md: 400 } }}>
               {vidasPFData && vidasPFData.length > 0 ? (
@@ -473,7 +452,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
             </Box>
           )}
 
-          {/* Tab 1: Overview - Empresas */}
           {tabValue === 1 && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1.5, md: 3 }, minHeight: { xs: 300, md: 400 } }}>
               {empresasData && empresasData.length > 0 ? (
@@ -488,7 +466,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
             </Box>
           )}
 
-          {/* Tab 2: Crescimento - Vidas PF */}
           {tabValue === 2 && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1.5, md: 3 }, minHeight: { xs: 300, md: 400 } }}>
               {crescimentoPFData && crescimentoPFData.length > 0 ? (
@@ -503,7 +480,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
             </Box>
           )}
 
-          {/* Tab 3: Crescimento - Empresas */}
           {tabValue === 3 && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1.5, md: 3 }, minHeight: { xs: 300, md: 400 } }}>
               {crescimentoEmpresasData && crescimentoEmpresasData.length > 0 ? (
@@ -518,7 +494,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
             </Box>
           )}
 
-          {/* Tab 4: Tendência */}
           {tabValue === 4 && (
             <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 1.5, md: 3 }, minHeight: { xs: 300, md: 400 } }}>
               {conveniosComMudancaSignificativa && conveniosComMudancaSignificativa.length > 0 ? (
@@ -534,7 +509,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
             </Box>
           )}
 
-          {/* Tab 5: Painel */}
           {tabValue === 5 && conveniosData && (
             <Box sx={{ p: { xs: 2, md: 3 }, display: 'flex', flexDirection: 'column', gap: { xs: 1.5, md: 2 } }}>
               {conveniosData.map((convenio) => (
@@ -570,7 +544,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         </Box>
       </CardContent>
 
-      {/* Menu Date Picker */}
       <Menu anchorEl={anchorEl} open={openMenu} onClose={handleCloseMenu}>
         <MenuItem onClick={() => handleSelectMonth(0)}>
           <ListItemIcon><FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon></ListItemIcon>
@@ -587,7 +560,6 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
         </MenuItem>
       </Menu>
 
-      {/* Dialog Date Picker */}
       <Dialog
         open={datePickerOpen}
         onClose={handleDatePickerClose}

@@ -26,9 +26,6 @@ type AppProps = {
 	children?: React.ReactNode;
 };
 
-/**
- * The main App component.
- */
 function App(props: AppProps) {
 	const { children } = props;
 	const val = useMemo(() => ({}), []);
@@ -36,24 +33,20 @@ function App(props: AppProps) {
 	return (
 		<ErrorBoundary>
 			<AppContext.Provider value={val}>
-				{/* Date Picker Localization Provider */}
 				<LocalizationProvider
 					dateAdapter={AdapterDateFns}
 					adapterLocale={enUS}
 				>
 					<QueryClientProvider client={queryClient}>
-						{/* Redux Store Provider */}
 						<Provider store={store}>
 							<FuseSettingsProvider>
 								<I18nProvider>
-									{/* Theme Provider */}
 									<MainThemeProvider>
 										<NavigationProvider>
 											<NavbarProvider>
 												<QuickPanelProvider>
 													<FuseDialogProvider>
 														<FuseMessageProvider>
-															{/* Notistack Notification Provider */}
 															<SnackbarProvider
 																maxSnack={5}
 																anchorOrigin={{

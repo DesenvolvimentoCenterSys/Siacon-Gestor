@@ -20,14 +20,12 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  // Filter State
   const [filterDate, setFilterDate] = useState<Date>(new Date());
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
@@ -71,10 +69,8 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
     return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
-  // Data Fetching
   const { data: widgetData, isLoading } = useDependentesTitularesCount(apiDate);
 
-  // Favorite Logic
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
   const handleToggleFavorite = (e: React.MouseEvent) => {
@@ -99,7 +95,6 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
     dependentesGrowth: 0
   };
 
-  // KPI Card Styling (Blue Theme matching Taxa de Utilização)
   const gradientColors = [theme.palette.info.main, theme.palette.info.dark];
 
   return (
@@ -119,7 +114,6 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
       elevation={3}
     >
       <CardContent sx={{ position: 'relative', zIndex: 1, p: { xs: 2, sm: 3 } }}>
-        {/* Header with actions */}
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
           <Box sx={{ flex: 1 }}>
             <Typography
@@ -133,8 +127,6 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
             >
               Titulares vs Dependentes
             </Typography>
-
-            {/* Elegant Filter Button */}
             <Tooltip title="Alterar período" placement="top">
               <Box
                 onClick={(e: any) => handleClickMenu(e)}
@@ -205,9 +197,7 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
           </Box>
         </Box>
 
-        {/* Content Section (2 Columns) */}
         <Box sx={{ display: 'flex', gap: 4 }}>
-          {/* Titulares */}
           <Box>
             <Typography variant="caption" sx={{ opacity: 0.8, fontSize: '0.9rem', fontWeight: 500 }}>
               Titulares
@@ -244,10 +234,7 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
             </Box>
           </Box>
 
-          {/* Divider */}
           <Box sx={{ width: '1px', bgcolor: alpha('#ffffff', 0.2) }} />
-
-          {/* Dependentes */}
           <Box>
             <Typography variant="caption" sx={{ opacity: 0.8, fontSize: '0.9rem', fontWeight: 500 }}>
               Dependentes
@@ -285,7 +272,6 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
           </Box>
         </Box>
 
-        {/* Filter Menu */}
         <Menu
           anchorEl={anchorEl}
           open={openMenu}
@@ -329,8 +315,6 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
             <ListItemText>Selecionar data...</ListItemText>
           </MenuItem>
         </Menu>
-
-        {/* Custom Date Picker Dialog */}
         <Dialog
           open={datePickerOpen}
           onClose={handleDatePickerClose}
@@ -373,8 +357,6 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
         </Dialog>
 
       </CardContent>
-
-      {/* Background decoration */}
       <Box
         sx={{
           position: 'absolute',

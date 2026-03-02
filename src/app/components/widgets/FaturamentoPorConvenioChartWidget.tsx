@@ -25,11 +25,9 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
     endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
   });
 
-  // Filter Menu State
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
 
-  // Tab State
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -44,7 +42,6 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
     setAnchorEl(null);
   };
 
-  // Date Picker State
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(new Date());
 
@@ -55,8 +52,6 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
 
   const handleDatePickerClose = () => {
     setDatePickerOpen(false);
-    // Note: To parse YYYY-MM-DD reliably assuming local timezone at midnight,
-    // new Date(`${dateRange.startDate}T00:00:00`) is safer, but new Date() is fine for temp state if it fails.
     setTempDate(new Date(`${dateRange.startDate}T00:00:00`));
   };
 
@@ -82,14 +77,12 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
     handleCloseMenu();
   };
 
-  // Data Fetching
   const { data: vencimentoData, isLoading: isVencimentoLoading } = useFaturamentoPorConvenio(dateRange.startDate, dateRange.endDate);
   const { data: competenciaData, isLoading: isCompetenciaLoading } = useFaturamentoPorConvenioReferencia(dateRange.startDate, dateRange.endDate);
 
   const chartData = tabIndex === 0 ? vencimentoData : competenciaData;
   const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
 
-  // Favorite Logic
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -103,7 +96,6 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
     );
   };
 
-  // Sort data by value (descending)
   const sortedData = useMemo(() => {
     if (!chartData) return [];
     return [...chartData].sort((a, b) => b.valorTotalFaturado - a.valorTotalFaturado);
@@ -134,21 +126,21 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
       bar: {
         borderRadius: 4,
         columnWidth: '40%',
-        distributed: true, // Use different colors for each bar
-        horizontal: true // Horizontal columns (Bar Chart)
+        distributed: true,
+        horizontal: true
       }
     },
     colors: [
-      '#BBDEFB', // Blue 100
-      '#90CAF9', // Blue 200
-      '#64B5F6', // Blue 300
-      '#42A5F5', // Blue 400
-      '#2196F3', // Blue 500
-      '#1E88E5', // Blue 600
-      '#1976D2', // Blue 700
-      '#1565C0', // Blue 800
-      '#0D47A1', // Blue 900
-      '#01579B', // Light Blue 900 (Deep rich blue)
+      '#BBDEFB',
+      '#90CAF9',
+      '#64B5F6',
+      '#42A5F5',
+      '#2196F3',
+      '#1E88E5',
+      '#1976D2',
+      '#1565C0',
+      '#0D47A1',
+      '#01579B',
     ],
     dataLabels: {
       enabled: false
@@ -170,7 +162,7 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
       axisBorder: { show: false },
       axisTicks: { show: false },
       tooltip: {
-        enabled: true // Show full text on hover of the label if supported, or rely on main tooltip
+        enabled: true
       }
     },
     yaxis: {
@@ -195,7 +187,7 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
       }
     },
     legend: {
-      show: false // Hide legend as bars are labeled on x-axis
+      show: false
     },
     tooltip: {
       theme: theme.palette.mode,
@@ -285,12 +277,11 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
         <ReactApexChart
           options={chartOptions}
           series={chartSeries}
-          type="bar" // Using column chart
+          type="bar"
           height={320}
         />
       </CardContent>
 
-      {/* Custom Date Picker Dialog */}
       <Dialog
         open={datePickerOpen}
         onClose={handleDatePickerClose}

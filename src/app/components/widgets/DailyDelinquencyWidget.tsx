@@ -18,7 +18,6 @@ import {
 	Tabs,
 	Tab,
 	Dialog,
-	DialogContent,
 	DialogActions,
 	Button
 } from '@mui/material';
@@ -67,7 +66,7 @@ function getRange(preset: RangePreset): { start: Date; end: Date } {
 			return { start: startOfMonth(prev), end: endOfMonth(prev) };
 		}
 		case 'custom':
-			return { start: today, end: today }; // overwritten by state
+			return { start: today, end: today };
 		default:
 			return { start: subDays(today, 29), end: today };
 	}
@@ -78,25 +77,21 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 	const { data: user } = useUser();
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
-	// Period selector
 	const [preset, setPreset] = useState<RangePreset>('30d');
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
 
-	// Tabs State
 	const [tabIndex, setTabIndex] = useState(0);
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTabIndex(newValue);
 	};
 
-	// Custom Date Picker State
 	const [customStart, setCustomStart] = useState<Date | null>(subDays(new Date(), 30));
 	const [customEnd, setCustomEnd] = useState<Date | null>(new Date());
 	const [tempStart, setTempStart] = useState<Date | null>(customStart);
 	const [tempEnd, setTempEnd] = useState<Date | null>(customEnd);
 	const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-	// Mobile Series Toggle
 	const [activeSeries, setActiveSeries] = useState<string>('diario');
 
 	const { start, end } = useMemo(() => {
@@ -109,7 +104,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 	const apiStart = useMemo(() => format(start, 'yyyy-MM-dd'), [start]);
 	const apiEnd = useMemo(() => format(end, 'yyyy-MM-dd'), [end]);
 
-	// Data
 	const { data: vencimentoData, isLoading: isLoadingVencimento } = useDailyDelinquency(apiStart, apiEnd);
 	const { data: competenciaData, isLoading: isLoadingCompetencia } = useDailyDelinquencyReferencia(apiStart, apiEnd);
 
@@ -118,7 +112,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
 	const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-	// Favorite logic
 	const backendIsFavorite = useMemo(() => {
 		if (!favoriteWidgets) return initialIsFavorite;
 
@@ -147,11 +140,9 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 		);
 	};
 
-	// Colors — diária: azul metálico / vermelho escuro
-	const colorDiario = '#1565C0'; // azul metálico
-	const colorAcumulado = '#B71C1C'; // vermelho escuro
+	const colorDiario = '#1565C0';
+	const colorAcumulado = '#B71C1C';
 
-	// 1. Process Raw Data
 	const rawData = useMemo(() => {
 		if (!widgetData || widgetData.length === 0)
 			return { dates: [], series: [], totals: { diario: 0, acumulado: 0 } };
@@ -168,7 +159,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 		const totalAcumulado = sorted.length > 0 ? sorted[sorted.length - 1].valorAcumulado : 0;
 		const peak = sorted.reduce((max, d) => (d.valorDiario > max.valorDiario ? d : max), sorted[0]);
 		const avgDiario = totalDiario / sorted.length;
-		// Variation last 2 days
 		const last2 = sorted.slice(-2);
 		const variation =
 			last2.length === 2 && last2[0].valorDiario !== 0
@@ -182,7 +172,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 		};
 	}, [widgetData]);
 
-	// 2. Aggregate Data using Hook
 	const aggregatedData = useChartDataAggregation({
 		dates: rawData.dates,
 		series: rawData.series,
@@ -190,7 +179,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 		maxPoints: 12
 	});
 
-	// 3. Filter Series for Mobile
 	const finalSeries = useMemo(() => {
 		if (!isMobile) return aggregatedData.series;
 
@@ -351,7 +339,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 						: `linear-gradient(145deg, ${alpha(colorDiario, 0.03)} 0%, ${theme.palette.background.paper} 40%)`
 			}}
 		>
-			{/* ─── Header ─── */}
 			<Box
 				sx={{
 					display: 'flex',
@@ -386,7 +373,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 				</Box>
 
 				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-					{/* Period selector */}
 					<Tooltip title="Selecionar período">
 						<Box
 							component="button"
@@ -438,7 +424,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 						))}
 					</Menu>
 
-					{/* Favorite */}
 					<Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
 						<IconButton
 							onClick={handleToggleFavorite}
@@ -534,7 +519,6 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 							key: 'variation'
 						}
 					].map((card) => {
-						// Filter KPI cards on mobile if needed
 						if (isMobile && card.key !== activeSeries && card.key !== 'variation' && card.key !== 'peak')
 							return null;
 
