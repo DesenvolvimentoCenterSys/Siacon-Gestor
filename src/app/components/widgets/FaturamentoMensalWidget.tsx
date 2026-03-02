@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
-import { Box, Tabs, Tab } from '@mui/material';
+import { Box, Tabs, Tab, Card } from '@mui/material';
 import { KPICard } from '../../components/charts';
 import { useFaturamentoMensal, useFaturamentoMensalReferencia } from '../../hooks/useDashboard';
 import WidgetLoading from '../../components/ui/WidgetLoading';
@@ -56,20 +56,46 @@ export function FaturamentoMensalWidget({ initialIsFavorite }: FaturamentoMensal
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+    <Card
+      elevation={3}
+      sx={{
+        height: '100%',
+        p: 0,
+        background: `linear-gradient(135deg, ${kpiData.gradientColors[0]} 0%, ${kpiData.gradientColors[1]} 100%)`,
+        color: 'white',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: (theme) => theme.shadows[8],
+        },
+      }}
+    >
+      <Box sx={{ borderBottom: 1, borderColor: 'rgba(255,255,255,0.2)', bgcolor: 'rgba(0,0,0,0.1)' }}>
         <Tabs
           value={tabIndex}
           onChange={handleTabChange}
           aria-label="faturamento mensal tabs"
           variant="fullWidth"
-          sx={{ minHeight: 40, '& .MuiTab-root': { minHeight: 40, py: 0.5, fontSize: '0.8125rem' } }}
+          textColor="inherit"
+          TabIndicatorProps={{ style: { backgroundColor: 'white' } }}
+          sx={{
+            minHeight: 40,
+            '& .MuiTab-root': {
+              minHeight: 40,
+              py: 0.5,
+              fontSize: '0.8125rem',
+              color: 'rgba(255,255,255,0.7)',
+              '&.Mui-selected': { color: 'white' }
+            }
+          }}
         >
           <Tab label="Por Vencimento" />
           <Tab label="Por Competência" />
         </Tabs>
       </Box>
-      <Box sx={{ flexGrow: 1, mt: 1 }}>
+      <Box sx={{ flexGrow: 1, height: 'calc(100% - 40px)', '& .MuiCard-root': { boxShadow: 'none', background: 'transparent', height: '100%' } }}>
         <KPICard
           {...kpiData}
           value={kpiData.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
@@ -79,6 +105,6 @@ export function FaturamentoMensalWidget({ initialIsFavorite }: FaturamentoMensal
           initialIsFavorite={initialIsFavorite}
         />
       </Box>
-    </Box>
+    </Card>
   );
 }
