@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -31,14 +32,27 @@ export function EvolucaoFaturamentoChartWidget({ initialIsFavorite = false }: Ev
 	const theme = useTheme();
 	const { data: user } = useUser();
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
-	const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+	const [selectedYear, setSelectedYear] = useSessionUrlFilter<number>(
+		'financeiro_evo_fat_year',
+		new Date().getFullYear(),
+		String,
+		Number
+	);
 
-	const [activeSeries, setActiveSeries] = useState<string>('pago');
+	const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
+		'financeiro_evo_fat_activeSeries',
+		'pago'
+	);
+
+	const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+		'financeiro_evo_fat_tabIndex',
+		0,
+		String,
+		Number
+	);
 
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
-
-	const [tabIndex, setTabIndex] = useState(0);
 
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTabIndex(newValue);

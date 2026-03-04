@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -41,7 +42,14 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 
 	const currentYear = new Date().getFullYear();
 	const availableYears = useMemo(() => Array.from({ length: 5 }, (_, i) => currentYear - i), [currentYear]);
-	const [selectedYear, setSelectedYear] = useState<number>(currentYear);
+
+	const [selectedYear, setSelectedYear] = useSessionUrlFilter<number>(
+		'inadimplencia_acc_selectedYear',
+		currentYear,
+		String,
+		Number
+	);
+
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
 
@@ -52,7 +60,13 @@ export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: Accu
 		handleCloseMenu();
 	};
 
-	const [tabIndex, setTabIndex] = useState(0);
+	const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+		'inadimplencia_acc_tabIndex',
+		0,
+		String,
+		Number
+	);
+
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTabIndex(newValue);
 	};

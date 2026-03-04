@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import {
 	Card,
@@ -79,10 +80,25 @@ export function CashFlowEvolutionWidget({ initialIsFavorite = false }: CashFlowE
 	const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
-	const [startDate, setStartDate] = useState<Date>(startOfMonth(new Date()));
-	const [endDate, setEndDate] = useState<Date>(endOfMonth(new Date()));
+	// Session + URL state para persistir filtros
+	const [startDate, setStartDate] = useSessionUrlFilter<Date>(
+		'caixa_startDate',
+		startOfMonth(new Date()),
+		(d) => d.toISOString(),
+		(s) => new Date(s)
+	);
 
-	const [activeSeries, setActiveSeries] = useState<string>('entradas');
+	const [endDate, setEndDate] = useSessionUrlFilter<Date>(
+		'caixa_endDate',
+		endOfMonth(new Date()),
+		(d) => d.toISOString(),
+		(s) => new Date(s)
+	);
+
+	const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
+		'caixa_activeSeries',
+		'entradas'
+	);
 
 	const apiStartDate = useMemo(() => format(startDate, 'yyyy-MM-dd'), [startDate]);
 	const apiEndDate = useMemo(() => format(endDate, 'yyyy-MM-dd'), [endDate]);

@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
@@ -20,7 +21,12 @@ export function DependentesTitularesWidget({ initialIsFavorite = false }: Depend
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  const [filterDate, setFilterDate] = useState<Date>(new Date());
+  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+    'convenios_dep_filterDate',
+    new Date(),
+    (d) => d.toISOString(),
+    (s) => new Date(s)
+  );
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');

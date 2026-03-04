@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -48,9 +49,20 @@ export function NovasCadastroPainelWidget({ initialIsFavorite = false }: NovasCa
   const { data: user } = useUser();
 
   const [monthOptions, setMonthOptions] = useState(() => buildMonthOptions());
-  const [selectedMonth, setSelectedMonth] = useState(0);
 
-  const [customDate, setCustomDate] = useState<Date | null>(new Date());
+  const [selectedMonth, setSelectedMonth] = useSessionUrlFilter<number>(
+    'pessoas_cad_novas_painel_selectedMonth',
+    0,
+    String,
+    Number
+  );
+
+  const [customDate, setCustomDate] = useSessionUrlFilter<Date | null>(
+    'pessoas_cad_novas_painel_customDate',
+    new Date(),
+    (d) => (d ? d.toISOString() : ''),
+    (s) => (s ? new Date(s) : null)
+  );
   const [tempDate, setTempDate] = useState<Date | null>(customDate);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 

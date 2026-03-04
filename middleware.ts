@@ -26,7 +26,7 @@ export default auth((req) => {
   // Usuário não autenticado tentando acessar rota protegida
   if (!isAuthenticated) {
     const signInUrl = new URL('/sign-in', nextUrl);
-    signInUrl.searchParams.set('callbackUrl', nextUrl.pathname);
+    signInUrl.searchParams.set('callbackUrl', nextUrl.pathname + nextUrl.search);
     return NextResponse.redirect(signInUrl);
   }
 

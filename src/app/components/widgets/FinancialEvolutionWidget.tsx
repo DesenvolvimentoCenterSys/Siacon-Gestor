@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -48,19 +49,36 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 	const { data: user } = useUser();
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
-	// Filter state
-	const [filterDate, setFilterDate] = useState<Date>(new Date());
+	// Session + URL state para persistir filtros
+	const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+		'bancos_filterDate',
+		new Date(),
+		(d) => d.toISOString(),
+		(s) => new Date(s)
+	);
+
+	const [selectedBank, setSelectedBank] = useSessionUrlFilter<string>(
+		'bancos_selectedBank',
+		'Todos'
+	);
+
+	const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
+		'bancos_activeSeries',
+		'receber'
+	);
+
+	const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+		'bancos_tabIndex',
+		0,
+		String,
+		Number
+	);
+
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
 	const [datePickerOpen, setDatePickerOpen] = useState(false);
 	const [tempDate, setTempDate] = useState<Date>(filterDate);
-	const [selectedBank, setSelectedBank] = useState<string>('Todos');
 
-	// Mobile Series Toggle
-	const [activeSeries, setActiveSeries] = useState<string>('receber');
-
-	// Tab State
-	const [tabIndex, setTabIndex] = useState(0);
 
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTabIndex(newValue);

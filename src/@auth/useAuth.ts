@@ -73,7 +73,13 @@ export function useAuth() {
       return result;
     },
     onSuccess: () => {
-      router.push('/');
+      if (typeof window !== 'undefined') {
+        const urlParams = new URLSearchParams(window.location.search);
+        const callbackUrl = urlParams.get('callbackUrl') || '/';
+        router.push(callbackUrl);
+      } else {
+        router.push('/');
+      }
       router.refresh();
     }
   });

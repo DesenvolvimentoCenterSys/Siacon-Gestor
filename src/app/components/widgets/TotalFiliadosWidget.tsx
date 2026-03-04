@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -20,7 +21,13 @@ interface TotalFiliadosWidgetProps {
 export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliadosWidgetProps) {
   const theme = useTheme();
   const { data: user } = useUser();
-  const [filterDate, setFilterDate] = useState<Date>(new Date());
+  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+    'pessoas_assoc_filiados_filterDate',
+    new Date(),
+    (d) => d.toISOString(),
+    (s) => new Date(s)
+  );
+
   const [refetchCounter, setRefetchCounter] = useState(0);
   const widgetId = 14;
 
@@ -28,7 +35,13 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useSessionUrlFilter<number>(
+    'pessoas_assoc_filiados_tabValue',
+    0,
+    String,
+    Number
+  );
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };

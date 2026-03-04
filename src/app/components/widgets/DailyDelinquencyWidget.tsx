@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -77,22 +78,47 @@ export function DailyDelinquencyWidget({ initialIsFavorite = false }: DailyDelin
 	const { data: user } = useUser();
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
-	const [preset, setPreset] = useState<RangePreset>('30d');
+	const [preset, setPreset] = useSessionUrlFilter<RangePreset>(
+		'inadimplencia_daily_preset',
+		'30d'
+	);
+
 	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 	const openMenu = Boolean(anchorEl);
 
-	const [tabIndex, setTabIndex] = useState(0);
+	const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+		'inadimplencia_daily_tabIndex',
+		0,
+		String,
+		Number
+	);
+
 	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
 		setTabIndex(newValue);
 	};
 
-	const [customStart, setCustomStart] = useState<Date | null>(subDays(new Date(), 30));
-	const [customEnd, setCustomEnd] = useState<Date | null>(new Date());
+	const [customStart, setCustomStart] = useSessionUrlFilter<Date | null>(
+		'inadimplencia_daily_customStart',
+		subDays(new Date(), 30),
+		(d) => (d ? d.toISOString() : ''),
+		(s) => (s ? new Date(s) : null)
+	);
+
+	const [customEnd, setCustomEnd] = useSessionUrlFilter<Date | null>(
+		'inadimplencia_daily_customEnd',
+		new Date(),
+		(d) => (d ? d.toISOString() : ''),
+		(s) => (s ? new Date(s) : null)
+	);
+
 	const [tempStart, setTempStart] = useState<Date | null>(customStart);
 	const [tempEnd, setTempEnd] = useState<Date | null>(customEnd);
 	const [datePickerOpen, setDatePickerOpen] = useState(false);
 
-	const [activeSeries, setActiveSeries] = useState<string>('diario');
+	const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
+		'inadimplencia_daily_activeSeries',
+		'diario'
+	);
 
 	const { start, end } = useMemo(() => {
 		if (preset === 'custom') {

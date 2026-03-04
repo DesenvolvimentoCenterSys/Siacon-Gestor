@@ -1,6 +1,7 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -41,7 +42,13 @@ export function DelinquencyAgingWidget({ initialIsFavorite = false }: Delinquenc
   const { data: user } = useUser();
 
   // Tabs State
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+    'inadimplencia_aging_tabIndex',
+    0,
+    String,
+    Number
+  );
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };

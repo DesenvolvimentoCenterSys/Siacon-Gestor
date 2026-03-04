@@ -1,4 +1,5 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -20,15 +21,31 @@ interface FaturamentoPorConvenioChartWidgetProps {
 export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }: FaturamentoPorConvenioChartWidgetProps) {
   const theme = useTheme();
   const { data: user } = useUser();
-  const [dateRange, setDateRange] = useState({
-    startDate: format(startOfMonth(new Date()), 'yyyy-MM-dd'),
-    endDate: format(endOfMonth(new Date()), 'yyyy-MM-dd')
-  });
+  const [startDate, setStartDate] = useSessionUrlFilter<string>(
+    'financeiro_fat_conv_start',
+    format(startOfMonth(new Date()), 'yyyy-MM-dd')
+  );
+
+  const [endDate, setEndDate] = useSessionUrlFilter<string>(
+    'financeiro_fat_conv_end',
+    format(endOfMonth(new Date()), 'yyyy-MM-dd')
+  );
+
+  const dateRange = { startDate, endDate };
+  const setDateRange = (range: { startDate: string, endDate: string }) => {
+    setStartDate(range.startDate);
+    setEndDate(range.endDate);
+  };
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
 
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+    'financeiro_fat_conv_tabIndex',
+    0,
+    String,
+    Number
+  );
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

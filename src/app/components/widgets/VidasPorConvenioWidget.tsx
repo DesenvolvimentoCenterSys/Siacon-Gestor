@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useMediaQuery } from '@mui/material';
 import ReactApexChart from 'react-apexcharts';
@@ -26,14 +27,26 @@ export function VidasPorConvenioWidget({ initialIsFavorite = false }: VidasPorCo
   const toggleFavoriteMutation = useToggleFavoriteWidget();
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const widgetId = 10;
-  const [filterDate, setFilterDate] = useState<Date>(new Date());
+  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+    'pessoas_ben_vidas_conv_filterDate',
+    new Date(),
+    (d) => d.toISOString(),
+    (s) => new Date(s)
+  );
+
   const [refetchCounter, setRefetchCounter] = useState(0);
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useSessionUrlFilter<number>(
+    'pessoas_ben_vidas_conv_tabValue',
+    0,
+    String,
+    Number
+  );
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };

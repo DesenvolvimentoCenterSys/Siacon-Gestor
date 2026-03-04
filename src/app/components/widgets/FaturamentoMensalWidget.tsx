@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { Box, Tabs, Tab, Card } from '@mui/material';
@@ -12,8 +13,19 @@ interface FaturamentoMensalWidgetProps {
 
 export function FaturamentoMensalWidget({ initialIsFavorite }: FaturamentoMensalWidgetProps) {
   const theme = useTheme();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [tabIndex, setTabIndex] = useState(0);
+  const [selectedDate, setSelectedDate] = useSessionUrlFilter<Date | null>(
+    'financeiro_fat_mensal_selectedDate',
+    new Date(),
+    (d) => (d ? d.toISOString() : ''),
+    (s) => (s ? new Date(s) : null)
+  );
+
+  const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+    'financeiro_fat_mensal_tabIndex',
+    0,
+    String,
+    Number
+  );
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);

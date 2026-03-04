@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
@@ -11,7 +12,12 @@ interface TotalVidasWidgetProps {
 
 export function TotalVidasWidget({ initialIsFavorite }: TotalVidasWidgetProps) {
   const theme = useTheme();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
+  const [selectedDate, setSelectedDate] = useSessionUrlFilter<Date | null>(
+    'pessoas_cad_total_vidas_selectedDate',
+    new Date(),
+    (d) => (d ? d.toISOString() : ''),
+    (s) => (s ? new Date(s) : null)
+  );
 
   const apiDate = useMemo(() => {
     if (!selectedDate) return undefined;

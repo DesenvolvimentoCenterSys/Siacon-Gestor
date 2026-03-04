@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
 import { KPICard } from '../../components/charts';
@@ -12,8 +13,17 @@ interface MensalidadeMediaWidgetProps {
 
 export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWidgetProps) {
   const theme = useTheme();
-  const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [selectedConvenio, setSelectedConvenio] = useState<string>('Todos');
+  const [selectedDate, setSelectedDate] = useSessionUrlFilter<Date | null>(
+    'financeiro_mens_media_selectedDate',
+    new Date(),
+    (d) => (d ? d.toISOString() : ''),
+    (s) => (s ? new Date(s) : null)
+  );
+
+  const [selectedConvenio, setSelectedConvenio] = useSessionUrlFilter<string>(
+    'financeiro_mens_media_convenio',
+    'Todos'
+  );
 
   const apiDate = useMemo(() => {
     if (!selectedDate) return undefined;

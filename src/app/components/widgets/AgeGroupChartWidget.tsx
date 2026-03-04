@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -21,7 +22,12 @@ interface AgeGroupChartWidgetProps {
 export function AgeGroupChartWidget({ initialIsFavorite = false }: AgeGroupChartWidgetProps) {
   const theme = useTheme();
   const { data: user } = useUser();
-  const [filterDate, setFilterDate] = useState<Date>(new Date());
+  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+    'pessoas_cad_age_group_filterDate',
+    new Date(),
+    (d) => d.toISOString(),
+    (s) => new Date(s)
+  );
   const [refetchCounter, setRefetchCounter] = useState(0);
 
   const apiDate = useMemo(() => {

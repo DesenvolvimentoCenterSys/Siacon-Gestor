@@ -1,4 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -21,14 +22,25 @@ interface GenderDonutChartWidgetProps {
 export function GenderDonutChartWidget({ initialIsFavorite = false }: GenderDonutChartWidgetProps) {
   const theme = useTheme();
   const { data: user } = useUser();
-  const [filterDate, setFilterDate] = useState<Date>(new Date());
+  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+    'pessoas_cad_gender_donut_filterDate',
+    new Date(),
+    (d) => d.toISOString(),
+    (s) => new Date(s)
+  );
   const [refetchCounter, setRefetchCounter] = useState(0);
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
   }, [filterDate]);
 
-  const [tabValue, setTabValue] = useState(0);
+  const [tabValue, setTabValue] = useSessionUrlFilter<number>(
+    'pessoas_cad_gender_donut_tabValue',
+    0,
+    String,
+    Number
+  );
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };

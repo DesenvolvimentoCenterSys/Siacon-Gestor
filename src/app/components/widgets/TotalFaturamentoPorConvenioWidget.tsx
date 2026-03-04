@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, LinearProgress, Tabs, Tab } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
@@ -66,7 +67,12 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
   const { data: user } = useUser();
   const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  const [filterDate, setFilterDate] = useState<Date>(new Date());
+  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
+    'financeiro_total_fat_conv_filterDate',
+    new Date(),
+    (d) => d.toISOString(),
+    (s) => new Date(s)
+  );
 
   const apiDate = useMemo(() => {
     return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
@@ -77,7 +83,12 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date>(filterDate);
 
-  const [tabIndex, setTabIndex] = useState(0);
+  const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+    'financeiro_total_fat_conv_tabIndex',
+    0,
+    String,
+    Number
+  );
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
