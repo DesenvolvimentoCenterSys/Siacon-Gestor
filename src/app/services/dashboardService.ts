@@ -499,7 +499,7 @@ export const dashboardService = {
     const searchParams: Record<string, string> = {};
     if (year) searchParams.year = year.toString();
 
-    return dashboardClient.get('api/DashboardFinanceiro/resumo-mensal-financeiro', {
+    return dashboardClient.get('api/dashboard/resumo-mensal-financeiro', {
       searchParams
     }).json<ResumoMensalFinanceiroDto[]>();
   }
