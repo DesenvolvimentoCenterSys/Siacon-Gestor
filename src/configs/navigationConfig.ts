@@ -82,7 +82,6 @@ const navigationConfig: FuseNavItemType[] = [
 			{
 				id: 'previsao-faturamento-vs-pagamento',
 				title: 'Previsão Faturamento VS Pagamento',
-				translate: 'Previsão Faturamento VS Pagamento',
 				type: 'item',
 				icon: 'heroicons-outline:chart-bar',
 				url: 'previsao-faturamento-vs-pagamento'
