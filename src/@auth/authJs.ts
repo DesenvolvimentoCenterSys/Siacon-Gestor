@@ -1,17 +1,22 @@
-import NextAuth from 'next-auth';
-import { User } from '@auth/user';
-import { createStorage } from 'unstorage';
-import memoryDriver from 'unstorage/drivers/memory';
-import vercelKVDriver from 'unstorage/drivers/vercel-kv';
-import { UnstorageAdapter } from '@auth/unstorage-adapter';
+import NextAuth, { CredentialsSignin } from 'next-auth';
 import type { NextAuthConfig } from 'next-auth';
 import type { Provider } from 'next-auth/providers';
 import Credentials from 'next-auth/providers/credentials';
-import Facebook from 'next-auth/providers/facebook';
-import Google from 'next-auth/providers/google';
 import { api } from '../services/api';
 
-export interface Cliente {
+/**
+ * Erro customizado para quando a conta precisa ser ativada.
+ * Estende CredentialsSignin para que o NextAuth v5 propague o código corretamente.
+ */
+class ActivationRequiredError extends CredentialsSignin {
+	code = 'activation_required';
+	message = 'Conta precisa ser ativada.';
+}
+
+/**
+ * Resposta da API de autenticação.
+ */
+export interface ClienteAuth {
 	codUsu: number;
 	cLogin: string;
 	cSenha: string;
@@ -19,133 +24,129 @@ export interface Cliente {
 	nIdPermissaoPortalVendas: number;
 }
 
-const storage = createStorage({
-	driver: process.env.VERCEL
-		? vercelKVDriver({
-			url: process.env.AUTH_KV_REST_API_URL,
-			token: process.env.AUTH_KV_REST_API_TOKEN,
-			env: false
-		})
-		: memoryDriver()
-});
+/**
+ * Token Bearer fixo para autenticação na API.
+ * TODO: substituir por token dinâmico quando backend suportar.
+ */
+const FIXED_BEARER_TOKEN =
+	'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0.YXViY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6YWIxMjM0NTY3ODkwMTIzNA';
 
 export const providers: Provider[] = [
 	Credentials({
 		name: 'Cliente',
 		credentials: {
-			email: { label: 'Email', type: 'text', placeholder: 'teste@teste.com.br' },
+			login: { label: 'Login', type: 'text' },
 			password: { label: 'Senha', type: 'password' }
 		},
 		async authorize(credentials, request) {
-			console.log('oi');
+			// Extrair origin do request
 			let origin: string | undefined;
 
 			if (typeof (request.headers as any).get === 'function') {
 				origin = (request.headers as any as Headers).get('origin') ?? undefined;
 			} else {
-				// @ts-ignore
-				const hdrs = request.headers as Record<string, string | string[] | undefined>;
+				const hdrs = request.headers as unknown as Record<string, string | string[] | undefined>;
 				const raw = hdrs.origin;
 				origin = Array.isArray(raw) ? raw[0] : raw;
 			}
 
-			console.log('[Authorize] origin extraído:', origin);
 			try {
-				const response = await api.post<Cliente>('/api/usuario/auth', credentials, {
+				const response = await api.post<ClienteAuth>('/api/usuario/auth', credentials, {
 					headers: {
 						Origin: origin,
-						Authorization: `Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0.YXViY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6YWIxMjM0NTY3ODkwMTIzNA`
+						Authorization: `Bearer ${FIXED_BEARER_TOKEN}`
 					}
 				});
+
 				const cliente = response.data;
 
-				if (cliente?.codUsu) {
-					const adaptedUser: User = {
-						id: String(cliente.codUsu),
-						email: '',
-						displayName: cliente.cLogin,
-						codFornecedor: cliente.codFornecedor,
-						nIdPermissaoPortalVendas: cliente.nIdPermissaoPortalVendas,
-						...cliente,
-						role: 'Usuário'
-					};
-					return adaptedUser;
+				if (!cliente?.codUsu) {
+					return null;
 				}
 
-				console.warn('[Authorize] sem codCliente, retornando null');
-				return null;
+				return {
+					id: String(cliente.codUsu),
+					email: '',
+					name: cliente.cLogin,
+					codUsu: cliente.codUsu,
+					cLogin: cliente.cLogin,
+					codFornecedor: cliente.codFornecedor,
+					nIdPermissaoPortalVendas: cliente.nIdPermissaoPortalVendas
+				};
 			} catch (error: any) {
-				console.error('[Authorize] erro ao chamar API:', error.response?.status, error.message);
+				console.error('[Auth] Erro na autenticação:', error.response?.status, error.message);
 
 				if (error.response?.status === 404) {
-					throw new Error('activation_required');
+					throw new ActivationRequiredError();
 				}
 
 				return null;
 			}
 		}
-	}),
-	Google,
-	Facebook
+	})
 ];
 
 const config = {
-	debug: true, // força debug do NextAuth
 	theme: { logo: '/assets/images/logo/logo.svg' },
-	adapter: UnstorageAdapter(storage),
 	pages: { signIn: '/sign-in' },
 	providers,
 	basePath: '/auth',
 	trustHost: true,
 	callbacks: {
-		authorized() {
-			console.log('[Authorized] checando autorização via middleware');
-			return true;
+		authorized({ auth: session }) {
+			// Usado pelo middleware — retorna true se autenticado
+			return !!session?.user;
 		},
-		async jwt({ token, trigger, account, user }) {
-			console.log('[JWT] trigger:', trigger, 'account:', account, 'user:', user);
-
-			if (trigger === 'update' && user) {
-				token.name = user.name;
-			}
-
-			if (account?.provider === 'keycloak') {
-				return { ...token, accessToken: account.access_token };
-			}
-
+		async jwt({ token, trigger, user, session: updateData }) {
+			// Login inicial — injeta dados do cliente no token
 			if (user) {
-				token.cliente = user;
+				token.codUsu = (user as any).codUsu;
+				token.cLogin = (user as any).cLogin;
+				token.codFornecedor = (user as any).codFornecedor;
+				token.nIdPermissaoPortalVendas = (user as any).nIdPermissaoPortalVendas;
+				token.role = ['usuário'];
+				token.customState = {};
 			}
 
-			console.log('[JWT] token final:', token);
+			// Atualização de sessão (via update() no client)
+			if (trigger === 'update' && updateData) {
+				// Merge customState se enviado via update({ customState: {...} })
+				if ((updateData as any).customState) {
+					token.customState = {
+						...((token.customState as Record<string, unknown>) || {}),
+						...(updateData as any).customState
+					};
+				}
+
+				// Permite atualizar nome
+				if ((updateData as any).name) {
+					token.name = (updateData as any).name;
+				}
+			}
+
 			return token;
 		},
 		async session({ session, token }) {
-			console.log('[Session] session antes:', session, 'token:', token);
-			session.accessToken = `Bearer ${process.env.API_FIXED_TOKEN}`;
+			// Mapeia token → session para o client
+			session.accessToken = `Bearer ${FIXED_BEARER_TOKEN}`;
 
-			if ((token as any).cliente) {
-				const { cliente } = token as any;
-				session.db = {
-					id: cliente.codUsu,
-					email: session.user?.email,
-					displayName: cliente.cLogin,
-					role: ['usuário'],
-					codFornecedor: cliente.codFornecedor,
-					nIdPermissaoPortalVendas: cliente.nIdPermissaoPortalVendas
-				};
-			}
+			session.db = {
+				id: token.codUsu as number,
+				email: session.user?.email ?? '',
+				displayName: (token.cLogin as string) ?? '',
+				role: (token.role as string[]) ?? ['usuário'],
+				codFornecedor: (token.codFornecedor as number) ?? null,
+				nIdPermissaoPortalVendas: (token.nIdPermissaoPortalVendas as number) ?? null
+			};
 
-			console.log('[Session] session depois:', session);
+			session.customState = (token.customState as Record<string, unknown>) ?? {};
+
 			return session;
 		}
 	},
 	session: {
 		strategy: 'jwt',
 		maxAge: 30 * 24 * 60 * 60 // 30 dias
-	},
-	experimental: {
-		enableWebAuthn: true
 	}
 } satisfies NextAuthConfig;
 

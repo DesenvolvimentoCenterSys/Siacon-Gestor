@@ -1,12 +1,13 @@
-import { useState } from 'react';
+'use client';
+
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import CircularProgress from '@mui/material/CircularProgress';
-import { signIn } from 'next-auth/react';
-import { Alert } from '@mui/material';
+import Alert from '@mui/material/Alert';
+import { useAuth } from '@auth/useAuth';
 
 // Esquema de validação com Zod
 const schema = z.object({
@@ -14,10 +15,7 @@ const schema = z.object({
 	password: z.string().min(1, 'Por favor, insira sua senha.')
 });
 
-type FormType = {
-	login: string;
-	password: string;
-};
+type FormType = z.infer<typeof schema>;
 
 const defaultValues: FormType = {
 	login: '',
@@ -25,9 +23,9 @@ const defaultValues: FormType = {
 };
 
 function AuthJsCredentialsSignInForm() {
-	const [loading, setLoading] = useState(false);
+	const { loginMutation } = useAuth();
 
-	const { control, formState, handleSubmit, setError } = useForm<FormType>({
+	const { control, formState, handleSubmit } = useForm<FormType>({
 		mode: 'onChange',
 		defaultValues,
 		resolver: zodResolver(schema)
@@ -35,25 +33,8 @@ function AuthJsCredentialsSignInForm() {
 
 	const { isValid, errors } = formState;
 
-	async function onSubmit(formData: FormType) {
-		setLoading(true);
-		const { password, login } = formData;
-
-		const result = await signIn('credentials', {
-			login,
-			password,
-			formType: 'signin',
-			redirect: false
-		});
-
-		if (result?.error) {
-			setError('root', { type: 'manual', message: 'Usuário não encontrado para os parâmetros fornecidos.' });
-			setLoading(false);
-			return false;
-		}
-
-		setLoading(false);
-		return true;
+	function onSubmit(formData: FormType) {
+		loginMutation.mutate({ login: formData.login, password: formData.password });
 	}
 
 	return (
@@ -63,12 +44,12 @@ function AuthJsCredentialsSignInForm() {
 			className="mt-32 flex w-full flex-col justify-center"
 			onSubmit={handleSubmit(onSubmit)}
 		>
-			{errors?.root?.message && (
+			{loginMutation.isError && (
 				<Alert
 					className="mb-32"
 					severity="error"
 				>
-					{errors.root.message}
+					{loginMutation.error.message}
 				</Alert>
 			)}
 
@@ -117,9 +98,9 @@ function AuthJsCredentialsSignInForm() {
 				aria-label="Entrar"
 				type="submit"
 				size="large"
-				disabled={!isValid || loading}
+				disabled={!isValid || loginMutation.isPending}
 			>
-				{loading ? (
+				{loginMutation.isPending ? (
 					<CircularProgress
 						size={24}
 						color="inherit"

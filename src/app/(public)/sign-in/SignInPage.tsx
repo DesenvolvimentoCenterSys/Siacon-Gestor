@@ -1,11 +1,13 @@
+'use client';
+
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import Typography from '@mui/material/Typography';
 import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import CardContent from '@mui/material/CardContent';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
+import { useQuery } from '@tanstack/react-query';
 
 import AuthJsForm from '@auth/forms/AuthJsForm';
 import { api } from '@/services/api';
@@ -17,33 +19,31 @@ interface PortalSettings {
 	urlLogoCard?: string;
 }
 
-export default function SignInPage() {
-	const [settings, setSettings] = useState<PortalSettings | null>(null);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+const FIXED_BEARER_TOKEN =
+	'eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0.YXViY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6YWIxMjM0NTY3ODkwMTIzNA';
 
-	useEffect(() => {
-		async function fetchSettings() {
-			try {
-				setLoading(true);
-				const response = await api.get<PortalSettings>('/api/portalSettings', {
-					headers: {
-						Authorization:
-							'Bearer eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0.YXViY2RlZmdoaWprbG1ub3BxcnN0dXZ3eHl6YWIxMjM0NTY3ODkwMTIzNA'
-					}
-				});
-				setSettings(response.data);
-			} catch (err: any) {
-				setError(err.response?.data?.error ?? err.message);
-			} finally {
-				setLoading(false);
-			}
+async function fetchPortalSettings(): Promise<PortalSettings> {
+	const response = await api.get<PortalSettings>('/api/portalSettings', {
+		headers: {
+			Authorization: `Bearer ${FIXED_BEARER_TOKEN}`
 		}
+	});
+	return response.data;
+}
 
-		fetchSettings();
-	}, []);
+export default function SignInPage() {
+	const {
+		data: settings,
+		isLoading,
+		error
+	} = useQuery<PortalSettings, Error>({
+		queryKey: ['portalSettings'],
+		queryFn: fetchPortalSettings,
+		staleTime: 1000 * 60 * 30, // 30 minutos — settings mudam raramente
+		retry: 2
+	});
 
-	if (loading) {
+	if (isLoading) {
 		return (
 			<Box className="flex flex-1 items-center justify-center p-4">
 				<CircularProgress />
@@ -54,7 +54,7 @@ export default function SignInPage() {
 	if (error) {
 		return (
 			<Box className="flex flex-1 items-center justify-center p-4">
-				<Alert severity="error">Erro ao carregar configurações: {error}</Alert>
+				<Alert severity="error">Erro ao carregar configurações: {error.message}</Alert>
 			</Box>
 		);
 	}
