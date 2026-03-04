@@ -37,9 +37,16 @@ export function useSessionUrlFilter<T>(
     }
 
     // 2. Tentar ler da Sessão Global
-    const sessionValue = getState<T>(key);
+    const sessionValue = getState<unknown>(key);
     if (sessionValue !== undefined && sessionValue !== null) {
-      return sessionValue;
+      try {
+        if (typeof sessionValue === 'string') {
+          return deserialize(sessionValue);
+        }
+        return sessionValue as T;
+      } catch (e) {
+        console.warn(`Erro ao desserializar o param ${key} da Sessão:`, e);
+      }
     }
 
     // 3. Fallback
