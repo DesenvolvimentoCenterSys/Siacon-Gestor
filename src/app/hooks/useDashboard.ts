@@ -282,3 +282,10 @@ export const useDelinquencySummaryReferencia = (startDate?: string, endDate?: st
     queryFn: () => dashboardService.getDelinquencySummaryReferencia(startDate, endDate)
   });
 };
+
+export const useResumoMensalFinanceiro = (year?: number) => {
+  return useQuery({
+    queryKey: ['resumoMensalFinanceiro', year],
+    queryFn: () => dashboardService.getResumoMensalFinanceiro(year)
+  });
+};

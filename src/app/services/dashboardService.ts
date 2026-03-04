@@ -246,6 +246,12 @@ export interface DelinquencySummaryDto {
   percentualAReceber: number;
 }
 
+export interface ResumoMensalFinanceiroDto {
+  mes: number;
+  totalCobranca: number;
+  totalPagamento: number;
+}
+
 
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
@@ -488,6 +494,14 @@ export const dashboardService = {
     return dashboardClient.get('api/UsuarioDashboardWidgets', {
       searchParams
     }).json<UsuarioDashboardWidgetDto[]>();
+  },
+  getResumoMensalFinanceiro: async (year?: number): Promise<ResumoMensalFinanceiroDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (year) searchParams.year = year.toString();
+
+    return dashboardClient.get('api/DashboardFinanceiro/resumo-mensal-financeiro', {
+      searchParams
+    }).json<ResumoMensalFinanceiroDto[]>();
   }
 };
 
