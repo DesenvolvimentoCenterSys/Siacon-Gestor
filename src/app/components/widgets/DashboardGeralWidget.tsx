@@ -1,5 +1,3 @@
-'use client';
-
 import { useMemo, useState } from 'react';
 import { useTheme, alpha } from '@mui/material/styles';
 import {
@@ -10,6 +8,15 @@ import {
   Grid,
   TextField,
   Button,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  Tooltip
 } from '@mui/material';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
@@ -22,7 +29,11 @@ import {
   useResumoMensalFinanceiroPorPeriodo
 } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth, subMonths } from 'date-fns';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { ptBR } from 'date-fns/locale';
 
 const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
 
@@ -61,9 +72,55 @@ interface GradientKPIProps {
   icon: string;
   gradientColors: [string, string];
   children?: React.ReactNode;
+  filterDate?: Date | null;
+  onFilterChange?: (date: Date) => void;
 }
 
-function GradientKPI({ title, mainValue, icon, gradientColors, children }: GradientKPIProps) {
+function GradientKPI({ title, mainValue, icon, gradientColors, children, filterDate, onFilterChange }: GradientKPIProps) {
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
+  const [tempDate, setTempDate] = useState<Date | null>(filterDate || new Date());
+
+  const handleFilterClick = (e: React.MouseEvent<HTMLElement>) => {
+    e.stopPropagation();
+    setFilterAnchorEl(e.currentTarget);
+  };
+
+  const handleFilterClose = () => {
+    setFilterAnchorEl(null);
+  };
+
+  const handleMonthSelect = (monthsBack: number) => {
+    if (onFilterChange) {
+      const newDate = subMonths(new Date(), monthsBack);
+      onFilterChange(newDate);
+    }
+    handleFilterClose();
+  };
+
+  const handleCustomDateClick = () => {
+    handleFilterClose();
+    setTempDate(filterDate || new Date());
+    setDatePickerOpen(true);
+  };
+
+  const handleDatePickerClose = () => {
+    setDatePickerOpen(false);
+  };
+
+  const handleDatePickerConfirm = () => {
+    if (onFilterChange && tempDate) {
+      onFilterChange(tempDate);
+    }
+    setDatePickerOpen(false);
+  };
+
+  const getFilterLabel = () => {
+    if (!filterDate) return 'Mês atual';
+    const month = filterDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
+    return month.charAt(0).toUpperCase() + month.slice(1);
+  };
+
   return (
     <Card
       elevation={3}
@@ -72,7 +129,7 @@ function GradientKPI({ title, mainValue, icon, gradientColors, children }: Gradi
         color: 'white',
         height: '100%',
         position: 'relative',
-        overflow: 'hidden',
+        overflow: 'hidden', // Dialog triggers clip if visible, so we use overflow:hidden but ensure menu/dialog are portals
         transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
         '&:hover': {
           transform: 'translateY(-4px)',
@@ -82,18 +139,155 @@ function GradientKPI({ title, mainValue, icon, gradientColors, children }: Gradi
     >
       <CardContent sx={{ position: 'relative', zIndex: 1, p: { xs: 2.5, sm: 3 } }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
-          <Typography
-            sx={{
-              opacity: 0.9,
-              fontWeight: 700,
-              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.35rem' },
-              letterSpacing: 0.3,
-            }}
-          >
-            {title}
-          </Typography>
-          <FuseSvgIcon size={32} sx={{ opacity: 0.3 }}>{icon}</FuseSvgIcon>
+          <Box>
+            <Typography
+              sx={{
+                opacity: 0.9,
+                fontWeight: 700,
+                fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.35rem' },
+                letterSpacing: 0.3,
+                mb: onFilterChange ? 1.5 : 0
+              }}
+            >
+              {title}
+            </Typography>
+
+            {onFilterChange && (
+              <Tooltip title="Alterar período" placement="top">
+                <Box
+                  onClick={handleFilterClick}
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.75,
+                    px: 2,
+                    py: 0.7,
+                    borderRadius: '12px',
+                    background: alpha('#ffffff', 0.15),
+                    backdropFilter: 'blur(10px)',
+                    border: `1px solid ${alpha('#ffffff', 0.2)}`,
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease-in-out',
+                    '&:hover': {
+                      background: alpha('#ffffff', 0.25),
+                      transform: 'translateY(-1px)',
+                    },
+                  }}
+                >
+                  <FuseSvgIcon size={18} sx={{ opacity: 0.9 }}>
+                    heroicons-outline:calendar
+                  </FuseSvgIcon>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      fontSize: '0.9rem',
+                      fontWeight: 600,
+                      opacity: 0.95,
+                      letterSpacing: '0.02em',
+                    }}
+                  >
+                    {getFilterLabel()}
+                  </Typography>
+                  <FuseSvgIcon size={16} sx={{ opacity: 0.7 }}>
+                    heroicons-solid:chevron-down
+                  </FuseSvgIcon>
+                </Box>
+              </Tooltip>
+            )}
+          </Box>
+          <FuseSvgIcon size={32} sx={{ opacity: 0.3, mt: onFilterChange ? 0 : 0 }}>{icon}</FuseSvgIcon>
         </Box>
+
+        <Menu
+          anchorEl={filterAnchorEl}
+          open={Boolean(filterAnchorEl)}
+          onClose={handleFilterClose}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+          slotProps={{
+            paper: {
+              sx: {
+                mt: 1,
+                minWidth: 220,
+                borderRadius: 2,
+                boxShadow: (theme: any) => theme.shadows[8],
+              }
+            }
+          }}
+        >
+          <MenuItem onClick={() => handleMonthSelect(0)} selected={filterDate?.getMonth() === new Date().getMonth() && filterDate?.getFullYear() === new Date().getFullYear()}>
+            <ListItemIcon>
+              <FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon>
+            </ListItemIcon>
+            <ListItemText>Mês atual</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleMonthSelect(1)}>
+            <ListItemIcon>
+              <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
+            </ListItemIcon>
+            <ListItemText>Mês passado</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleMonthSelect(2)}>
+            <ListItemIcon>
+              <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
+            </ListItemIcon>
+            <ListItemText>Há 2 meses</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={() => handleMonthSelect(3)}>
+            <ListItemIcon>
+              <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
+            </ListItemIcon>
+            <ListItemText>Há 3 meses</ListItemText>
+          </MenuItem>
+          <Divider sx={{ my: 0.5 }} />
+          <MenuItem onClick={handleCustomDateClick}>
+            <ListItemIcon>
+              <FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
+            </ListItemIcon>
+            <ListItemText>Selecionar data...</ListItemText>
+          </MenuItem>
+        </Menu>
+
+        <Dialog
+          open={datePickerOpen}
+          onClose={handleDatePickerClose}
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              minWidth: 320,
+            }
+          }}
+        >
+          <DialogContent sx={{ pt: 3 }}>
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
+              <DatePicker
+                views={['year', 'month']}
+                label="Selecione o mês e ano"
+                value={tempDate}
+                onChange={(newValue) => setTempDate(newValue)}
+                slotProps={{
+                  textField: {
+                    fullWidth: true,
+                    sx: { mb: 2 }
+                  },
+                  popper: {
+                    sx: {
+                      zIndex: 99999,
+                    }
+                  }
+                }}
+              />
+            </LocalizationProvider>
+          </DialogContent>
+          <DialogActions sx={{ px: 3, pb: 2 }}>
+            <Button onClick={handleDatePickerClose} color="inherit">
+              Cancelar
+            </Button>
+            <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">
+              Confirmar
+            </Button>
+          </DialogActions>
+        </Dialog>
 
         <Typography
           sx={{
@@ -173,7 +367,7 @@ export function DashboardGeralWidget() {
   const theme = useTheme();
   const isMobile = useThemeMediaQuery((t) => t.breakpoints.down('md'));
 
-  // ── Period selector state ──
+  // ── Global Chart Period selector state ──
   const [startMonth, setStartMonth] = useState(getDefaultStartMonth());
   const [endMonth, setEndMonth] = useState(getDefaultEndMonth());
   const [appliedStart, setAppliedStart] = useState(getDefaultStartMonth());
@@ -184,7 +378,14 @@ export function DashboardGeralWidget() {
     setAppliedEnd(endMonth);
   };
 
-  // ── Compute API dates ──
+  // ── Cards individual filters state ──
+  const defaultDate = new Date();
+  const [card1Date, setCard1Date] = useState<Date>(defaultDate);
+  const [card2Date, setCard2Date] = useState<Date>(defaultDate);
+  const [card3Date, setCard3Date] = useState<Date>(defaultDate);
+  const [card4Date, setCard4Date] = useState<Date>(defaultDate);
+
+  // ── Compute API dates for chart ──
   const startDate = useMemo(() => {
     const d = monthInputToDate(appliedStart);
     return toApiDate(startOfMonth(d));
@@ -195,18 +396,29 @@ export function DashboardGeralWidget() {
     return toApiDate(endOfMonth(d));
   }, [appliedEnd]);
 
-  const referenceDate = useMemo(() => {
-    const d = monthInputToDate(appliedEnd);
-    return toApiDate(startOfMonth(d));
-  }, [appliedEnd]);
-
   // ── Data hooks ──
-  const { data: filiadosData, isLoading: l1 } = useTotalFiliados(referenceDate);
-  const { data: faturamentoData, isLoading: l2 } = useTotalFaturamentoPorConvenio(referenceDate);
-  const { data: delinquencyData, isLoading: l3 } = useDelinquencySummary(startDate, endDate);
+  // Card 1: Associados
+  const { data: filiadosData, isLoading: l1 } = useTotalFiliados(toApiDate(startOfMonth(card1Date)));
+
+  // Card 2: Faturamento do Mês
+  const { data: faturamentoCard2Data, isLoading: l2 } = useTotalFaturamentoPorConvenio(toApiDate(startOfMonth(card2Date)));
+
+  // Card 3: Títulos a Pagar
+  const { data: faturamentoCard3Data, isLoading: l2_2 } = useTotalFaturamentoPorConvenio(toApiDate(startOfMonth(card3Date)));
+
+  // Card 4: Inadimplência
+  const { data: delinquencyCard4Data, isLoading: l3 } = useDelinquencySummary(
+    toApiDate(startOfMonth(card4Date)),
+    toApiDate(endOfMonth(card4Date))
+  );
+
+  // Chart
   const { data: resumoMensalData, isLoading: l4 } = useResumoMensalFinanceiroPorPeriodo(startDate, endDate);
 
-  const isLoading = l1 || l2 || l3 || l4;
+  // Chart Results: also use delinquency but matching the chart period
+  const { data: delinquencyChartData, isLoading: l3_chart } = useDelinquencySummary(startDate, endDate);
+
+  const isLoading = l1 || l2 || l2_2 || l3 || l3_chart || l4;
 
   // ── Derived card data ──
   const filiadosInfo = useMemo(() => {
@@ -219,9 +431,9 @@ export function DashboardGeralWidget() {
     };
   }, [filiadosData]);
 
-  const faturamentoInfo = useMemo(() => {
-    if (!faturamentoData?.geral) return null;
-    const g = faturamentoData.geral;
+  const faturamentoInfoCard2 = useMemo(() => {
+    if (!faturamentoCard2Data?.geral) return null;
+    const g = faturamentoCard2Data.geral;
     const total = g.totalGeral;
     const percentAVencer = total > 0 ? (g.totalAberto / total) * 100 : 0;
     const percentVencido = total > 0 ? (g.totalVencido / total) * 100 : 0;
@@ -233,16 +445,27 @@ export function DashboardGeralWidget() {
       percentAVencer,
       percentVencido
     };
-  }, [faturamentoData]);
+  }, [faturamentoCard2Data]);
+
+  const faturamentoInfoCard3 = useMemo(() => {
+    if (!faturamentoCard3Data?.geral) return null;
+    const g = faturamentoCard3Data.geral;
+    return {
+      totalGeral: g.totalGeral,
+      totalPago: g.totalPago,
+      aVencer: g.totalAberto,
+      vencido: g.totalVencido,
+    };
+  }, [faturamentoCard3Data]);
 
   const delinquencyInfo = useMemo(() => {
-    if (!delinquencyData) return null;
+    if (!delinquencyCard4Data) return null;
     return {
-      totalInadimplente: delinquencyData.totalInadimplente,
-      totalFaturado: delinquencyData.totalFaturado,
-      percentualInadimplencia: delinquencyData.percentualInadimplencia,
+      totalInadimplente: delinquencyCard4Data.totalInadimplente,
+      totalFaturado: delinquencyCard4Data.totalFaturado,
+      percentualInadimplencia: delinquencyCard4Data.percentualInadimplencia,
     };
-  }, [delinquencyData]);
+  }, [delinquencyCard4Data]);
 
   // ── Chart data ──
   const startMonthNum = useMemo(() => {
@@ -296,7 +519,7 @@ export function DashboardGeralWidget() {
     const totalCobranca = chartInfo.cobrancaData.reduce((s, v) => s + v, 0);
     const totalPagamento = chartInfo.pagamentoData.reduce((s, v) => s + v, 0);
     const totalVencido = chartInfo.vencidoData.reduce((s, v) => s + v, 0);
-    const resultado = totalPagamento - totalCobranca;
+    const resultado = totalCobranca - totalPagamento; // Receitas - Despesas
     return { totalCobranca, totalPagamento, totalVencido, resultado };
   }, [chartInfo]);
 
@@ -458,6 +681,8 @@ export function DashboardGeralWidget() {
             mainValue={filiadosInfo?.totalAtivos?.toLocaleString('pt-BR') ?? '—'}
             icon="heroicons-outline:users"
             gradientColors={['#1565C0', '#0D47A1']}
+            filterDate={card1Date}
+            onFilterChange={setCard1Date}
           >
             <KPIMetric label="Novos no mês" value={filiadosInfo?.totalNovos?.toLocaleString('pt-BR') ?? '0'} valueColor="#4ade80" />
             <KPIMetric label="Desligados" value={filiadosInfo?.totalDesligados?.toLocaleString('pt-BR') ?? '0'} valueColor="#fca5a5" />
@@ -470,15 +695,17 @@ export function DashboardGeralWidget() {
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
             title="Faturamento do Mês"
-            mainValue={formatCurrency(faturamentoInfo?.totalGeral ?? 0)}
+            mainValue={formatCurrency(faturamentoInfoCard2?.totalGeral ?? 0)}
             icon="heroicons-outline:currency-dollar"
             gradientColors={['#2E7D32', '#1B5E20']}
+            filterDate={card2Date}
+            onFilterChange={setCard2Date}
           >
-            <KPIMetric label="À Vencer" value={formatCurrency(faturamentoInfo?.aVencer ?? 0)} valueColor="#bbf7d0" />
-            <KPIMetric label="" value={formatPercent(faturamentoInfo?.percentAVencer ?? 0)} />
+            <KPIMetric label="À Vencer" value={formatCurrency(faturamentoInfoCard2?.aVencer ?? 0)} valueColor="#bbf7d0" />
+            <KPIMetric label="" value={formatPercent(faturamentoInfoCard2?.percentAVencer ?? 0)} />
             <KPIDivider />
-            <KPIMetric label="Vencido" value={formatCurrency(faturamentoInfo?.vencido ?? 0)} valueColor="#fca5a5" />
-            <KPIMetric label="" value={formatPercent(faturamentoInfo?.percentVencido ?? 0)} />
+            <KPIMetric label="Vencido" value={formatCurrency(faturamentoInfoCard2?.vencido ?? 0)} valueColor="#fca5a5" />
+            <KPIMetric label="" value={formatPercent(faturamentoInfoCard2?.percentVencido ?? 0)} />
           </GradientKPI>
         </Grid>
 
@@ -486,12 +713,14 @@ export function DashboardGeralWidget() {
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
             title="Títulos a Pagar"
-            mainValue={formatCurrency(faturamentoInfo?.totalGeral ?? 0)}
+            mainValue={formatCurrency(faturamentoInfoCard3?.totalGeral ?? 0)}
             icon="heroicons-outline:document-text"
             gradientColors={['#E65100', '#BF360C']}
+            filterDate={card3Date}
+            onFilterChange={setCard3Date}
           >
-            <KPIMetric label="Em Aberto" value={formatCurrency(faturamentoInfo?.aVencer ?? 0)} valueColor="#fed7aa" />
-            <KPIMetric label="Liquidado" value={formatCurrency(faturamentoInfo?.totalPago ?? 0)} valueColor="#4ade80" />
+            <KPIMetric label="Em Aberto" value={formatCurrency(faturamentoInfoCard3?.aVencer ?? 0)} valueColor="#fed7aa" />
+            <KPIMetric label="Liquidado" value={formatCurrency(faturamentoInfoCard3?.totalPago ?? 0)} valueColor="#4ade80" />
           </GradientKPI>
         </Grid>
 
@@ -502,9 +731,11 @@ export function DashboardGeralWidget() {
             mainValue={formatCurrency(delinquencyInfo?.totalInadimplente ?? 0)}
             icon="heroicons-outline:exclamation-triangle"
             gradientColors={['#B71C1C', '#880E4F']}
+            filterDate={card4Date}
+            onFilterChange={setCard4Date}
           >
             <KPIMetric
-              label="Inadimplência Período"
+              label="Inadimplência (Gráfico)"
               value={formatCurrency(chartTotals.totalVencido)}
               valueColor="#fca5a5"
             />
