@@ -1,7 +1,7 @@
 const locale = {
 	APPLICATIONS: 'Programlar',
 	EXAMPLE: 'Örnek Sayfa',
-	'Dashboard Geral': 'Dashboard Geral'
+	DASHBOARD_GERAL: 'Dashboard Geral'
 };
 
 export default locale;

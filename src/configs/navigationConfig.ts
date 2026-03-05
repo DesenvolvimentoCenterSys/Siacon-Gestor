@@ -25,7 +25,7 @@ const navigationConfig: FuseNavItemType[] = [
 	{
 		id: 'dashboard-geral',
 		title: 'Dashboard Geral',
-		translate: 'Dashboard Geral',
+		translate: 'DASHBOARD_GERAL',
 		type: 'item',
 		icon: 'heroicons-outline:chart-bar-square',
 		url: 'dashboard-geral'
