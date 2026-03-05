@@ -245,18 +245,52 @@ export function DashboardGeralWidget() {
   }, [delinquencyData]);
 
   // ── Chart data ──
+  const startMonthNum = useMemo(() => {
+    const [, m] = appliedStart.split('-').map(Number);
+    return m;
+  }, [appliedStart]);
+
+  const endMonthNum = useMemo(() => {
+    const [, m] = appliedEnd.split('-').map(Number);
+    return m;
+  }, [appliedEnd]);
+
+  const crossesYear = useMemo(() => {
+    const [sy] = appliedStart.split('-').map(Number);
+    const [ey] = appliedEnd.split('-').map(Number);
+    return ey > sy;
+  }, [appliedStart, appliedEnd]);
+
   const chartInfo = useMemo(() => {
     if (!resumoMensalData || resumoMensalData.length === 0) {
       return { categories: [] as string[], cobrancaData: [] as number[], pagamentoData: [] as number[], vencidoData: [] as number[] };
     }
-    const sortedData = [...resumoMensalData].sort((a, b) => a.mes - b.mes);
+
+    // Chronological sort: months before startMonth belong to the next year
+    const sortedData = [...resumoMensalData].sort((a, b) => {
+      const aKey = crossesYear && a.mes < startMonthNum ? a.mes + 12 : a.mes;
+      const bKey = crossesYear && b.mes < startMonthNum ? b.mes + 12 : b.mes;
+      return aKey - bKey;
+    });
+
+    // Parse years from the period for labels
+    const [startYear] = appliedStart.split('-').map(Number);
+    const [endYear] = appliedEnd.split('-').map(Number);
+
     return {
-      categories: sortedData.map((item) => MONTH_NAMES[item.mes - 1] || `Mês ${item.mes}`),
+      categories: sortedData.map((item) => {
+        const name = MONTH_NAMES[item.mes - 1] || `Mês ${item.mes}`;
+        if (crossesYear) {
+          const yr = item.mes >= startMonthNum ? startYear : endYear;
+          return `${name}/${String(yr).slice(2)}`;
+        }
+        return name;
+      }),
       cobrancaData: sortedData.map((item) => item.totalCobranca),
       pagamentoData: sortedData.map((item) => item.totalPagamento),
       vencidoData: sortedData.map((item) => item.totalVencido || 0)
     };
-  }, [resumoMensalData]);
+  }, [resumoMensalData, startMonthNum, crossesYear, appliedStart, appliedEnd]);
 
   const chartTotals = useMemo(() => {
     const totalCobranca = chartInfo.cobrancaData.reduce((s, v) => s + v, 0);

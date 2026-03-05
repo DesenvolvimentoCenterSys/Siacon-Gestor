@@ -66,6 +66,22 @@ export function PrevisaoFaturamentoPorPeriodoWidget() {
     setAppliedEnd(endMonth);
   };
 
+  const startMonthNum = useMemo(() => {
+    const [, m] = appliedStart.split('-').map(Number);
+    return m;
+  }, [appliedStart]);
+
+  const endMonthNum = useMemo(() => {
+    const [, m] = appliedEnd.split('-').map(Number);
+    return m;
+  }, [appliedEnd]);
+
+  const crossesYear = useMemo(() => {
+    const [sy] = appliedStart.split('-').map(Number);
+    const [ey] = appliedEnd.split('-').map(Number);
+    return ey > sy;
+  }, [appliedStart, appliedEnd]);
+
   const { categories, cobrancaSemVencidoData, vencidoData, pagamentoData, totals } = useMemo(() => {
     if (!data || data.length === 0) {
       return {
@@ -77,14 +93,27 @@ export function PrevisaoFaturamentoPorPeriodoWidget() {
       };
     }
 
-    const sortedData = [...data].sort((a, b) => a.mes - b.mes);
+    const sortedData = [...data].sort((a, b) => {
+      const aKey = crossesYear && a.mes < startMonthNum ? a.mes + 12 : a.mes;
+      const bKey = crossesYear && b.mes < startMonthNum ? b.mes + 12 : b.mes;
+      return aKey - bKey;
+    });
+
+    const [startYear] = appliedStart.split('-').map(Number);
+    const [endYear] = appliedEnd.split('-').map(Number);
 
     const totalCobranca = sortedData.reduce((sum, item) => sum + item.totalCobranca, 0);
     const totalPagamento = sortedData.reduce((sum, item) => sum + item.totalPagamento, 0);
     const totalVencido = sortedData.reduce((sum, item) => sum + (item.totalVencido || 0), 0);
 
     return {
-      categories: sortedData.map((item) => formatMonthLabel(item.mes)),
+      categories: sortedData.map((item) => {
+        if (crossesYear) {
+          const yr = item.mes >= startMonthNum ? startYear : endYear;
+          return formatMonthLabel(item.mes, yr);
+        }
+        return formatMonthLabel(item.mes);
+      }),
       cobrancaSemVencidoData: sortedData.map((item) => {
         const vencido = item.totalVencido || 0;
         return Math.max(item.totalCobranca - vencido, 0);
@@ -93,7 +122,7 @@ export function PrevisaoFaturamentoPorPeriodoWidget() {
       pagamentoData: sortedData.map((item) => item.totalPagamento),
       totals: { totalCobranca, totalPagamento, totalVencido }
     };
-  }, [data]);
+  }, [data, startMonthNum, crossesYear, appliedStart, appliedEnd]);
 
   const chartOptions: ApexOptions = {
     chart: {
