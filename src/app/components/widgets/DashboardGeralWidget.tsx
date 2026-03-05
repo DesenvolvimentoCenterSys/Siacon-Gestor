@@ -641,7 +641,7 @@ export function DashboardGeralWidget() {
       >
         <FuseSvgIcon size={22} color="action">heroicons-outline:calendar-days</FuseSvgIcon>
         <Typography variant="subtitle1" fontWeight={700} color="text.secondary" sx={{ mr: 1, fontSize: '1.1rem' }}>
-          Período:
+          Período do Gráfico:
         </Typography>
         <TextField
           type="month"
