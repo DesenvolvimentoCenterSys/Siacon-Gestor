@@ -36,7 +36,6 @@ function formatPercent(value: number): string {
 
 function getDefaultStartMonth(): string {
   const now = new Date();
-  // 6 months back
   const start = new Date(now.getFullYear(), now.getMonth() - 6, 1);
   return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`;
 }
@@ -81,48 +80,47 @@ function GradientKPI({ title, mainValue, icon, gradientColors, children }: Gradi
         },
       }}
     >
-      <CardContent sx={{ position: 'relative', zIndex: 1, p: { xs: 2, sm: 2.5 } }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1.5 }}>
+      <CardContent sx={{ position: 'relative', zIndex: 1, p: { xs: 2.5, sm: 3 } }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
           <Typography
-            variant="body2"
             sx={{
               opacity: 0.9,
               fontWeight: 700,
-              fontSize: { xs: '0.85rem', sm: '0.95rem' },
+              fontSize: { xs: '1.1rem', sm: '1.25rem', md: '1.35rem' },
               letterSpacing: 0.3,
             }}
           >
             {title}
           </Typography>
-          <FuseSvgIcon size={24} sx={{ opacity: 0.3 }}>{icon}</FuseSvgIcon>
+          <FuseSvgIcon size={32} sx={{ opacity: 0.3 }}>{icon}</FuseSvgIcon>
         </Box>
 
         <Typography
-          variant="h4"
           sx={{
             fontWeight: 800,
-            mb: 1.5,
-            fontSize: { xs: '1.5rem', sm: '1.75rem', md: '2rem' },
+            mb: 2,
+            fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' },
+            lineHeight: 1.1,
           }}
         >
           {mainValue}
         </Typography>
 
         {children && (
-          <Box sx={{ mt: 1 }}>
+          <Box sx={{ mt: 1.5 }}>
             {children}
           </Box>
         )}
       </CardContent>
 
-      {/* Decorative circle */}
+      {/* Decorative circles */}
       <Box
         sx={{
           position: 'absolute',
           right: -20,
           bottom: -20,
-          width: 100,
-          height: 100,
+          width: 120,
+          height: 120,
           borderRadius: '50%',
           background: alpha('#ffffff', 0.1),
           zIndex: 0,
@@ -131,10 +129,10 @@ function GradientKPI({ title, mainValue, icon, gradientColors, children }: Gradi
       <Box
         sx={{
           position: 'absolute',
-          right: 30,
-          bottom: 30,
-          width: 60,
-          height: 60,
+          right: 35,
+          bottom: 35,
+          width: 70,
+          height: 70,
           borderRadius: '50%',
           background: alpha('#ffffff', 0.06),
           zIndex: 0,
@@ -155,11 +153,11 @@ function KPIMetric({
   valueColor?: string;
 }) {
   return (
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.25 }}>
-      <Typography variant="caption" sx={{ opacity: 0.85, fontWeight: 500, fontSize: '0.8rem' }}>
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', py: 0.4 }}>
+      <Typography sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: '1rem', sm: '1.1rem' } }}>
         {label}
       </Typography>
-      <Typography variant="body2" sx={{ fontWeight: 700, color: valueColor || 'inherit', fontSize: '0.85rem' }}>
+      <Typography sx={{ fontWeight: 700, color: valueColor || 'inherit', fontSize: { xs: '1.05rem', sm: '1.15rem' } }}>
         {value}
       </Typography>
     </Box>
@@ -167,7 +165,7 @@ function KPIMetric({
 }
 
 function KPIDivider() {
-  return <Box sx={{ borderTop: '1px solid rgba(255,255,255,0.2)', my: 0.75 }} />;
+  return <Box sx={{ borderTop: '1px solid rgba(255,255,255,0.25)', my: 1 }} />;
 }
 
 // ─── Main Dashboard Widget ──────────────────────────────────────
@@ -197,7 +195,6 @@ export function DashboardGeralWidget() {
     return toApiDate(endOfMonth(d));
   }, [appliedEnd]);
 
-  // Reference date for single-month endpoints (use end month)
   const referenceDate = useMemo(() => {
     const d = monthInputToDate(appliedEnd);
     return toApiDate(startOfMonth(d));
@@ -244,8 +241,6 @@ export function DashboardGeralWidget() {
       totalInadimplente: delinquencyData.totalInadimplente,
       totalFaturado: delinquencyData.totalFaturado,
       percentualInadimplencia: delinquencyData.percentualInadimplencia,
-      totalAdimplente: delinquencyData.totalAdimplente,
-      totalAReceber: delinquencyData.totalAReceber
     };
   }, [delinquencyData]);
 
@@ -254,9 +249,7 @@ export function DashboardGeralWidget() {
     if (!resumoMensalData || resumoMensalData.length === 0) {
       return { categories: [] as string[], cobrancaData: [] as number[], pagamentoData: [] as number[], vencidoData: [] as number[] };
     }
-
     const sortedData = [...resumoMensalData].sort((a, b) => a.mes - b.mes);
-
     return {
       categories: sortedData.map((item) => MONTH_NAMES[item.mes - 1] || `Mês ${item.mes}`),
       cobrancaData: sortedData.map((item) => item.totalCobranca),
@@ -273,7 +266,7 @@ export function DashboardGeralWidget() {
     return { totalCobranca, totalPagamento, totalVencido, resultado };
   }, [chartInfo]);
 
-  // ── Chart options ──
+  // ── Metallic chart colors ──
   const chartOptions: ApexOptions = {
     chart: {
       type: 'bar',
@@ -288,10 +281,27 @@ export function DashboardGeralWidget() {
       }
     },
     colors: [
-      '#2E7D32',   // Previsão Faturamento (green)
-      '#FF9800',   // Pagamento (amber)
-      '#C62828',   // Vencido (red)
+      '#7B9F3A',   // Faturamento — metallic olive green
+      '#C29B2A',   // Pagamento — metallic gold
+      '#9B2D2D',   // Vencido — metallic crimson
     ],
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'light',
+        type: 'vertical',
+        shadeIntensity: 0.4,
+        gradientToColors: [
+          '#A8CC5C',   // lighter metallic green
+          '#E6C44D',   // lighter metallic gold
+          '#CC4444',   // lighter metallic red
+        ],
+        inverseColors: false,
+        opacityFrom: 1,
+        opacityTo: 0.85,
+        stops: [0, 100]
+      }
+    },
     dataLabels: {
       enabled: !isMobile,
       formatter(val: number) {
@@ -300,14 +310,14 @@ export function DashboardGeralWidget() {
         if (val >= 1000) return `${(val / 1000).toFixed(0)}k`;
         return val.toLocaleString('pt-BR');
       },
-      style: { fontSize: '9px', fontWeight: 600 },
-      offsetY: -6,
+      style: { fontSize: '11px', fontWeight: 700 },
+      offsetY: -8,
     },
     stroke: { show: true, width: 1, colors: ['transparent'] },
     xaxis: {
       categories: chartInfo.categories,
       labels: {
-        style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '10px' : '12px' }
+        style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '12px' : '14px', fontWeight: 600 }
       },
       axisBorder: { show: false },
       axisTicks: { show: false }
@@ -319,7 +329,7 @@ export function DashboardGeralWidget() {
           if (value >= 1000) return `R$ ${(value / 1000).toFixed(0)}k`;
           return `R$ ${value.toFixed(0)}`;
         },
-        style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '10px' : '12px' }
+        style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '11px' : '13px', fontWeight: 500 }
       }
     },
     grid: {
@@ -331,6 +341,7 @@ export function DashboardGeralWidget() {
     },
     tooltip: {
       theme: theme.palette.mode,
+      style: { fontSize: '14px' },
       y: {
         formatter(val) {
           return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -341,7 +352,9 @@ export function DashboardGeralWidget() {
       show: true,
       position: 'top',
       horizontalAlign: 'center',
-      itemMargin: { horizontal: 12, vertical: 4 }
+      fontSize: '14px',
+      fontWeight: 600,
+      itemMargin: { horizontal: 16, vertical: 6 }
     }
   };
 
@@ -360,7 +373,7 @@ export function DashboardGeralWidget() {
         elevation={0}
         sx={{
           mb: 3,
-          p: 2,
+          p: 2.5,
           border: `1px solid ${theme.palette.divider}`,
           borderRadius: 2,
           display: 'flex',
@@ -369,8 +382,8 @@ export function DashboardGeralWidget() {
           gap: 2,
         }}
       >
-        <FuseSvgIcon size={20} color="action">heroicons-outline:calendar-days</FuseSvgIcon>
-        <Typography variant="subtitle2" fontWeight={600} color="text.secondary" sx={{ mr: 1 }}>
+        <FuseSvgIcon size={22} color="action">heroicons-outline:calendar-days</FuseSvgIcon>
+        <Typography variant="subtitle1" fontWeight={700} color="text.secondary" sx={{ mr: 1, fontSize: '1.1rem' }}>
           Período:
         </Typography>
         <TextField
@@ -380,7 +393,7 @@ export function DashboardGeralWidget() {
           onChange={(e) => setStartMonth(e.target.value)}
           size="small"
           InputLabelProps={{ shrink: true }}
-          sx={{ minWidth: 150 }}
+          sx={{ minWidth: 160 }}
         />
         <TextField
           type="month"
@@ -389,21 +402,21 @@ export function DashboardGeralWidget() {
           onChange={(e) => setEndMonth(e.target.value)}
           size="small"
           InputLabelProps={{ shrink: true }}
-          sx={{ minWidth: 150 }}
+          sx={{ minWidth: 160 }}
         />
         <Button
           variant="contained"
-          size="small"
+          size="medium"
           onClick={handleApplyFilter}
-          startIcon={<FuseSvgIcon size={16}>heroicons-outline:funnel</FuseSvgIcon>}
-          sx={{ borderRadius: 2, textTransform: 'none', px: 3, fontWeight: 600 }}
+          startIcon={<FuseSvgIcon size={18}>heroicons-outline:funnel</FuseSvgIcon>}
+          sx={{ borderRadius: 2, textTransform: 'none', px: 3, fontWeight: 700, fontSize: '1rem' }}
         >
           Filtrar
         </Button>
       </Card>
 
-      {/* ── KPI CARDS ── */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
+      {/* ── KPI CARDS — Row 1 ── */}
+      <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
         {/* Card 1 — Associados Ativos */}
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
@@ -427,18 +440,10 @@ export function DashboardGeralWidget() {
             icon="heroicons-outline:currency-dollar"
             gradientColors={['#2E7D32', '#1B5E20']}
           >
-            <KPIMetric
-              label="À Vencer"
-              value={`${formatCurrency(faturamentoInfo?.aVencer ?? 0)}`}
-              valueColor="#bbf7d0"
-            />
+            <KPIMetric label="À Vencer" value={formatCurrency(faturamentoInfo?.aVencer ?? 0)} valueColor="#bbf7d0" />
             <KPIMetric label="" value={formatPercent(faturamentoInfo?.percentAVencer ?? 0)} />
             <KPIDivider />
-            <KPIMetric
-              label="Vencido"
-              value={formatCurrency(faturamentoInfo?.vencido ?? 0)}
-              valueColor="#fca5a5"
-            />
+            <KPIMetric label="Vencido" value={formatCurrency(faturamentoInfo?.vencido ?? 0)} valueColor="#fca5a5" />
             <KPIMetric label="" value={formatPercent(faturamentoInfo?.percentVencido ?? 0)} />
           </GradientKPI>
         </Grid>
@@ -451,16 +456,8 @@ export function DashboardGeralWidget() {
             icon="heroicons-outline:document-text"
             gradientColors={['#E65100', '#BF360C']}
           >
-            <KPIMetric
-              label="Em Aberto"
-              value={formatCurrency(faturamentoInfo?.aVencer ?? 0)}
-              valueColor="#fed7aa"
-            />
-            <KPIMetric
-              label="Liquidado"
-              value={formatCurrency(faturamentoInfo?.totalPago ?? 0)}
-              valueColor="#4ade80"
-            />
+            <KPIMetric label="Em Aberto" value={formatCurrency(faturamentoInfo?.aVencer ?? 0)} valueColor="#fed7aa" />
+            <KPIMetric label="Liquidado" value={formatCurrency(faturamentoInfo?.totalPago ?? 0)} valueColor="#4ade80" />
           </GradientKPI>
         </Grid>
 
@@ -477,13 +474,35 @@ export function DashboardGeralWidget() {
               value={formatCurrency(chartTotals.totalVencido)}
               valueColor="#fca5a5"
             />
-            <KPIDivider />
-            <KPIMetric
-              label="Resultado Período"
-              value={formatCurrency(chartTotals.resultado)}
-              valueColor={chartTotals.resultado >= 0 ? '#4ade80' : '#fca5a5'}
-            />
           </GradientKPI>
+        </Grid>
+      </Grid>
+
+      {/* ── RESULTADO DO GRÁFICO — Separate Card ── */}
+      <Grid container spacing={2.5} sx={{ mb: 3 }}>
+        <Grid item xs={12} sm={4}>
+          <GradientKPI
+            title="Faturamento Período (Gráfico)"
+            mainValue={formatCurrency(chartTotals.totalCobranca)}
+            icon="heroicons-outline:arrow-trending-up"
+            gradientColors={['#558B2F', '#33691E']}
+          />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <GradientKPI
+            title="Pagamento Período (Gráfico)"
+            mainValue={formatCurrency(chartTotals.totalPagamento)}
+            icon="heroicons-outline:banknotes"
+            gradientColors={['#F57F17', '#E65100']}
+          />
+        </Grid>
+        <Grid item xs={12} sm={4}>
+          <GradientKPI
+            title="Resultado Período (Gráfico)"
+            mainValue={formatCurrency(chartTotals.resultado)}
+            icon="heroicons-outline:scale"
+            gradientColors={chartTotals.resultado >= 0 ? ['#1B5E20', '#004D40'] : ['#B71C1C', '#880E4F']}
+          />
         </Grid>
       </Grid>
 
@@ -493,17 +512,17 @@ export function DashboardGeralWidget() {
         elevation={0}
         sx={{ border: `1px solid ${theme.palette.divider}` }}
       >
-        <Box className="flex items-center justify-center px-6 py-3 border-b">
-          <Typography variant="subtitle1" fontWeight={700} color="text.primary">
+        <Box className="flex items-center justify-center px-6 py-4 border-b">
+          <Typography sx={{ fontWeight: 700, fontSize: { xs: '1.1rem', sm: '1.3rem' }, color: 'text.primary' }}>
             Faturamento / Pagamento / Inadimplência — Período Selecionado
           </Typography>
         </Box>
-        <Box sx={{ p: { xs: 1, md: 2 }, minHeight: { xs: 300, md: 400 } }}>
+        <Box sx={{ p: { xs: 1.5, md: 2.5 }, minHeight: { xs: 320, md: 420 } }}>
           <ReactApexChart
             options={chartOptions}
             series={series}
             type="bar"
-            height={isMobile ? 300 : 400}
+            height={isMobile ? 320 : 420}
           />
         </Box>
       </Card>
