@@ -81,10 +81,16 @@ const navigationConfig: FuseNavItemType[] = [
 			},
 			{
 				id: 'previsao-faturamento-vs-pagamento',
-				title: 'Previsão Faturamento VS Pagamento',
+				title: 'Previsão Faturamento\nVS Pagamento',
 				type: 'item',
 				icon: 'heroicons-outline:chart-bar',
-				url: 'previsao-faturamento-vs-pagamento'
+				url: 'previsao-faturamento-vs-pagamento',
+				sx: {
+					'& .fuse-list-item-text-primary': {
+						whiteSpace: 'pre-line !important',
+						lineHeight: '1.2 !important'
+					}
+				}
 			}
 		]
 	},

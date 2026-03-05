@@ -77,6 +77,14 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
       fontFamily: 'inherit',
       animations: {
         enabled: !isMobile
+      },
+      dropShadow: {
+        enabled: true,
+        color: '#000',
+        top: 2,
+        left: 0,
+        blur: 3,
+        opacity: 0.15
       }
     },
     plotOptions: {
@@ -85,7 +93,20 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
         borderRadius: 4,
       }
     },
-    colors: [theme.palette.primary.main, theme.palette.success.main],
+    colors: [theme.palette.success.main, theme.palette.error.main],
+    fill: {
+      type: 'gradient',
+      gradient: {
+        shade: 'dark',
+        type: 'vertical',
+        shadeIntensity: 0.5,
+        gradientToColors: [theme.palette.success.light, theme.palette.error.light],
+        inverseColors: true,
+        opacityFrom: 1,
+        opacityTo: 0.8,
+        stops: [0, 50, 100]
+      }
+    },
     dataLabels: {
       enabled: false
     },
@@ -176,7 +197,7 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
   };
 
   const series = [
-    { name: 'Cobrança', data: cobrancaData },
+    { name: 'Previsão Faturamento', data: cobrancaData },
     { name: 'Pagamento', data: pagamentoData }
   ];
 
