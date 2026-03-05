@@ -250,6 +250,7 @@ export interface ResumoMensalFinanceiroDto {
   mes: number;
   totalCobranca: number;
   totalPagamento: number;
+  totalVencido: number;
 }
 
 

@@ -56,23 +56,39 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
 
   const { data, isLoading } = useResumoMensalFinanceiro(selectedYear);
 
-  const { categories, cobrancaData, pagamentoData } = useMemo(() => {
+  const { categories, cobrancaSemVencidoData, vencidoData, pagamentoData, totals } = useMemo(() => {
     if (!data || data.length === 0) {
-      return { categories: MONTH_NAMES, cobrancaData: [], pagamentoData: [] };
+      return {
+        categories: MONTH_NAMES,
+        cobrancaSemVencidoData: [],
+        vencidoData: [],
+        pagamentoData: [],
+        totals: { totalCobranca: 0, totalPagamento: 0, totalVencido: 0 }
+      };
     }
 
     const sortedData = [...data].sort((a, b) => a.mes - b.mes);
 
+    const totalCobranca = sortedData.reduce((sum, item) => sum + item.totalCobranca, 0);
+    const totalPagamento = sortedData.reduce((sum, item) => sum + item.totalPagamento, 0);
+    const totalVencido = sortedData.reduce((sum, item) => sum + (item.totalVencido || 0), 0);
+
     return {
       categories: sortedData.map((item) => MONTH_NAMES[item.mes - 1] || `Mês ${item.mes}`),
-      cobrancaData: sortedData.map((item) => item.totalCobranca),
-      pagamentoData: sortedData.map((item) => item.totalPagamento)
+      cobrancaSemVencidoData: sortedData.map((item) => {
+        const vencido = item.totalVencido || 0;
+        return Math.max(item.totalCobranca - vencido, 0);
+      }),
+      vencidoData: sortedData.map((item) => item.totalVencido || 0),
+      pagamentoData: sortedData.map((item) => item.totalPagamento),
+      totals: { totalCobranca, totalPagamento, totalVencido }
     };
   }, [data]);
 
   const chartOptions: ApexOptions = {
     chart: {
       type: 'bar',
+      stacked: true,
       toolbar: { show: false },
       fontFamily: 'inherit',
       animations: {
@@ -93,14 +109,22 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
         borderRadius: 4,
       }
     },
-    colors: [theme.palette.success.main, theme.palette.error.main],
+    colors: [
+      theme.palette.success.main,
+      theme.palette.warning.main,
+      theme.palette.error.main
+    ],
     fill: {
       type: 'gradient',
       gradient: {
         shade: 'dark',
         type: 'vertical',
         shadeIntensity: 0.5,
-        gradientToColors: [theme.palette.success.light, theme.palette.error.light],
+        gradientToColors: [
+          theme.palette.success.light,
+          theme.palette.warning.light,
+          theme.palette.error.light
+        ],
         inverseColors: true,
         opacityFrom: 1,
         opacityTo: 0.8,
@@ -197,9 +221,13 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
   };
 
   const series = [
-    { name: 'Previsão Faturamento', data: cobrancaData },
-    { name: 'Pagamento', data: pagamentoData }
+    { name: 'Previsão Faturamento', group: 'cobranca', data: cobrancaSemVencidoData },
+    { name: 'Vencido / Inadimplência', group: 'cobranca', data: vencidoData },
+    { name: 'Pagamento', group: 'pagamento', data: pagamentoData }
   ];
+
+  const formatCurrency = (value: number) =>
+    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 
   if (isLoading) return <WidgetLoading height={350} />;
 
@@ -260,6 +288,71 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
               </MenuItem>
             ))}
           </Menu>
+        </Box>
+      </Box>
+
+      {/* Painel de Totais */}
+      <Box
+        sx={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 2,
+          px: { xs: 2, md: 3 },
+          pt: 2,
+        }}
+      >
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            minWidth: 140,
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: alpha(theme.palette.success.main, 0.08),
+            borderLeft: `4px solid ${theme.palette.success.main}`,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+            Total Previsão Faturamento
+          </Typography>
+          <Typography variant="subtitle1" fontWeight={700} color="success.main">
+            {formatCurrency(totals.totalCobranca)}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            minWidth: 140,
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: alpha(theme.palette.error.main, 0.08),
+            borderLeft: `4px solid ${theme.palette.error.main}`,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+            Total Pagamento
+          </Typography>
+          <Typography variant="subtitle1" fontWeight={700} color="error.main">
+            {formatCurrency(totals.totalPagamento)}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            flex: '1 1 auto',
+            minWidth: 140,
+            p: 1.5,
+            borderRadius: 2,
+            backgroundColor: alpha(theme.palette.warning.main, 0.08),
+            borderLeft: `4px solid ${theme.palette.warning.main}`,
+          }}
+        >
+          <Typography variant="caption" color="text.secondary" fontWeight={600}>
+            Total Vencido / Inadimplência
+          </Typography>
+          <Typography variant="subtitle1" fontWeight={700} color="warning.main">
+            {formatCurrency(totals.totalVencido)}
+          </Typography>
         </Box>
       </Box>
 
