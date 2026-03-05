@@ -23,6 +23,14 @@ const navigationConfig: FuseNavItemType[] = [
 	},
 	// ─── D ──────────────────────────────────────────────────────────────────────
 	{
+		id: 'dashboard-geral',
+		title: 'Dashboard Geral',
+		translate: 'Dashboard Geral',
+		type: 'item',
+		icon: 'heroicons-outline:chart-bar-square',
+		url: 'dashboard-geral'
+	},
+	{
 		id: 'dashboard',
 		title: 'DASHBOARD',
 		translate: 'DASHBOARD',
