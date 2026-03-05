@@ -289,3 +289,11 @@ export const useResumoMensalFinanceiro = (year?: number) => {
     queryFn: () => dashboardService.getResumoMensalFinanceiro(year)
   });
 };
+
+export const useResumoMensalFinanceiroPorPeriodo = (startDate?: string, endDate?: string) => {
+  return useQuery({
+    queryKey: ['resumoMensalFinanceiroPorPeriodo', startDate, endDate],
+    queryFn: () => dashboardService.getResumoMensalFinanceiroPorPeriodo(startDate!, endDate!),
+    enabled: !!startDate && !!endDate
+  });
+};

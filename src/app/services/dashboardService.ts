@@ -503,6 +503,11 @@ export const dashboardService = {
     return dashboardClient.get('api/dashboard/resumo-mensal-financeiro', {
       searchParams
     }).json<ResumoMensalFinanceiroDto[]>();
+  },
+  getResumoMensalFinanceiroPorPeriodo: async (startDate: string, endDate: string): Promise<ResumoMensalFinanceiroDto[]> => {
+    return dashboardClient.get('api/dashboard/resumo-mensal-financeiro-periodo', {
+      searchParams: { startDate, endDate }
+    }).json<ResumoMensalFinanceiroDto[]>();
   }
 };
 
