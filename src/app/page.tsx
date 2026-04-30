@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 
 function MainPage() {
-	redirect(`/painel`);
+	redirect(`/dashboard-geral`);
 	return null;
 }
 

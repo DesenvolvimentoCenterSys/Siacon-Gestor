@@ -56,7 +56,9 @@ function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 				{/* REMOVED: Horizontal navbar completely disabled */}
 				{/* Only vertical drawer is used for all screen sizes */}
 
-				<StyledSwipeableDrawer
+			</ThemeProvider>
+
+			<StyledSwipeableDrawer
 					anchor="left"
 					variant="temporary"
 					open={mobileOpen}
@@ -70,7 +72,6 @@ function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 				>
 					<NavbarMobileLayout2 />
 				</StyledSwipeableDrawer>
-			</ThemeProvider>
 
 			{/* Toggle button - ALWAYS visible */}
 			<NavbarToggleFabLayout2 />

@@ -9,8 +9,8 @@ import Navigation from '../../components/navigation/Navigation';
 import GoToDocBox from '../../components/GoToDocBox';
 
 const Root = styled('div')(({ theme }) => ({
-	backgroundColor: '#E5E7EB !important',
-	color: '#1F232B',
+	backgroundColor: theme.palette.background.default,  
+    color: theme.palette.text.primary,
 	'& .fuse-list-item': {
 		'&:not(.active)': {
 			color: '#1F232B !important',

@@ -1,6 +1,6 @@
 'use client';
 
-import { styled, ThemeProvider } from '@mui/material/styles';
+import { styled, ThemeProvider, useTheme } from '@mui/material/styles';
 import SwipeableDrawer from '@mui/material/SwipeableDrawer';
 import { memo, useEffect } from 'react';
 import AppBar from '@mui/material/AppBar';
@@ -15,17 +15,13 @@ import NavbarMobileLayout2 from '../../components/NavbarMobileLayout2';
 import NavbarLayout2 from './NavbarLayout2';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
 
-const StyledSwipeableDrawer = styled(SwipeableDrawer)(({ theme }) => ({
+const StyledSwipeableDrawer = styled(SwipeableDrawer)(() => ({
 	'& > .MuiDrawer-paper': {
 		height: '100%',
 		flexDirection: 'column',
 		flex: '1 1 auto',
 		width: 280,
 		minWidth: 280,
-		transition: theme.transitions.create(['width', 'min-width'], {
-			easing: theme.transitions.easing.sharp,
-			duration: theme.transitions.duration.shorter
-		})
 	}
 }));
 
@@ -33,9 +29,6 @@ type NavbarWrapperLayout2Props = {
 	className?: string;
 };
 
-/**
- * The navbar wrapper layout 2 - UNIFIED MOBILE/OVERLAY BEHAVIOR
- */
 function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 	const { className = '' } = props;
 
@@ -45,7 +38,6 @@ function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 	const pathname = usePathname();
 	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
 
-	// Close navbar on route change
 	useEffect(() => {
 		if (isMobile) {
 			navbarCloseMobile();
@@ -54,28 +46,29 @@ function NavbarWrapperLayout2(props: NavbarWrapperLayout2Props) {
 
 	return (
 		<>
-			<ThemeProvider theme={navbarTheme}>
-				{!isMobile && <NavbarLayout2 className={className} />}
+			{!isMobile && (
+				<ThemeProvider theme={navbarTheme}>
+					<NavbarLayout2 className={className} />
+				</ThemeProvider>
+			)}
 
-				{isMobile && (
+			{isMobile && (
+				<ThemeProvider theme={navbarTheme}>
 					<StyledSwipeableDrawer
 						anchor="left"
 						variant="temporary"
 						open={mobileOpen}
 						onClose={navbarCloseMobile}
-						onOpen={() => { }}
+						onOpen={() => {}}
 						disableSwipeToOpen
 						className={className}
-						ModalProps={{
-							keepMounted: true
-						}}
+						ModalProps={{ keepMounted: true }}
 					>
 						<NavbarMobileLayout2 />
 					</StyledSwipeableDrawer>
-				)}
-			</ThemeProvider>
+				</ThemeProvider>
+			)}
 
-			{/* Top Bar - ONLY visible on mobile */}
 			{isMobile && (
 				<AppBar
 					position="fixed"

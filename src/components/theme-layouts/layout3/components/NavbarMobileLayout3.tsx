@@ -7,6 +7,7 @@ import UserMenu from 'src/components/theme-layouts/components/UserMenu';
 import Navigation from '../../components/navigation/Navigation';
 import Logo from '../../components/Logo';
 import GoToDocBox from '../../components/GoToDocBox';
+import Box from '@mui/material/Box';
 
 const Root = styled('div')(({ theme }) => ({
 	backgroundColor: theme.palette.background.default,
@@ -47,6 +48,20 @@ function NavbarMobileLayout3(props: NavbarMobileLayout3Props) {
 
 	return (
 		<Root className={clsx('flex h-full flex-col overflow-hidden', className)}>
+		<Box
+        component="svg"
+        className="pointer-events-none absolute inset-0"
+        viewBox="0 0 960 540"
+        width="100%"
+        height="100%"
+        preserveAspectRatio="xMidYMax slice"
+        sx={{ color: 'primary.contrastText', opacity: 0.05 }}
+      >
+        <g fill="none" stroke="currentColor" strokeWidth="100">
+          <circle r="234" cx="196" cy="23" />
+          <circle r="234" cx="790" cy="491" />
+        </g>
+      </Box>
 			<div className="flex h-48 shrink-0 flex-row items-center px-12 md:h-72">
 				<Logo />
 			</div>

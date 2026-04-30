@@ -11,6 +11,7 @@ import NavbarWrapperLayout2 from './components/NavbarWrapperLayout2';
 import RightSideLayout2 from './components/RightSideLayout2';
 import ToolbarLayout2 from './components/ToolbarLayout2';
 import Configurator from './components/configurator/Configurator';
+import Box from '@mui/material/Box';
 
 const Root = styled('div')(({ config }: { config: Layout2ConfigDefaultsType }) => ({
 	...(config.mode === 'boxed' && {
@@ -47,6 +48,20 @@ function Layout2(props: Layout2Props) {
 			className="flex flex-auto w-full"
 			config={config}
 		>
+			<Box
+				component="svg"
+				className="pointer-events-none absolute inset-0"
+				viewBox="0 0 960 540"
+				width="100%"
+				height="100%"
+				preserveAspectRatio="xMidYMax slice"
+				sx={{ color: 'primary.contrastText', opacity: 0.05 }}
+			>
+				<g fill="none" stroke="currentColor" strokeWidth="100">
+				<circle r="234" cx="196" cy="23" />
+				<circle r="234" cx="790" cy="491" />
+				</g>
+			</Box>
 			{config.leftSidePanel.display && <LeftSideLayout2 />}
 
 			<div className="flex min-w-0 flex-auto flex-col">

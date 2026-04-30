@@ -29,31 +29,24 @@ function ProjectDashboardAppHeader({ pageTitle }: ProjectDashboardAppHeaderProps
 
           <Avatar
             sx={{
-              background: (theme) => theme.palette.secondary.main,
+              background: (theme) => '#161616',
               color: (theme) => theme.palette.common.white,
               fontWeight: 600
             }}
-            className="flex-0 w-64 h-64 mt-4"
+            className="flex-0 w-64 h-64 mt-3 ml-8"
             alt="user photo"
             src={user?.photoURL}
           >
             {_.toUpper(user?.displayName?.[0])}
           </Avatar>
-          <div className="flex flex-col min-w-0 mx-16">
-            {pageTitle ? (
+          <div className="flex flex-col min-w-0 mx-16 mt-12 ml-8">
+            {
               <>
-                <Typography className="text-lg font-medium tracking-tight text-secondary leading-6">
-                  {_.startCase(_.toLower(user?.displayName || user?.email))}
-                </Typography>
                 <Typography className="text-2xl md:text-5xl font-semibold tracking-tight leading-7 md:leading-snug truncate text-primary">
                   {pageTitle}
                 </Typography>
               </>
-            ) : (
-              <Typography className="text-2xl md:text-5xl font-semibold tracking-tight leading-7 md:leading-snug truncate text-primary">
-                {isGuest ? 'Hi Guest!' : `Bem vindo ${_.startCase(_.toLower(user?.displayName || user?.email))}!`}
-              </Typography>
-            )}
+            }
           </div>
         </div>
       </div>

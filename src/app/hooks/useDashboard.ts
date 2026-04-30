@@ -94,10 +94,11 @@ export const useNovasVidas = (date?: string) => {
   });
 };
 
-export const useTotalFiliados = (date?: string) => {
+export const useTotalFiliados = (startDate?: string) => {
   return useQuery({
-    queryKey: ['totalFiliados', date],
-    queryFn: () => dashboardService.getTotalFiliados(date)
+    queryKey: ['totalFiliados', startDate],
+    queryFn: () => dashboardService.getTotalFiliados(startDate),
+    enabled: !!startDate 
   });
 };
 
@@ -185,10 +186,17 @@ export const useTotalUsuariosConvenio = (date?: string) => {
   });
 };
 
-export const useTotalFaturamentoPorConvenio = (date?: string) => {
+export const useTotalFaturamentoPorConvenio = (startDate?: string, searchBy?: string) => {
   return useQuery({
-    queryKey: ['totalFaturamentoPorConvenio', date],
-    queryFn: () => dashboardService.getTotalFaturamentoPorConvenio(date)
+    queryKey: ['totalFaturamentoPorConvenio', startDate, searchBy],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenio(startDate, searchBy)
+  });
+};
+
+export const useTotalDespesasPorConvenio = (dateMonth?: string, tipoPesquisa?: string) => {
+  return useQuery({
+    queryKey: ['totalDespesasPorConvenio', dateMonth],
+    queryFn: () => dashboardService.getTotalDespesasPorConvenio(dateMonth, tipoPesquisa)
   });
 };
 
@@ -269,10 +277,10 @@ export const useDelinquencyAgingReferencia = () => {
   });
 };
 
-export const useDelinquencySummary = (startDate?: string, endDate?: string) => {
+export const useDelinquencySummary = (startDate?: string, endDate?: string, searchBy?: string) => {
   return useQuery({
-    queryKey: ['delinquencySummary', startDate, endDate],
-    queryFn: () => dashboardService.getDelinquencySummary(startDate, endDate)
+    queryKey: ['delinquencySummary', startDate, endDate, searchBy],
+    queryFn: () => dashboardService.getDelinquencySummary(startDate, endDate, searchBy)
   });
 };
 

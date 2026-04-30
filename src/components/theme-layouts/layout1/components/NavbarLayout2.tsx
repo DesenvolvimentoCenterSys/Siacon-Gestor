@@ -9,8 +9,8 @@ import UserMenu from '../../components/UserMenu';
 
 const Root = styled('div')(({ theme }) => ({
 	position: 'relative',
-	backgroundColor: '#E5E7EB !important',
-	color: '#1F232B',
+	backgroundColor: theme.palette.background.default,
+	color: theme.palette.text.primary,
 	width: 280,
 	minWidth: 280,
 	maxWidth: 280,
@@ -18,7 +18,7 @@ const Root = styled('div')(({ theme }) => ({
 	flexDirection: 'column',
 	height: '100vh',
 	'& .fuse-list-item': {
-		color: '#1F232B !important'
+		color:`${theme.palette.text.primary} !important`
 	}
 }));
 
@@ -31,6 +31,20 @@ function NavbarLayout2(props: NavbarLayout2Props) {
 
 	return (
 		<Root className={clsx('shadow-md', className)}>
+		<Box
+        component="svg"
+        className="pointer-events-none absolute inset-0"
+        viewBox="0 0 960 540"
+        width="100%"
+        height="100%"
+        preserveAspectRatio="xMidYMax slice"
+        sx={{ color: 'primary.contrastText', opacity: 0.05 }}
+      >
+        <g fill="none" stroke="currentColor" strokeWidth="100">
+          <circle r="234" cx="196" cy="23" />
+          <circle r="234" cx="790" cy="491" />
+        </g>
+      </Box>
 			<div className="flex shrink-0 items-center justify-center px-8 py-16">
 				<Logo />
 			</div>

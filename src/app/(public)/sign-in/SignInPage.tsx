@@ -86,15 +86,15 @@ export default function SignInPage() {
 						display: { xs: 'none', md: 'flex' },
 						alignItems: 'center',
 						justifyContent: 'center',
-						backgroundColor: '#1976d2',
+						backgroundColor: '#1E1E1E',
 						p: 4
 					}}
 				>
-					<Box sx={{ textAlign: 'center', color: '#ffffff' }}>
+					<Box sx={{ textAlign: 'center',display:'flex', flexDirection: 'column', color: '#ffffff' }}>
 						<img
 							src={settings?.urlLogoMenu}
 							alt="logo"
-							style={{ width: 120, marginBottom: 16 }}
+							style={{ width: 120, marginBottom: 16, alignSelf: 'center' }}
 						/>
 						<Typography
 							variant="h4"
@@ -115,14 +115,14 @@ export default function SignInPage() {
 				{/* Área de Login */}
 				<Box sx={{ flex: 1, backgroundColor: '#ffffff', p: { xs: 4, md: 6 } }}>
 					<CardContent>
-						<Box sx={{ textAlign: 'center', mb: 4 }}>
+						<Box sx={{ textAlign: 'center',display:'flex', flexDirection: 'column', mb: 4 }}>
 							<img
 								src={settings?.urlLogoLogin}
 								alt="logo"
-								style={{ width: 120 }}
+								style={{ width: 120, alignSelf: 'center'}}
 							/>
 							<Typography
-								variant="h5"
+								variant="h4"
 								sx={{ mt: 2, fontWeight: 'bold', color: '#1976d2' }}
 							>
 								Fazer Login

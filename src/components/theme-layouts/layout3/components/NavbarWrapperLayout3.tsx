@@ -56,7 +56,9 @@ function NavbarWrapperLayout3(props: NavbarWrapperLayout3Props) {
 	return (
 		<>
 			<ThemeProvider theme={navbarTheme}>
-				{!isMobile && <NavbarLayout3 className={className} />}
+				
+			</ThemeProvider>
+			{!isMobile && <NavbarLayout3 className={className} />}
 
 				{isMobile && (
 					<StyledSwipeableDrawer
@@ -73,7 +75,6 @@ function NavbarWrapperLayout3(props: NavbarWrapperLayout3Props) {
 						<NavbarMobileLayout3 />
 					</StyledSwipeableDrawer>
 				)}
-			</ThemeProvider>
 
 			{config.navbar.display && !config.toolbar.display && isMobile && <NavbarToggleFab />}
 		</>

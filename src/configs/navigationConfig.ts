@@ -63,14 +63,14 @@ const navigationConfig: FuseNavItemType[] = [
 				icon: 'heroicons-outline:building-library',
 				url: 'bancos'
 			},
-			{
-				id: 'caixa',
-				title: 'Caixa',
-				translate: 'Caixa',
-				type: 'item',
-				icon: 'heroicons-outline:archive-box',
-				url: 'caixa'
-			},
+			//{
+			//	id: 'caixa',
+			//	title: 'Caixa',
+			//	translate: 'Caixa',
+			//	type: 'item',
+			//	icon: 'heroicons-outline:archive-box',
+			//	url: 'caixa'
+			//},
 			{
 				id: 'faturamento',
 				title: 'Faturamento',

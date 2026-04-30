@@ -251,8 +251,15 @@ export interface ResumoMensalFinanceiroDto {
   totalCobranca: number;
   totalPagamento: number;
   totalVencido: number;
+  resultado: number;
 }
 
+export interface TotalDespesasPorConvenioDto{
+  valorTotal: number;
+  emAberto: number;
+  liquidado: number;
+  valorVencido: number;
+}
 
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
@@ -386,12 +393,24 @@ export const dashboardService = {
       searchParams
     }).json<TotalUsuariosConvenioDto>();
   },
-  getTotalFaturamentoPorConvenio: async (date?: string): Promise<TotalFaturamentoPorConvenioDto> => {
-    const searchParams = date ? { date } : undefined;
+  getTotalFaturamentoPorConvenio: async (date?: string, searchBy?: string): Promise<TotalFaturamentoPorConvenioDto> => {
+    const searchParams : Record<string,string> = {}
+    if(date) searchParams.date = date;
+    if(searchBy) searchParams.searchBy = searchBy;
     return dashboardClient.get('api/Dashboard/total-faturamento-convenio', {
       searchParams
     }).json<TotalFaturamentoPorConvenioDto>();
   },
+
+  getTotalDespesasPorConvenio: async (date?: string, tipoPesquisa?: string): Promise<TotalDespesasPorConvenioDto> => {
+    const searchParams : Record<string,string> = {}
+    if(date) searchParams.date = date;
+    if(tipoPesquisa) searchParams.tipoPesquisa = tipoPesquisa
+    return dashboardClient.get('api/Dashboard/total-despesas', {
+      searchParams
+    }).json<TotalDespesasPorConvenioDto>();
+  },
+
   getTotalFaturamentoPorConvenioReferencia: async (date?: string): Promise<TotalFaturamentoPorConvenioDto> => {
     const searchParams = date ? { date } : undefined;
     return dashboardClient.get('api/Dashboard/total-faturamento-convenio-referencia', {
@@ -469,10 +488,11 @@ export const dashboardService = {
   getDelinquencyAgingReferencia: async (): Promise<DelinquencyAgingDto[]> => {
     return dashboardClient.get('api/Dashboard/delinquency-aging-referencia').json<DelinquencyAgingDto[]>();
   },
-  getDelinquencySummary: async (startDate?: string, endDate?: string): Promise<DelinquencySummaryDto> => {
+  getDelinquencySummary: async (startDate?: string, endDate?: string, searchBy?: string): Promise<DelinquencySummaryDto> => {
     const searchParams: Record<string, string> = {};
     if (startDate) searchParams.startDate = startDate;
     if (endDate) searchParams.endDate = endDate;
+    if( searchBy) searchParams.searchBy = searchBy;
     return dashboardClient.get('api/Dashboard/delinquency-summary', { searchParams }).json<DelinquencySummaryDto>();
   },
   getDelinquencySummaryReferencia: async (startDate?: string, endDate?: string): Promise<DelinquencySummaryDto> => {
@@ -504,9 +524,9 @@ export const dashboardService = {
       searchParams
     }).json<ResumoMensalFinanceiroDto[]>();
   },
-  getResumoMensalFinanceiroPorPeriodo: async (startDate: string, endDate: string): Promise<ResumoMensalFinanceiroDto[]> => {
+  getResumoMensalFinanceiroPorPeriodo: async (startDate: string, endDate: string,): Promise<ResumoMensalFinanceiroDto[]> => {
     return dashboardClient.get('api/dashboard/resumo-mensal-financeiro-periodo', {
-      searchParams: { startDate, endDate }
+      searchParams: { startDate, endDate}
     }).json<ResumoMensalFinanceiroDto[]>();
   }
 };
