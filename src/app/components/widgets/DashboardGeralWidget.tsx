@@ -539,6 +539,7 @@ export function DashboardGeralWidget() {
     const total = g.totalGeral;
     const percentAVencer = total > 0 ? (g.totalAberto / total) * 100 : 0;
     const percentVencido = total > 0 ? (g.totalVencido / total) * 100 : 0;
+    const percentPago = total > 0 ? (g.totalPago / total) * 100 : 0;
     return {
       totalGeral: total,
       totalPago: g.totalPago,
@@ -546,6 +547,7 @@ export function DashboardGeralWidget() {
       vencido: g.totalVencido,
       percentAVencer,
       percentVencido,
+      percentPago,
     };
   }, [faturamentoCard2Data]);
 
@@ -952,11 +954,6 @@ export function DashboardGeralWidget() {
               value={formatCurrency(faturamentoInfoCard2?.aVencer ?? 0)}
               valueColor="#bbf7d0"
             />
-             <KPIMetric
-              label="Liquidado"
-              value={formatCurrency(faturamentoInfoCard2?.totalPago ?? 0)}
-              valueColor="#bbf7d0"
-            />
             <KPIMetric
               label=""
               value={formatPercent(faturamentoInfoCard2?.percentAVencer ?? 0)}
@@ -970,6 +967,16 @@ export function DashboardGeralWidget() {
             <KPIMetric
               label=""
               value={formatPercent(faturamentoInfoCard2?.percentVencido ?? 0)}
+            />
+            <KPIDivider />
+            <KPIMetric
+              label="Liquidado"
+              value={formatCurrency(faturamentoInfoCard2?.totalPago ?? 0)}
+              valueColor="#bbf7d0"
+            />
+            <KPIMetric
+              label=""
+              value={formatPercent(faturamentoInfoCard2?.percentPago ?? 0)}
             />
           </GradientKPI>
         </Grid>
