@@ -952,6 +952,11 @@ export function DashboardGeralWidget() {
               value={formatCurrency(faturamentoInfoCard2?.aVencer ?? 0)}
               valueColor="#bbf7d0"
             />
+             <KPIMetric
+              label="Liquidado"
+              value={formatCurrency(faturamentoInfoCard2?.totalPago ?? 0)}
+              valueColor="#bbf7d0"
+            />
             <KPIMetric
               label=""
               value={formatPercent(faturamentoInfoCard2?.percentAVencer ?? 0)}

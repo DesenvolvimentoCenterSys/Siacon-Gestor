@@ -600,7 +600,8 @@ export function FinancialEvolutionWidget({ initialIsFavorite = false }: Financia
 						display: 'grid',
 						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' },
 						gap: 2,
-						mb: 3
+						mb: 3,
+						pb: 2,
 					}}
 				>
 					{metricCards.map((m) => {
