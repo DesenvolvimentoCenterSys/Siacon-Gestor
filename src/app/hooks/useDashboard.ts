@@ -221,19 +221,26 @@ export const useCashFlowEvolution = (startDate?: string, endDate?: string) => {
   });
 };
 
-export const useFinancialEvolution = (date?: string) => {
+export const useFinancialEvolution = (startDate?: string, endDate?: string, gruposEscolhidos?: number[]) => {
   return useQuery({
-    queryKey: ['financialEvolution', date],
-    queryFn: () => dashboardService.getFinancialEvolution(date)
+    queryKey: ['financialEvolution', startDate, endDate, gruposEscolhidos],
+    queryFn: () => dashboardService.getFinancialEvolution(startDate, endDate, gruposEscolhidos)
   });
 };
 
-export const useFinancialEvolutionReferencia = (date?: string) => {
+export const useFinancialEvolutionCompetencia = (startDate?: string, endDate?: string, gruposEscolhidos?: number[]) => {
   return useQuery({
-    queryKey: ['financialEvolutionReferencia', date],
-    queryFn: () => dashboardService.getFinancialEvolutionReferencia(date)
+    queryKey: ['financialEvolutionCompetencia', startDate, endDate, gruposEscolhidos],
+    queryFn: () => dashboardService.getFinancialEvolutionCompetencia(startDate, endDate, gruposEscolhidos)
   });
 };
+
+export const useGrupoBanco = () => {
+  return useQuery({
+    queryKey: ['grupoBanco'],
+    queryFn: () => dashboardService.getGrupoBanco()
+  });
+}
 
 export const useAccumulatedDelinquency = (year?: number) => {
   return useQuery({

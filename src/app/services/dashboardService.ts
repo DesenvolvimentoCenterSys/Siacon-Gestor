@@ -261,6 +261,11 @@ export interface TotalDespesasPorConvenioDto{
   valorVencido: number;
 }
 
+export interface GrupoBancoDto {
+  nomeGrupo : string;
+  codigo : number;
+}
+
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
     return dashboardClient.post('api/UsuarioDashboardWidgets/favorite', {
@@ -273,6 +278,9 @@ export const dashboardService = {
   },
   getUserFavoriteWidgets: async (codUsu: number): Promise<UsuarioDashboardWidgetDto[]> => {
     return dashboardClient.get(`api/UsuarioDashboardWidgets/usuario/${codUsu}`).json<UsuarioDashboardWidgetDto[]>();
+  },
+  getGrupoBanco: async (): Promise<GrupoBancoDto[]> => {
+    return dashboardClient.get('api/Dashboard/grupo-banco').json<GrupoBancoDto[]>();
   },
   getTotalVidas: async (date?: string): Promise<TotalVidasDto> => {
     const searchParams = date ? { date } : undefined;
@@ -432,19 +440,23 @@ export const dashboardService = {
       searchParams
     }).json<CashFlowEvolutionDto[]>();
   },
-  getFinancialEvolution: async (date?: string): Promise<FinancialEvolutionDto[]> => {
+  getFinancialEvolution: async (startDate?: string, endDate?: string, grupos?: number[]): Promise<FinancialEvolutionDto[]> => {
     const searchParams: Record<string, string> = {};
-    if (date) searchParams.date = date;
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    if (grupos && grupos.length > 0) searchParams.grupos = grupos.join(',');
 
     return dashboardClient.get('api/Dashboard/financial-evolution', {
       searchParams
     }).json<FinancialEvolutionDto[]>();
   },
-  getFinancialEvolutionReferencia: async (date?: string): Promise<FinancialEvolutionDto[]> => {
+  getFinancialEvolutionCompetencia: async (startDate?: string, endDate?: string, gruposEscolhidos?: number[]): Promise<FinancialEvolutionDto[]> => {
     const searchParams: Record<string, string> = {};
-    if (date) searchParams.date = date;
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    if (gruposEscolhidos && gruposEscolhidos.length > 0) searchParams.grupos = gruposEscolhidos.join(',');
 
-    return dashboardClient.get('api/Dashboard/financial-evolution-referencia', {
+    return dashboardClient.get('api/Dashboard/financial-evolution-competencia', {
       searchParams
     }).json<FinancialEvolutionDto[]>();
   },

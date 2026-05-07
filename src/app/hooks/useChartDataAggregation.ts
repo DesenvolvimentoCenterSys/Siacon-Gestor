@@ -32,7 +32,7 @@ export function useChartDataAggregation({
 	maxPoints = 15
 }: UseChartDataAggregationProps): AggregationResult {
 	return useMemo(() => {
-		if (!isMobile || dates.length <= maxPoints) {
+		if (dates.length <= maxPoints) {
 			return {
 				categories: dates.map((d) => format(parseISO(d), 'dd/MM')),
 				series,
@@ -74,7 +74,14 @@ export function useChartDataAggregation({
 
 			const newCategories = groupKeys.map((k) => {
 				const d = groups[k].displayDate;
-				return period === 'weekly' ? format(d, 'dd/MM') : format(d, 'MMM/yy', { locale: ptBR });
+				
+				if (period === 'weekly') {
+					return format(d, 'dd/MM');
+				}
+				
+				const formattedMonth = format(d, 'MMM/yy', { locale: ptBR });
+				
+				return formattedMonth.charAt(0).toUpperCase() + formattedMonth.slice(1);
 			});
 
 			const newDisplayDates = groupKeys.map((k) => format(groups[k].displayDate, 'yyyy-MM-dd'));

@@ -1,673 +1,1028 @@
-'use client';
+"use client";
 
-import { useMemo, useState, useEffect } from 'react';
-import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
-import { useTheme, alpha } from '@mui/material/styles';
-import ReactApexChart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
+import { useMemo, useState, useEffect } from "react";
+import { useSessionUrlFilter } from "@auth/useSessionUrlFilter";
+import { useTheme, alpha } from "@mui/material/styles";
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
 import {
-	Card,
-	CardContent,
-	Typography,
-	Box,
-	IconButton,
-	Tooltip,
-	Menu,
-	MenuItem,
-	ListItemIcon,
-	ListItemText,
-	Divider,
-	Button,
-	Dialog,
-	DialogContent,
-	DialogActions,
-	Chip,
-	Tabs,
-	Tab
-} from '@mui/material';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import useUser from '@auth/useUser';
-import { format } from 'date-fns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ptBR } from 'date-fns/locale';
-import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
-import WidgetLoading from '../ui/WidgetLoading';
-import { FinancialEvolutionDto } from '../../services/dashboardService';
-import { useFinancialEvolution, useFinancialEvolutionReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
-import { useChartDataAggregation, SeriesData } from '../../hooks/useChartDataAggregation';
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  IconButton,
+  Tooltip,
+  DialogTitle,
+  FormControl,
+  InputLabel,
+  Select,
+  Menu,
+  MenuItem,
+  ListItemIcon,
+  ListItemText,
+  Divider,
+  Button,
+  Dialog,
+  DialogContent,
+  DialogActions,
+  OutlinedInput,
+  Checkbox,
+  Chip,
+  Tabs,
+  Tab,
+  SelectChangeEvent,
+} from "@mui/material";
+import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
+import useUser from "@auth/useUser";
+import { format, addDays, startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+import { ptBR } from "date-fns/locale";
+import useThemeMediaQuery from "@fuse/hooks/useThemeMediaQuery";
+import WidgetLoading from "../ui/WidgetLoading";
+import { FinancialEvolutionDto } from "../../services/dashboardService";
+import {
+  useFinancialEvolution,
+  useFinancialEvolutionCompetencia,
+  useToggleFavoriteWidget,
+  useUserFavoriteWidgets,
+  useGrupoBanco,
+} from "../../hooks/useDashboard";
+import {
+  useChartDataAggregation,
+  SeriesData,
+} from "../../hooks/useChartDataAggregation";
+import { fontSize } from "@mui/system";
 
 interface FinancialEvolutionWidgetProps {
-	initialIsFavorite?: boolean;
+  initialIsFavorite?: boolean;
 }
 
 const WIDGET_ID = 18;
 
-export function FinancialEvolutionWidget({ initialIsFavorite = false }: FinancialEvolutionWidgetProps) {
-	const theme = useTheme();
-	const { data: user } = useUser();
-	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
+export function FinancialEvolutionWidget({
+  initialIsFavorite = false,
+}: FinancialEvolutionWidgetProps) {
+  const initialStartDate = startOfMonth(subMonths(new Date(), 5));
+  const initialEndDate = endOfMonth(new Date());
+  const theme = useTheme();
+  const { data: user } = useUser();
+  const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down("md"));
 
-	// Session + URL state para persistir filtros
-	const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
-		'bancos_filterDate',
-		new Date(),
-		(d) => d.toISOString(),
-		(s) => new Date(s)
-	);
+  const [startDate, setStartDate] = useState(initialStartDate);
+  const [endDate, setEndDate] = useState(initialEndDate);
+  const [viewMode, setViewMode] = useState("monthly");
+  const MOBILE_PAGE_SIZE = viewMode === "monthly" ? 12 : 10;
+  const [mobilePage, setMobilePage] = useState(0);
 
-	const [selectedBank, setSelectedBank] = useSessionUrlFilter<string>(
-		'bancos_selectedBank',
-		'Todos'
-	);
+  const [tempViewMode, setTempViewMode] = useState<"daily" | "monthly">(
+    "monthly",
+  );
+  const [tempStartDate, setTempStartDate] = useState<Date>(
+    startOfMonth(new Date()),
+  );
+  const [tempEndDate, setTempEndDate] = useState<Date>(endOfMonth(new Date()));
 
-	const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
-		'bancos_activeSeries',
-		'receber'
-	);
+  const { data: gruposBancos, isLoading: isLoadingGrupos } = useGrupoBanco();
 
-	const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
-		'bancos_tabIndex',
-		0,
-		String,
-		Number
-	);
+  const [selectedGrupos, setSelectedGrupos] = useState<number[]>([]);
+  const [tempSelectedGrupos, setTempSelectedGrupos] = useState<number[]>([]);
 
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-	const openMenu = Boolean(anchorEl);
-	const [datePickerOpen, setDatePickerOpen] = useState(false);
-	const [tempDate, setTempDate] = useState<Date>(filterDate);
+  const [selectedBank, setSelectedBank] = useSessionUrlFilter<string>(
+    "bancos_selectedBank",
+    "Todos",
+  );
 
+  const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
+    "bancos_activeSeries",
+    "receber",
+  );
 
-	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-		setTabIndex(newValue);
-	};
+  const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
+    "bancos_tabIndex",
+    0,
+    String,
+    Number,
+  );
 
-	const apiDate = useMemo(() => {
-		return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
-	}, [filterDate]);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
 
-	useEffect(() => {
-		setTempDate(filterDate);
-	}, [filterDate]);
+  const handleGrupoBancoChange = (
+    event: SelectChangeEvent<typeof selectedGrupos>,
+  ) => {
+    const {
+      target: { value },
+    } = event;
+    setTempSelectedGrupos(
+      typeof value === "string"
+        ? value.split(",").map(Number)
+        : (value as number[]),
+    );
+  };
 
-	// Filter menu handlers
-	const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => setAnchorEl(event.currentTarget);
-	const handleCloseMenu = () => setAnchorEl(null);
-	const handleSelectMonth = (monthsAgo: number) => {
-		const d = new Date();
-		d.setMonth(d.getMonth() - monthsAgo);
-		setFilterDate(d);
-		handleCloseMenu();
-	};
-	const handleCustomDateClick = () => {
-		handleCloseMenu();
-		setDatePickerOpen(true);
-	};
-	const handleDatePickerClose = () => {
-		setDatePickerOpen(false);
-		setTempDate(filterDate);
-	};
-	const handleDatePickerConfirm = () => {
-		if (tempDate) setFilterDate(tempDate);
+  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
+    setTabIndex(newValue);
+  };
 
-		setDatePickerOpen(false);
-	};
+  const apiStartDate = useMemo(
+    () => format(startDate, "yyyy-MM-dd"),
+    [startDate],
+  );
 
-	// Data
-	const { data: vencimentoData, isLoading: isVencimentoLoading } = useFinancialEvolution(apiDate);
-	const { data: competenciaData, isLoading: isCompetenciaLoading } = useFinancialEvolutionReferencia(apiDate);
+  const apiEndDate = useMemo(() => {
+    if (viewMode === "monthly") {
+      return format(endOfMonth(endDate), "yyyy-MM-dd");
+    }
+    return format(endDate, "yyyy-MM-dd");
+  }, [endDate, viewMode]);
 
-	const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
-	const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
-	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
-	const toggleFavoriteMutation = useToggleFavoriteWidget();
+  const { data: vencimentoData, isLoading: isVencimentoLoading } =
+    useFinancialEvolution(apiStartDate, apiEndDate, selectedGrupos);
+  const { data: competenciaData, isLoading: isCompetenciaLoading } =
+    useFinancialEvolutionCompetencia(apiStartDate, apiEndDate, selectedGrupos);
 
-	// Favorite logic
-	const backendIsFavorite = useMemo(() => {
-		if (!favoriteWidgets) return initialIsFavorite;
+  const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
+  const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
+  const { data: favoriteWidgets } = useUserFavoriteWidgets(
+    user?.id ? Number(user.id) : undefined,
+  );
+  const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-		return favoriteWidgets.some(
-			(w: { dashboardWidgetId: number; isFavorite: boolean }) => w.dashboardWidgetId === WIDGET_ID && w.isFavorite
-		);
-	}, [favoriteWidgets, initialIsFavorite]);
+  // Favorite logic
+  const backendIsFavorite = useMemo(() => {
+    if (!favoriteWidgets) return initialIsFavorite;
 
-	const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(null);
-	const isFavorite = optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
+    return favoriteWidgets.some(
+      (w: { dashboardWidgetId: number; isFavorite: boolean }) =>
+        w.dashboardWidgetId === WIDGET_ID && w.isFavorite,
+    );
+  }, [favoriteWidgets, initialIsFavorite]);
 
-	useEffect(() => {
-		if (optimisticStatus !== null && backendIsFavorite === optimisticStatus) setOptimisticStatus(null);
-	}, [backendIsFavorite, optimisticStatus]);
+  const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(
+    null,
+  );
+  const isFavorite =
+    optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
 
-	const handleToggleFavorite = (e: React.MouseEvent) => {
-		e.stopPropagation();
+  useEffect(() => {
+    if (optimisticStatus !== null && backendIsFavorite === optimisticStatus)
+      setOptimisticStatus(null);
+  }, [backendIsFavorite, optimisticStatus]);
 
-		if (!user?.id) return;
+  const handleToggleFavorite = (e: React.MouseEvent) => {
+    e.stopPropagation();
 
-		const newStatus = !isFavorite;
-		setOptimisticStatus(newStatus);
-		toggleFavoriteMutation.mutate(
-			{ codUsu: Number(user.id), widgetId: WIDGET_ID, isFavorite: newStatus },
-			{ onError: () => setOptimisticStatus(null) }
-		);
-	};
+    if (!user?.id) return;
 
-	// Colors
-	const colorReceber = '#2E7D32'; // verde metálico
-	const colorPagar = '#C62828'; // vermelho metálico
-	const colorSaldo = theme.palette.secondary.main;
+    const newStatus = !isFavorite;
+    setOptimisticStatus(newStatus);
+    toggleFavoriteMutation.mutate(
+      { codUsu: Number(user.id), widgetId: WIDGET_ID, isFavorite: newStatus },
+      { onError: () => setOptimisticStatus(null) },
+    );
+  };
 
-	// Derived data
-	const banks = useMemo(() => {
-		if (!widgetData) return [];
+  // Colors
+  const colorReceber = "#4783dc"; // verde metálico
+  const colorPagar = "#ff772e"; // vermelho metálico
+  const colorSaldo = "#23a329";
 
-		return ['Todos', ...Array.from(new Set(widgetData.map((d: FinancialEvolutionDto) => d.nomeBanco)))];
-	}, [widgetData]);
+  // Derived data
+  const banks = useMemo(() => {
+    if (!widgetData) return [];
 
-	const filteredData = useMemo(() => {
-		if (!widgetData) return [];
+    return [
+      "Todos",
+      ...Array.from(
+        new Set(widgetData.map((d: FinancialEvolutionDto) => d.nomeBanco)),
+      ),
+    ];
+  }, [widgetData]);
 
-		if (selectedBank === 'Todos') return widgetData;
+  const filteredData = useMemo(() => {
+    if (!widgetData) return [];
 
-		return widgetData.filter((d: FinancialEvolutionDto) => d.nomeBanco === selectedBank);
-	}, [widgetData, selectedBank]);
+    if (selectedBank === "Todos") return widgetData;
 
-	const rawData = useMemo(() => {
-		if (!filteredData || filteredData.length === 0)
-			return { dates: [], series: [], totals: { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 } };
+    return widgetData.filter(
+      (d: FinancialEvolutionDto) => d.nomeBanco === selectedBank,
+    );
+  }, [widgetData, selectedBank]);
 
-		const groupedByDate = filteredData.reduce((acc: Record<string, FinancialEvolutionDto>, curr: FinancialEvolutionDto) => {
-			const date = curr.data.split('T')[0];
-			if (!acc[date]) {
-				acc[date] = { ...curr, totalReceber: 0, totalPagar: 0, saldoDoDia: 0, saldoAcumulado: 0 };
-			}
-			acc[date].totalReceber += curr.totalReceber;
-			acc[date].totalPagar += curr.totalPagar;
-			acc[date].saldoDoDia += curr.saldoDoDia;
-			acc[date].saldoAcumulado += curr.saldoAcumulado;
-			return acc;
-		}, {});
+  const rawData = useMemo(() => {
+    if (!filteredData || filteredData.length === 0)
+      return {
+        dates: [],
+        series: [],
+        totals: { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 },
+      };
 
-		const sortedData = Object.values(groupedByDate).sort((a, b) => a.data.localeCompare(b.data));
+    console.log("📦 filteredData sample:", filteredData.slice(0, 5));
+    console.log(
+      "🗓️ apiStartDate:",
+      apiStartDate,
+      "| apiEndDate:",
+      apiEndDate,
+      "| viewMode:",
+      viewMode,
+    );
 
-		const dates = sortedData.map((d) => d.data.split('T')[0]);
+    const groupedByDate = filteredData.reduce(
+      (
+        acc: Record<string, FinancialEvolutionDto>,
+        curr: FinancialEvolutionDto,
+      ) => {
+        const dateKey =
+          viewMode === "monthly"
+            ? curr.data.split("T")[0].substring(0, 7)
+            : curr.data.split("T")[0];
 
-		const seriesList: SeriesData[] = [
-			{
-				name: 'A Receber',
-				data: sortedData.map((d) => Math.abs(d.totalReceber)),
-				type: 'column',
-				aggregation: 'sum'
-			},
-			{
-				name: 'A Pagar',
-				data: sortedData.map((d) => Math.abs(d.totalPagar)),
-				type: 'column',
-				aggregation: 'sum'
-			},
-			{
-				name: 'Saldo Acumulado',
-				data: sortedData.map((d) => d.saldoAcumulado),
-				type: 'line',
-				aggregation: 'last'
-			}
-		];
+        if (!acc[dateKey]) {
+          acc[dateKey] = {
+            ...curr,
+            data: dateKey,
+            totalReceber: 0,
+            totalPagar: 0,
+            saldoDoDia: 0,
+            saldoAcumulado: 0,
+          };
+        }
+        acc[dateKey].totalReceber += curr.totalReceber;
+        acc[dateKey].totalPagar += curr.totalPagar;
+        acc[dateKey].saldoDoDia += curr.saldoDoDia;
+        acc[dateKey].saldoAcumulado += curr.saldoAcumulado;
+        return acc;
+      },
+      {},
+    );
 
-		const totals = sortedData.reduce(
-			(acc, d) => ({
-				receber: acc.receber + Math.abs(d.totalReceber),
-				pagar: acc.pagar + Math.abs(d.totalPagar),
-				saldoDia: sortedData.length > 0 ? sortedData[sortedData.length - 1].saldoDoDia : 0,
-				saldoAcumulado: sortedData.length > 0 ? sortedData[sortedData.length - 1].saldoAcumulado : 0
-			}),
-			{ receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 }
-		);
+    const sortedData = Object.values(groupedByDate).sort((a, b) =>
+      a.data.localeCompare(b.data),
+    );
 
-		return { dates, series: seriesList, totals };
-	}, [filteredData]);
+    const dates = sortedData.map((d) => d.data.split("T")[0]);
+
+    const seriesList: SeriesData[] = [
+      {
+        name: "A Receber",
+        data: sortedData.map((d) => Math.abs(d.totalReceber)),
+        type: "column",
+        aggregation: "sum",
+      },
+      {
+        name: "A Pagar",
+        data: sortedData.map((d) => Math.abs(d.totalPagar)),
+        type: "column",
+        aggregation: "sum",
+      },
+      {
+        name: "Lucro/Prejuízo do Período",
+        data: sortedData.map((d) => d.totalReceber - d.totalPagar),
+        type: "column",
+        aggregation: "sum",
+      },
+    ];
+
+    const totals = sortedData.reduce(
+      (acc, d) => ({
+        receber: acc.receber + Math.abs(d.totalReceber),
+        pagar: acc.pagar + Math.abs(d.totalPagar),
+        saldoDia:
+          sortedData.length > 0
+            ? sortedData[sortedData.length - 1].saldoDoDia
+            : 0,
+        saldoAcumulado:
+          sortedData.length > 0
+            ? sortedData[sortedData.length - 1].saldoAcumulado
+            : 0,
+      }),
+      { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 },
+    );
+
+    return { dates, series: seriesList, totals };
+  }, [filteredData, viewMode]);
 
 	const aggregatedData = useChartDataAggregation({
-		dates: rawData.dates,
-		series: rawData.series,
-		isMobile,
-		maxPoints: 12
+	dates: rawData.dates,
+	series: rawData.series,
+	isMobile,
+	maxPoints: 999, 
 	});
 
-	const finalSeries = useMemo(() => {
-		if (!isMobile) return aggregatedData.series;
+  const finalSeries = useMemo(() => {
+    if (!isMobile) return aggregatedData.series;
 
-		switch (activeSeries) {
-			case 'receber':
-				return aggregatedData.series
-					.filter((s) => s.name === 'A Receber')
-					.map((s) => ({ ...s, type: 'area', color: colorReceber }));
-			case 'pagar':
-				return aggregatedData.series
-					.filter((s) => s.name === 'A Pagar')
-					.map((s) => ({ ...s, type: 'area', color: colorPagar }));
-			case 'saldo':
-				return aggregatedData.series
-					.filter((s) => s.name === 'Saldo Acumulado')
-					.map((s) => ({ ...s, type: 'area', color: colorSaldo }));
-			default:
-				return aggregatedData.series;
-		}
-	}, [aggregatedData.series, isMobile, activeSeries, colorReceber, colorPagar, colorSaldo]);
+    const mapSeries = (s: SeriesData, color: string) => ({
+      ...s,
+      type: "bar",
+      color,
+      data: s.data.map((v) => Math.abs(v as number)),
+    });
 
-	const mobileSeriesColor = useMemo(() => {
-		if (activeSeries === 'receber') return colorReceber;
+    switch (activeSeries) {
+      case "receber":
+        return aggregatedData.series
+          .filter((s) => s.name === "A Receber")
+          .map((s) => ({ ...s, type: "bar", color: colorReceber }));
+      case "pagar":
+        return aggregatedData.series
+          .filter((s) => s.name === "A Pagar")
+          .map((s) => ({ ...s, type: "bar", color: colorPagar }));
+      case "saldo":
+        const saldoSeries = aggregatedData.series.find(
+          (s) => s.name === "Lucro/Prejuízo do Período",
+        );
+        if (!saldoSeries) return aggregatedData.series;
+        return [
+          {
+            ...saldoSeries,
+            type: "bar",
+            color: colorSaldo,
+            originalData: saldoSeries.data,
+            data: saldoSeries.data.map((v) => Math.abs(v as number)),
+          },
+        ];
 
-		if (activeSeries === 'pagar') return colorPagar;
+      default:
+        return aggregatedData.series;
+    }
+  }, [
+    aggregatedData.series,
+    isMobile,
+    activeSeries,
+    colorReceber,
+    colorPagar,
+    colorSaldo,
+  ]);
 
-		return colorSaldo;
-	}, [activeSeries, colorReceber, colorPagar, colorSaldo]);
+  const mobileSeriesColor = useMemo(() => {
+    if (activeSeries === "receber") return colorReceber;
 
-	const chartOptions: ApexOptions = {
-		chart: {
-			type: 'line',
-			stacked: false,
-			toolbar: { show: false },
-			zoom: { enabled: false },
-			fontFamily: 'inherit',
-			animations: { enabled: !isMobile }
-		},
-		colors: isMobile ? [mobileSeriesColor] : [colorReceber, colorPagar, colorSaldo],
-		stroke: {
-			width: isMobile ? 3 : [0, 0, 3],
-			curve: 'smooth',
-			colors: isMobile ? [mobileSeriesColor] : ['transparent', 'transparent', colorSaldo]
-		},
-		fill: {
-			type: isMobile ? 'gradient' : 'solid',
-			gradient: {
-				shadeIntensity: 1,
-				opacityFrom: 0.4,
-				opacityTo: 0.1,
-				stops: [0, 100]
-			}
-		},
-		plotOptions: {
-			bar: { columnWidth: '55%', borderRadius: 3 }
-		},
-		dataLabels: { enabled: false },
-		xaxis: {
-			categories: aggregatedData.categories,
-			axisBorder: { show: false },
-			axisTicks: { show: false },
-			tooltip: { enabled: false },
-			tickAmount: aggregatedData.categories.length > 15 ? (isMobile ? 6 : 12) : undefined,
-			labels: {
-				show: true,
-				rotate: -45,
-				hideOverlappingLabels: true,
-				style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '10px' : '11px' }
-			}
-		},
-		yaxis: isMobile
-			? {
-				labels: {
-					formatter: (v) => {
-						if (Math.abs(v) >= 1000) return `${(v / 1000).toFixed(1)}k`;
+    if (activeSeries === "pagar") return colorPagar;
 
-						return v.toFixed(0);
-					},
-					style: { fontSize: '10px' }
-				}
-			}
-			: [
-				{
-					seriesName: 'A Receber',
-					min: 0,
-					forceNiceScale: true,
-					title: {
-						text: 'Movimentação',
-						style: { color: theme.palette.text.secondary }
-					},
-					labels: {
-						style: { colors: theme.palette.text.secondary },
-						formatter: (v) => {
-							if (v >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
+    return colorSaldo;
+  }, [activeSeries, colorReceber, colorPagar, colorSaldo]);
 
-							return `R$${v.toFixed(0)}`;
-						}
-					}
-				},
-				{
-					seriesName: 'A Pagar',
-					show: false,
-					min: 0,
-					forceNiceScale: true
-				},
-				{
-					seriesName: 'Saldo Acumulado',
-					opposite: true,
-					title: {
-						text: 'Saldo Acumulado',
-						style: { color: colorSaldo }
-					},
-					labels: {
-						style: { colors: colorSaldo },
-						formatter: (v) => {
-							if (Math.abs(v) >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
+  const chartOptionsDesktop: ApexOptions = {
+    chart: {
+      type: "bar",
+      stacked: false,
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: "inherit",
+      animations: { enabled: true },
+    },
+    colors: [colorReceber, colorPagar, colorSaldo],
+    stroke: { show: false },
+    fill: { type: "solid", opacity: 1 },
+    plotOptions: {
+      bar: {
+        columnWidth: "70%",
+        borderRadius: 2,
+        horizontal: false,
+        dataLabels: { position: "top" },
+      },
+    },
+    dataLabels: {
+      enabled: viewMode === "monthly",
+      offsetY: -22,
+      style: { fontSize: "11px", fontWeight: 700, colors: ["#181818"] },
+      background: { enabled: false },
+      formatter: (val: number) => {
+        if (!val || val === 0) return "";
+        const abs = Math.abs(val);
+        if (abs >= 1000000) return `${(abs / 1000000).toFixed(1)}M`;
+        if (abs >= 1000) return `${(abs / 1000).toFixed(1)}k`;
+        return abs % 1 === 0 ? String(abs) : abs.toFixed(1);
+      },
+    },
+    xaxis: {
+      categories: aggregatedData.categories,
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+      tooltip: { enabled: false },
+      labels: {
+        rotate: -45,
+        hideOverlappingLabels: true,
+        style: { colors: theme.palette.text.secondary, fontSize: "11px" },
+      },
+    },
+    yaxis: {
+      forceNiceScale: true,
+      labels: {
+        style: { colors: theme.palette.text.secondary, fontSize: "11px" },
+        formatter: (v) => {
+          if (Math.abs(v) >= 1000000) return `R$${(v / 1000000).toFixed(1)}M`;
+          if (Math.abs(v) >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
+          return `R$${v.toFixed(0)}`;
+        },
+      },
+    },
+    tooltip: {
+      shared: true,
+      intersect: false,
+      y: {
+        formatter: (v) =>
+          v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+      },
+      theme: theme.palette.mode,
+    },
+    markers: {
+      size: 0,
+    },
+    legend: { show: true, position: "top", horizontalAlign: "center" },
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 3,
+      padding: { left: 20, right: 20, top: 10 },
+    },
+  };
 
-							return `R$${v.toFixed(0)}`;
-						}
-					}
-				}
-			],
-		tooltip: {
-			y: {
-				formatter: (v) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-			},
-			theme: theme.palette.mode,
-			fixed: {
-				enabled: isMobile,
-				position: 'topRight',
-				offsetX: 0,
-				offsetY: 0
-			}
-		},
-		legend: { show: !isMobile, position: 'top', horizontalAlign: 'center' },
-		grid: {
-			borderColor: theme.palette.divider,
-			strokeDashArray: 3,
-			padding: {
-				left: isMobile ? 10 : 20,
-				right: isMobile ? 10 : 20
-			}
-		}
-	};
+  const paginatedSeries = useMemo(() => {
+    if (!isMobile) return finalSeries;
 
-	const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const start = mobilePage * MOBILE_PAGE_SIZE;
+    const end = start + MOBILE_PAGE_SIZE;
 
-	const metricCards = [
-		{
-			label: 'A Receber',
-			value: rawData.totals.receber,
-			color: colorReceber,
-			icon: 'heroicons-outline:arrow-trending-up',
-			key: 'receber'
-		},
-		{
-			label: 'A Pagar',
-			value: rawData.totals.pagar,
-			color: colorPagar,
-			icon: 'heroicons-outline:arrow-trending-down',
-			key: 'pagar'
-		},
-		{
-			label: 'Saldo do Dia',
-			value: rawData.totals.saldoDia,
-			color: theme.palette.warning.main,
-			icon: 'heroicons-outline:calendar-days',
-			key: 'saldo_dia'
-		},
-		{
-			label: 'Saldo Acumulado',
-			value: rawData.totals.saldoAcumulado,
-			color: colorSaldo,
-			icon: 'heroicons-outline:chart-bar-square',
-			key: 'saldo'
-		}
-	];
+    return finalSeries.map((s) => ({
+      ...s,
+      data: (s.data as number[]).slice(start, end),
+    }));
+  }, [finalSeries, isMobile, mobilePage]);
 
-	if (isLoading) return <WidgetLoading height={500} />;
+  const paginatedCategories = useMemo(() => {
+    if (!isMobile) return aggregatedData.categories;
 
-	return (
-		<Card
-			className="w-full shadow-sm rounded-2xl"
-			elevation={0}
-			sx={{
-				border: `1px solid ${theme.palette.divider}`,
-				height: { xs: 'auto', md: '100%' },
-				overflow: { xs: 'visible', md: 'hidden' },
-				display: 'flex',
-				flexDirection: 'column'
-			}}
-		>
-			<Box className="flex items-center justify-between px-6 py-4 border-b">
-				<Typography className="text-lg font-semibold truncate text-primary">
-					{isMobile && aggregatedData.period !== 'daily'
-						? `Evolução (${aggregatedData.period === 'weekly' ? 'Semana' : 'Mês'})`
-						: 'Evolução Financeira por Banco'}
-				</Typography>
-				<Box className="flex items-center gap-2">
-					<Tooltip title="Filtrar por data">
-						<IconButton
-							size="small"
-							onClick={handleClickMenu}
-						>
-							<FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>
-						</IconButton>
-					</Tooltip>
-					<Menu
-						anchorEl={anchorEl}
-						open={openMenu}
-						onClose={handleCloseMenu}
-					>
-						<MenuItem onClick={() => handleSelectMonth(0)}>
-							<ListItemIcon>
-								<FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon>
-							</ListItemIcon>
-							<ListItemText>Mês atual</ListItemText>
-						</MenuItem>
-						<MenuItem onClick={() => handleSelectMonth(1)}>
-							<ListItemIcon>
-								<FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-							</ListItemIcon>
-							<ListItemText>Mês passado</ListItemText>
-						</MenuItem>
-						<MenuItem onClick={() => handleSelectMonth(2)}>
-							<ListItemIcon>
-								<FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-							</ListItemIcon>
-							<ListItemText>Há 2 meses</ListItemText>
-						</MenuItem>
-						<MenuItem onClick={() => handleSelectMonth(3)}>
-							<ListItemIcon>
-								<FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-							</ListItemIcon>
-							<ListItemText>Há 3 meses</ListItemText>
-						</MenuItem>
-						<Divider sx={{ my: 0.5 }} />
-						<MenuItem onClick={handleCustomDateClick}>
-							<ListItemIcon>
-								<FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
-							</ListItemIcon>
-							<ListItemText>Selecionar data...</ListItemText>
-						</MenuItem>
-					</Menu>
-					<Dialog
-						open={datePickerOpen}
-						onClose={handleDatePickerClose}
-						PaperProps={{ sx: { borderRadius: 3, minWidth: 320, zIndex: 1400 } }}
-						sx={{ zIndex: 1300 }}
-					>
-						<DialogContent sx={{ pt: 3 }}>
-							<LocalizationProvider
-								dateAdapter={AdapterDateFns}
-								adapterLocale={ptBR}
-							>
-								<DatePicker
-									views={['year', 'month']}
-									label="Selecione o mês e ano"
-									value={tempDate}
-									onChange={(v) => setTempDate(v || filterDate)}
-									slotProps={{
-										textField: { fullWidth: true, sx: { mb: 2 } },
-										popper: { sx: { zIndex: 9999 } }
-									}}
-								/>
-							</LocalizationProvider>
-						</DialogContent>
-						<DialogActions sx={{ px: 3, pb: 2 }}>
-							<Button
-								onClick={handleDatePickerClose}
-								color="inherit"
-							>
-								Cancelar
-							</Button>
-							<Button
-								onClick={handleDatePickerConfirm}
-								variant="contained"
-								color="primary"
-							>
-								Confirmar
-							</Button>
-						</DialogActions>
-					</Dialog>
+    const start = mobilePage * MOBILE_PAGE_SIZE;
+    const end = start + MOBILE_PAGE_SIZE;
 
-					<Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
-						<IconButton
-							onClick={handleToggleFavorite}
-							size="small"
-						>
-							<FuseSvgIcon
-								sx={{ color: isFavorite ? '#FFD700' : 'action.active' }}
-								size={20}
-							>
-								{isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
-							</FuseSvgIcon>
-						</IconButton>
-					</Tooltip>
-				</Box>
-			</Box>
+    return aggregatedData.categories.slice(start, end);
+  }, [aggregatedData.categories, isMobile, mobilePage]);
 
-			{/* Tabs */}
-			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
-				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="faturamento tabs">
-					<Tab label="Por Vencimento" />
-					<Tab label="Por Competência" />
-				</Tabs>
-			</Box>
+  const totalMobilePages = Math.ceil(
+    aggregatedData.categories.length / MOBILE_PAGE_SIZE,
+  );
 
-			<CardContent
-				sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}
-			>
-				{/* Bank filter chips */}
-				{banks.length > 1 && (
-					<Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
-						{banks.map((bank) => (
-							<Chip
-								key={bank}
-								label={bank}
-								size="small"
-								onClick={() => setSelectedBank(bank)}
-								variant={selectedBank === bank ? 'filled' : 'outlined'}
-								color={selectedBank === bank ? 'primary' : 'default'}
-								sx={{ fontWeight: selectedBank === bank ? 700 : 400 }}
-							/>
-						))}
-					</Box>
-				)}
+  useEffect(() => {
+    setMobilePage(0);
+  }, [aggregatedData.categories, viewMode, selectedBank, selectedGrupos]);
 
-				{isMobile && (
-					<Tabs
-						value={activeSeries}
-						onChange={(_, v) => setActiveSeries(v as string)}
-						variant="fullWidth"
-						indicatorColor="primary"
-						textColor="inherit"
-						sx={{
-							minHeight: 40,
-							mb: 2,
-							'& .MuiTabs-indicator': {
-								bgcolor: mobileSeriesColor
-							}
-						}}
-					>
-						<Tab
-							value="receber"
-							label="Receber"
-							sx={{ color: colorReceber, fontWeight: 700, minHeight: 40, py: 1 }}
-						/>
-						<Tab
-							value="pagar"
-							label="Pagar"
-							sx={{ color: colorPagar, fontWeight: 700, minHeight: 40, py: 1 }}
-						/>
-						<Tab
-							value="saldo"
-							label="Saldo"
-							sx={{ color: colorSaldo, fontWeight: 700, minHeight: 40, py: 1 }}
-						/>
-					</Tabs>
-				)}
+  const chartOptionsMobile: ApexOptions = {
+    chart: {
+      type: "bar",
+      toolbar: { show: false },
+      fontFamily: "inherit",
+      animations: { enabled: false },
+    },
+    colors: [mobileSeriesColor],
+    stroke: { show: false },
+    fill: { type: "solid", opacity: 1 },
+    plotOptions: {
+      bar: {
+        horizontal: true,
+        barHeight: "50%",
+        borderRadius: 4,
+        dataLabels: { position: "top" },
+      },
+    },
+    dataLabels: {
+      enabled: true,
+      offsetX: 8,
+      style: { fontSize: "10px", fontWeight: 700, colors: ["#181818"] },
+      background: { enabled: false },
+      formatter: (val: number, opts: any) => {
+        const serie = opts.w.config.series[0];
+        const original = serie?.originalData ?? serie?.data;
+        const raw = original?.[opts.dataPointIndex] ?? val;
+        if (!raw || Number(raw) === 0) return "";
+        const isNeg = Number(raw) < 0;
+        const abs = Math.abs(Number(raw));
+        const prefix = isNeg ? "-" : "";
+        if (abs >= 1000000) return `${prefix}${(abs / 1000000).toFixed(1)}M`;
+        if (abs >= 1000) return `${prefix}${(abs / 1000).toFixed(1)}k`;
+        return `${prefix}${abs % 1 === 0 ? abs : abs.toFixed(1)}`;
+      },
+    },
+    xaxis: {
+      categories: paginatedCategories,
+      labels: {
+        formatter: (v: any) => {
+          const n = Number(v);
+          if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
+          if (Math.abs(n) >= 1000) return `${(n / 1000).toFixed(0)}k`;
+          return String(n);
+        },
+        style: { colors: theme.palette.text.secondary, fontSize: "10px" },
+      },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
+    },
+    yaxis: {
+      labels: {
+        style: { colors: theme.palette.text.secondary, fontSize: "10px" },
+        maxWidth: 80,
+      },
+    },
+    tooltip: {
+      y: {
+        formatter: (v) =>
+          v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
+      },
+      theme: theme.palette.mode,
+    },
+    legend: { show: false },
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 3,
+      padding: { left: 5, right: 40 },
+    },
+  };
 
-				<Box
-					sx={{
-						display: 'grid',
-						gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr', md: 'repeat(4, 1fr)' },
-						gap: 2,
-						mb: 3,
-						pb: 2,
-					}}
-				>
-					{metricCards.map((m) => {
-						if (isMobile && m.key !== 'saldo_dia' && m.key !== activeSeries) return null;
+  const formatCurrency = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-						return (
-							<Box
-								key={m.label}
-								sx={{
-									p: 2,
-									borderRadius: 2,
-									backgroundColor: alpha(m.color, 0.08),
-									border: `1px solid ${alpha(m.color, 0.2)}`
-								}}
-							>
-								<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-									<FuseSvgIcon
-										size={16}
-										sx={{ color: m.color }}
-									>
-										{m.icon}
-									</FuseSvgIcon>
-									<Typography
-										variant="caption"
-										sx={{ color: theme.palette.text.secondary, fontWeight: 600 }}
-									>
-										{m.label}
-									</Typography>
-								</Box>
-								<Typography
-									variant="h6"
-									sx={{ fontWeight: 700, color: m.color, fontSize: '0.95rem' }}
-								>
-									{formatCurrency(m.value)}
-								</Typography>
-							</Box>
-						);
-					})}
-				</Box>
-				{filteredData.length === 0 ? (
-					<Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-						<Typography color="text.secondary">
-							Nenhum dado encontrado para o período selecionado.
-						</Typography>
-					</Box>
-				) : (
-					<Box sx={{ flex: 1, minHeight: { xs: 250, md: 320 } }}>
-						<ReactApexChart
-							options={chartOptions}
-							series={finalSeries}
-							type={isMobile ? 'area' : 'line'}
-							height="100%"
-						/>
-					</Box>
-				)}
+  const metricCards = [
+    {
+      label: "A Receber",
+      value: rawData.totals.receber,
+      color: colorReceber,
+      fontSize: "0.95rem",
+      icon: "heroicons-outline:arrow-trending-up",
+      key: "receber",
+    },
+    {
+      label: "A Pagar",
+      value: rawData.totals.pagar,
+      color: colorPagar,
+      fontSize: "0.95rem",
+      icon: "heroicons-outline:arrow-trending-down",
+      key: "pagar",
+    },
+    {
+      label: "Lucro/Prejuízo do Período",
+      value: rawData.totals.saldoAcumulado,
+      color: colorSaldo,
+      fontSize: "0.95rem",
+      icon: "heroicons-outline:chart-bar-square",
+      key: "saldo",
+    },
+    {
+      label: "Saldo do Dia",
+      value: rawData.totals.saldoDia,
+      color: "#f826ff",
+      fontSize: "0.95rem",
+      icon: "heroicons-outline:calendar-days",
+      key: "saldo_dia",
+    },
+  ];
 
-				<Box sx={{ mt: 1, textAlign: 'right' }}>
-					<Typography
-						variant="caption"
-						color="text.disabled"
-					>
-						Referência: {format(filterDate, 'MMMM/yyyy', { locale: ptBR })}
-						{selectedBank !== 'Todos' ? ` · ${selectedBank}` : ''}
-					</Typography>
-				</Box>
-			</CardContent>
-		</Card>
-	);
+  if (isLoading) return <WidgetLoading height={500} />;
+
+  return (
+    <Card
+      className="w-full shadow-sm rounded-2xl"
+      elevation={0}
+      sx={{
+        border: `1px solid ${theme.palette.divider}`,
+        height: { xs: "auto" },
+        overflow: { xs: "visible" },
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
+        {/* Linha 1 — Título + Favorito */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            px: 3,
+            pt: 2.5,
+            pb: 1.5,
+          }}
+        >
+          <Typography
+            sx={{ fontSize: "1.1rem", fontWeight: 700, color: "text.primary" }}
+          >
+            Evolução Financeira por Banco
+          </Typography>
+        </Box>
+
+        {/* Linha 2 — Filtros */}
+        <Box
+          sx={{
+            display: "flex",
+            gap: 2,
+            flexWrap: "wrap",
+            alignItems: "center",
+            px: 3,
+            pb: 2,
+          }}
+        >
+          {/* Visualização */}
+          <FormControl size="small" sx={{ width: isMobile ? "100%" : 140 }}>
+            <InputLabel>Visualização</InputLabel>
+            <Select
+              value={tempViewMode}
+              label="Visualização"
+              onChange={(e) =>
+                setTempViewMode(e.target.value as "daily" | "monthly")
+              }
+            >
+              <MenuItem value="daily">Diária</MenuItem>
+              <MenuItem value="monthly">Mensal</MenuItem>
+            </Select>
+          </FormControl>
+
+          {/* Datas */}
+          <LocalizationProvider
+            dateAdapter={AdapterDateFns}
+            adapterLocale={ptBR}
+          >
+            <DatePicker
+              views={
+                tempViewMode === "monthly"
+                  ? ["year", "month"]
+                  : ["year", "month", "day"]
+              }
+              label="Data Inicial"
+              value={tempStartDate}
+              onChange={(v) => {
+                if (v) {
+                  setTempStartDate(v);
+                  if (tempViewMode === "daily" && tempEndDate < v)
+                    setTempEndDate(v);
+                }
+              }}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: { width: isMobile ? "100%" : 150 },
+                },
+                popper: { sx: { zIndex: 9999 } },
+              }}
+            />
+            <DatePicker
+              views={
+                tempViewMode === "monthly"
+                  ? ["year", "month"]
+                  : ["year", "month", "day"]
+              }
+              label="Data Final"
+              value={tempEndDate}
+              minDate={tempStartDate}
+              maxDate={
+                tempViewMode === "daily"
+                  ? addDays(tempStartDate, 30)
+                  : undefined
+              }
+              onChange={(v) => v && setTempEndDate(v)}
+              slotProps={{
+                textField: {
+                  size: "small",
+                  sx: { width: isMobile ? "100%" : 150 },
+                },
+                popper: { sx: { zIndex: 9999 } },
+              }}
+            />
+          </LocalizationProvider>
+
+          {/* Grupos de Bancos */}
+          <FormControl size="small" sx={{ width: isMobile ? "100%" : 200 }}>
+            <InputLabel id="grupo-banco-label">Grupos de Bancos</InputLabel>
+            <Select
+              labelId="grupo-banco-label"
+              multiple
+              value={tempSelectedGrupos}
+              onChange={handleGrupoBancoChange}
+              input={<OutlinedInput label="Grupos de Bancos" size="small" />}
+              renderValue={(selected) => {
+                if (selected.length === 0) return <em>Todos</em>;
+                return gruposBancos
+                  ?.filter((g) => selected.includes(g.codigo))
+                  .map((g) => g.nomeGrupo)
+                  .join(", ");
+              }}
+            >
+              {gruposBancos?.map((banco) => (
+                <MenuItem key={banco.codigo} value={banco.codigo}>
+                  <Checkbox
+                    checked={tempSelectedGrupos.indexOf(banco.codigo) > -1}
+                  />
+                  <ListItemText primary={banco.nomeGrupo} />
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          {/* Pesquisar */}
+          <Button
+            onClick={() => {
+              setViewMode(tempViewMode);
+              setSelectedGrupos(tempSelectedGrupos);
+              if (tempViewMode === "monthly") {
+                setStartDate(startOfMonth(tempStartDate));
+                setEndDate(endOfMonth(tempEndDate));
+              } else {
+                setStartDate(tempStartDate);
+                setEndDate(tempEndDate);
+              }
+            }}
+            variant="contained"
+            color="primary"
+            sx={{
+              height: 40,
+              borderRadius: 2,
+              textTransform: "none",
+              fontWeight: 700,
+              width: isMobile ? "100%" : "auto",
+              ml: isMobile ? 0 : "auto", // empurra pro final no desktop
+            }}
+          >
+            Pesquisar
+          </Button>
+        </Box>
+      </Box>
+
+      {/* Tabs */}
+      <Box
+        sx={{ borderBottom: 1, borderColor: "divider", px: { xs: 2, md: 3 } }}
+      >
+        <Tabs
+          value={tabIndex}
+          onChange={handleTabChange}
+          aria-label="faturamento tabs"
+        >
+          <Tab label="Por Vencimento" />
+          <Tab label="Por Competência" />
+        </Tabs>
+      </Box>
+
+      <CardContent
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          p: 3,
+          "&:last-child": { pb: 3 },
+        }}
+      >
+        {/* Bank filter chips */}
+        {banks.length > 1 && (
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
+            {banks.map((bank) => (
+              <Chip
+                key={bank}
+                label={bank}
+                size="small"
+                onClick={() => setSelectedBank(bank)}
+                variant={selectedBank === bank ? "filled" : "outlined"}
+                color={selectedBank === bank ? "primary" : "default"}
+                sx={{ fontWeight: selectedBank === bank ? 700 : 400 }}
+              />
+            ))}
+          </Box>
+        )}
+
+        {isMobile && (
+          <Tabs
+            value={activeSeries}
+            onChange={(_, v) => setActiveSeries(v as string)}
+            variant="fullWidth"
+            indicatorColor="primary"
+            textColor="inherit"
+            sx={{
+              minHeight: 40,
+              mb: 2,
+              "& .MuiTabs-indicator": {
+                bgcolor: mobileSeriesColor,
+              },
+            }}
+          >
+            <Tab
+              value="receber"
+              label="Receber"
+              sx={{
+                color: colorReceber,
+                fontWeight: 700,
+                minHeight: 40,
+                py: 1,
+              }}
+            />
+            <Tab
+              value="pagar"
+              label="Pagar"
+              sx={{ color: colorPagar, fontWeight: 700, minHeight: 40, py: 1 }}
+            />
+            <Tab
+              value="saldo"
+              label="Saldo"
+              sx={{ color: colorSaldo, fontWeight: 700, minHeight: 40, py: 1 }}
+            />
+          </Tabs>
+        )}
+
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "1fr 1fr",
+              md: "repeat(4, 1fr)",
+            },
+            gap: 2,
+            mb: 3,
+            pb: 2,
+          }}
+        >
+          {metricCards.map((m) => {
+            if (isMobile && m.key !== "saldo_dia" && m.key !== activeSeries)
+              return null;
+            return (
+              <Box
+                key={m.label}
+                sx={{
+                  p: isMobile ? 2 : 2.5,
+                  borderRadius: 2,
+                  background: `linear-gradient(135deg, ${m.color} 0%, ${alpha(m.color, 0.75)} 100%)`,
+                  position: "relative",
+                  overflow: "hidden",
+                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: 4,
+                  },
+                }}
+              >
+                <Box
+                  sx={{
+                    position: "absolute",
+                    right: -12,
+                    bottom: -12,
+                    width: 80,
+                    height: 80,
+                    borderRadius: "50%",
+                    background: alpha("#fff", 0.1),
+                    zIndex: 0,
+                  }}
+                />
+
+                <Box sx={{ position: "relative", zIndex: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
+                  >
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: alpha("#fff", 0.9),
+                        fontWeight: 700,
+                        fontSize: isMobile ? "1.25rem" : "1.25rem",
+                        letterSpacing: 0.5,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {m.label}
+                    </Typography>
+                    <FuseSvgIcon
+                      size={isMobile ? 20 : 24}
+                      sx={{ color: alpha("#fff", 0.4) }}
+                    >
+                      {m.icon}
+                    </FuseSvgIcon>
+                  </Box>
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: 900,
+                      color: "#fff",
+                      fontSize: isMobile ? "1.25rem" : "1.25rem",
+                      lineHeight: 1.2,
+                    }}
+                  >
+                    {formatCurrency(m.value)}
+                  </Typography>
+                </Box>
+              </Box>
+            );
+          })}
+        </Box>
+        {filteredData.length === 0 ? (
+          <Box
+            sx={{
+              flex: 1,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Typography color="text.secondary">
+              Nenhum dado encontrado para o período selecionado.
+            </Typography>
+          </Box>
+        ) : (
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: { xs: 250, md: 380 },
+              height: { md: 380 },
+            }}
+          >
+            {isMobile && totalMobilePages > 1 && (
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  mb: 1,
+                  px: 1,
+                }}
+              >
+                <IconButton
+                  size="small"
+                  onClick={() => setMobilePage((p) => Math.max(0, p - 1))}
+                  disabled={mobilePage === 0}
+                  sx={{
+                    bgcolor:
+                      mobilePage === 0
+                        ? "transparent"
+                        : alpha(mobileSeriesColor, 0.1),
+                    border: `1px solid ${alpha(mobileSeriesColor, 0.3)}`,
+                    borderRadius: 2,
+                  }}
+                >
+                  <FuseSvgIcon size={18}>
+                    heroicons-outline:chevron-left
+                  </FuseSvgIcon>
+                </IconButton>
+
+                <Typography
+                  variant="caption"
+                  sx={{ fontWeight: 600, color: "text.secondary" }}
+                >
+                  {mobilePage * MOBILE_PAGE_SIZE + 1}–
+                  {Math.min(
+                    (mobilePage + 1) * MOBILE_PAGE_SIZE,
+                    aggregatedData.categories.length,
+                  )}{" "}
+                  de {aggregatedData.categories.length}{" "}
+                  {viewMode === "monthly" ? "meses" : "dias"}
+                </Typography>
+
+                <IconButton
+                  size="small"
+                  onClick={() =>
+                    setMobilePage((p) => Math.min(totalMobilePages - 1, p + 1))
+                  }
+                  disabled={mobilePage === totalMobilePages - 1}
+                  sx={{
+                    bgcolor:
+                      mobilePage === totalMobilePages - 1
+                        ? "transparent"
+                        : alpha(mobileSeriesColor, 0.1),
+                    border: `1px solid ${alpha(mobileSeriesColor, 0.3)}`,
+                    borderRadius: 2,
+                  }}
+                >
+                  <FuseSvgIcon size={18}>
+                    heroicons-outline:chevron-right
+                  </FuseSvgIcon>
+                </IconButton>
+              </Box>
+            )}
+
+            <ReactApexChart
+              key={
+                isMobile ? `mobile-${activeSeries}-${mobilePage}` : "desktop"
+              }
+              options={isMobile ? chartOptionsMobile : chartOptionsDesktop}
+              series={isMobile ? paginatedSeries : aggregatedData.series}
+              type="bar"
+              height={
+                isMobile
+                  ? Math.max(250, paginatedCategories.length * 55) 
+                  : 380
+              }
+            />
+          </Box>
+        )}
+
+        <Box sx={{ mt: 1, textAlign: "right" }}>
+          <Typography variant="caption" color="text.disabled">
+            Referência:{" "}
+            {viewMode === "monthly"
+              ? format(startDate, "MMMM/yyyy", { locale: ptBR })
+              : `${format(startDate, "dd/MM/yyyy")} até ${format(endDate, "dd/MM/yyyy")}`}
+            {selectedBank !== "Todos" ? ` · ${selectedBank}` : ""}
+          </Typography>
+        </Box>
+      </CardContent>
+    </Card>
+  );
 }
