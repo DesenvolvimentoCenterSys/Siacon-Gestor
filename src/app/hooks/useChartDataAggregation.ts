@@ -33,13 +33,21 @@ export function useChartDataAggregation({
 }: UseChartDataAggregationProps): AggregationResult {
 	return useMemo(() => {
 		if (dates.length <= maxPoints) {
-			return {
-				categories: dates.map((d) => format(parseISO(d), 'dd/MM')),
-				series,
-				displayDates: dates,
-				period: 'daily'
-			};
-		}
+    return {
+        categories: dates.map((d) => {
+
+            if (d.length === 7) {
+                const [year, month] = d.split("-");
+                const months = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+                return `${months[parseInt(month) - 1]}/${year.slice(2)}`;
+            }
+            return format(parseISO(d), 'dd/MM');
+        }),
+        series,
+        displayDates: dates,
+        period: 'daily'
+    };
+}
 
 		const aggregate = (period: 'weekly' | 'monthly'): AggregationResult | null => {
 			const groups: Record<string, { displayDate: Date; indices: number[] }> = {};

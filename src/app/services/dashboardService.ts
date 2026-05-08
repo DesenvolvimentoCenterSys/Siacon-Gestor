@@ -217,6 +217,11 @@ export interface FinancialEvolutionDto {
   saldoAcumulado: number;
 }
 
+export interface FinancialEvolutionResponseDto {
+  data: FinancialEvolutionDto[];
+  saldoAtual: number;
+}
+
 export interface AccumulatedDelinquencyDto {
   mes: number;
   valorMensal: number;
@@ -440,7 +445,7 @@ export const dashboardService = {
       searchParams
     }).json<CashFlowEvolutionDto[]>();
   },
-  getFinancialEvolution: async (startDate?: string, endDate?: string, grupos?: number[]): Promise<FinancialEvolutionDto[]> => {
+  getFinancialEvolution: async (startDate?: string, endDate?: string, grupos?: number[]): Promise<FinancialEvolutionResponseDto> => {
     const searchParams: Record<string, string> = {};
     if (startDate) searchParams.startDate = startDate;
     if (endDate) searchParams.endDate = endDate;
@@ -448,7 +453,7 @@ export const dashboardService = {
 
     return dashboardClient.get('api/Dashboard/financial-evolution', {
       searchParams
-    }).json<FinancialEvolutionDto[]>();
+    }).json<FinancialEvolutionResponseDto>();
   },
   getFinancialEvolutionCompetencia: async (startDate?: string, endDate?: string, gruposEscolhidos?: number[]): Promise<FinancialEvolutionDto[]> => {
     const searchParams: Record<string, string> = {};

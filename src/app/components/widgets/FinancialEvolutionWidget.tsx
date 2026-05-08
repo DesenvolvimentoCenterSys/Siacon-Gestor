@@ -44,7 +44,6 @@ import WidgetLoading from "../ui/WidgetLoading";
 import { FinancialEvolutionDto } from "../../services/dashboardService";
 import {
   useFinancialEvolution,
-  useFinancialEvolutionCompetencia,
   useToggleFavoriteWidget,
   useUserFavoriteWidgets,
   useGrupoBanco,
@@ -79,10 +78,8 @@ export function FinancialEvolutionWidget({
   const [tempViewMode, setTempViewMode] = useState<"daily" | "monthly">(
     "monthly",
   );
-  const [tempStartDate, setTempStartDate] = useState<Date>(
-    startOfMonth(new Date()),
-  );
-  const [tempEndDate, setTempEndDate] = useState<Date>(endOfMonth(new Date()));
+  const [tempStartDate, setTempStartDate] = useState<Date>(initialStartDate);
+  const [tempEndDate, setTempEndDate] = useState<Date>(initialEndDate);
 
   const { data: gruposBancos, isLoading: isLoadingGrupos } = useGrupoBanco();
 
@@ -138,51 +135,15 @@ export function FinancialEvolutionWidget({
     return format(endDate, "yyyy-MM-dd");
   }, [endDate, viewMode]);
 
-  const { data: vencimentoData, isLoading: isVencimentoLoading } =
-    useFinancialEvolution(apiStartDate, apiEndDate, selectedGrupos);
-  const { data: competenciaData, isLoading: isCompetenciaLoading } =
-    useFinancialEvolutionCompetencia(apiStartDate, apiEndDate, selectedGrupos);
 
-  const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
-  const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
-  const { data: favoriteWidgets } = useUserFavoriteWidgets(
-    user?.id ? Number(user.id) : undefined,
-  );
-  const toggleFavoriteMutation = useToggleFavoriteWidget();
+  const { data: widgetData, isLoading } =
+    useFinancialEvolution(apiStartDate, apiEndDate, selectedGrupos);
 
   // Favorite logic
-  const backendIsFavorite = useMemo(() => {
-    if (!favoriteWidgets) return initialIsFavorite;
-
-    return favoriteWidgets.some(
-      (w: { dashboardWidgetId: number; isFavorite: boolean }) =>
-        w.dashboardWidgetId === WIDGET_ID && w.isFavorite,
-    );
-  }, [favoriteWidgets, initialIsFavorite]);
-
+  
   const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(
     null,
   );
-  const isFavorite =
-    optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
-
-  useEffect(() => {
-    if (optimisticStatus !== null && backendIsFavorite === optimisticStatus)
-      setOptimisticStatus(null);
-  }, [backendIsFavorite, optimisticStatus]);
-
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    if (!user?.id) return;
-
-    const newStatus = !isFavorite;
-    setOptimisticStatus(newStatus);
-    toggleFavoriteMutation.mutate(
-      { codUsu: Number(user.id), widgetId: WIDGET_ID, isFavorite: newStatus },
-      { onError: () => setOptimisticStatus(null) },
-    );
-  };
 
   // Colors
   const colorReceber = "#4783dc"; // verde metálico
@@ -191,12 +152,12 @@ export function FinancialEvolutionWidget({
 
   // Derived data
   const banks = useMemo(() => {
-    if (!widgetData) return [];
+    if (!widgetData?.data) return [];
 
     return [
       "Todos",
       ...Array.from(
-        new Set(widgetData.map((d: FinancialEvolutionDto) => d.nomeBanco)),
+        new Set(widgetData.data.map((d: FinancialEvolutionDto) => d.nomeBanco)),
       ),
     ];
   }, [widgetData]);
@@ -204,9 +165,11 @@ export function FinancialEvolutionWidget({
   const filteredData = useMemo(() => {
     if (!widgetData) return [];
 
-    if (selectedBank === "Todos") return widgetData;
+    const data = widgetData.data ?? []; // ← acessa .data
 
-    return widgetData.filter(
+    if (selectedBank === "Todos") return data;
+
+    return data.filter(
       (d: FinancialEvolutionDto) => d.nomeBanco === selectedBank,
     );
   }, [widgetData, selectedBank]);
@@ -266,13 +229,13 @@ export function FinancialEvolutionWidget({
 
     const seriesList: SeriesData[] = [
       {
-        name: "A Receber",
+        name: "Receitas",
         data: sortedData.map((d) => Math.abs(d.totalReceber)),
         type: "column",
         aggregation: "sum",
       },
       {
-        name: "A Pagar",
+        name: "Despesas",
         data: sortedData.map((d) => Math.abs(d.totalPagar)),
         type: "column",
         aggregation: "sum",
@@ -289,10 +252,7 @@ export function FinancialEvolutionWidget({
       (acc, d) => ({
         receber: acc.receber + Math.abs(d.totalReceber),
         pagar: acc.pagar + Math.abs(d.totalPagar),
-        saldoDia:
-          sortedData.length > 0
-            ? sortedData[sortedData.length - 1].saldoDoDia
-            : 0,
+        saldoDia: widgetData?.saldoAtual ?? 0,       
         saldoAcumulado:
           sortedData.length > 0
             ? sortedData[sortedData.length - 1].saldoAcumulado
@@ -304,12 +264,12 @@ export function FinancialEvolutionWidget({
     return { dates, series: seriesList, totals };
   }, [filteredData, viewMode]);
 
-	const aggregatedData = useChartDataAggregation({
-	dates: rawData.dates,
-	series: rawData.series,
-	isMobile,
-	maxPoints: 999, 
-	});
+  const aggregatedData = useChartDataAggregation({
+    dates: rawData.dates,
+    series: rawData.series,
+    isMobile,
+    maxPoints: 999,
+  });
 
   const finalSeries = useMemo(() => {
     if (!isMobile) return aggregatedData.series;
@@ -324,11 +284,11 @@ export function FinancialEvolutionWidget({
     switch (activeSeries) {
       case "receber":
         return aggregatedData.series
-          .filter((s) => s.name === "A Receber")
+          .filter((s) => s.name === "Receitas")
           .map((s) => ({ ...s, type: "bar", color: colorReceber }));
       case "pagar":
         return aggregatedData.series
-          .filter((s) => s.name === "A Pagar")
+          .filter((s) => s.name === "Despesas")
           .map((s) => ({ ...s, type: "bar", color: colorPagar }));
       case "saldo":
         const saldoSeries = aggregatedData.series.find(
@@ -506,18 +466,38 @@ export function FinancialEvolutionWidget({
       },
     },
     xaxis: {
-      categories: paginatedCategories,
+      categories: aggregatedData.categories,
       labels: {
-        formatter: (v: any) => {
-          const n = Number(v);
-          if (Math.abs(n) >= 1000000) return `${(n / 1000000).toFixed(1)}M`;
-          if (Math.abs(n) >= 1000) return `${(n / 1000).toFixed(0)}k`;
-          return String(n);
+        rotate: -45,
+        hideOverlappingLabels: true,
+        style: { colors: theme.palette.text.secondary, fontSize: "11px" },
+        formatter: (val: string) => {
+          if (!val) return val;
+          if (viewMode === "monthly" && val.length === 7) {
+            const [year, month] = val.split("-");
+            const months = [
+              "Jan",
+              "Fev",
+              "Mar",
+              "Abr",
+              "Mai",
+              "Jun",
+              "Jul",
+              "Ago",
+              "Set",
+              "Out",
+              "Nov",
+              "Dez",
+            ];
+            return `${months[parseInt(month) - 1]}/${year}`;
+          }
+          if (val.length >= 10) {
+            const [year, month, day] = val.split("-");
+            return `${day}/${month}/${year.slice(2)}`;
+          }
+          return val;
         },
-        style: { colors: theme.palette.text.secondary, fontSize: "10px" },
       },
-      axisBorder: { show: false },
-      axisTicks: { show: false },
     },
     yaxis: {
       labels: {
@@ -545,7 +525,7 @@ export function FinancialEvolutionWidget({
 
   const metricCards = [
     {
-      label: "A Receber",
+      label: "Receitas",
       value: rawData.totals.receber,
       color: colorReceber,
       fontSize: "0.95rem",
@@ -553,7 +533,7 @@ export function FinancialEvolutionWidget({
       key: "receber",
     },
     {
-      label: "A Pagar",
+      label: "Despesas",
       value: rawData.totals.pagar,
       color: colorPagar,
       fontSize: "0.95rem",
@@ -562,14 +542,14 @@ export function FinancialEvolutionWidget({
     },
     {
       label: "Lucro/Prejuízo do Período",
-      value: rawData.totals.saldoAcumulado,
+      value: rawData.totals.receber - rawData.totals.pagar,
       color: colorSaldo,
       fontSize: "0.95rem",
       icon: "heroicons-outline:chart-bar-square",
       key: "saldo",
     },
     {
-      label: "Saldo do Dia",
+      label: "Saldo Atual",
       value: rawData.totals.saldoDia,
       color: "#f826ff",
       fontSize: "0.95rem",
@@ -577,8 +557,6 @@ export function FinancialEvolutionWidget({
       key: "saldo_dia",
     },
   ];
-
-  if (isLoading) return <WidgetLoading height={500} />;
 
   return (
     <Card
@@ -626,12 +604,21 @@ export function FinancialEvolutionWidget({
           <FormControl size="small" sx={{ width: isMobile ? "100%" : 140 }}>
             <InputLabel>Visualização</InputLabel>
             <Select
-              value={tempViewMode}
-              label="Visualização"
-              onChange={(e) =>
-                setTempViewMode(e.target.value as "daily" | "monthly")
-              }
-            >
+                value={tempViewMode}
+                label="Visualização"
+                onChange={(e: SelectChangeEvent) => {
+                  const mode = e.target.value as "daily" | "monthly";
+                  setTempViewMode(mode);
+                  if (mode === "daily") {
+                    const today = new Date();
+                    setTempEndDate(today);
+                    setTempStartDate(addDays(today, -14));
+                  } else {
+                    setTempStartDate(initialStartDate);
+                    setTempEndDate(initialEndDate);
+                  }
+                }}
+              >
               <MenuItem value="daily">Diária</MenuItem>
               <MenuItem value="monthly">Mensal</MenuItem>
             </Select>
@@ -660,7 +647,7 @@ export function FinancialEvolutionWidget({
               slotProps={{
                 textField: {
                   size: "small",
-                  sx: { width: isMobile ? "100%" : 150 },
+                  sx: { width: isMobile ? "100%" : 175 },
                 },
                 popper: { sx: { zIndex: 9999 } },
               }}
@@ -679,11 +666,11 @@ export function FinancialEvolutionWidget({
                   ? addDays(tempStartDate, 30)
                   : undefined
               }
-              onChange={(v) => v && setTempEndDate(v)}
+              onChange={(v) => v && setTempEndDate(v)}  
               slotProps={{
                 textField: {
                   size: "small",
-                  sx: { width: isMobile ? "100%" : 150 },
+                  sx: { width: isMobile ? "100%" : 175 },
                 },
                 popper: { sx: { zIndex: 9999 } },
               }}
@@ -746,21 +733,6 @@ export function FinancialEvolutionWidget({
           </Button>
         </Box>
       </Box>
-
-      {/* Tabs */}
-      <Box
-        sx={{ borderBottom: 1, borderColor: "divider", px: { xs: 2, md: 3 } }}
-      >
-        <Tabs
-          value={tabIndex}
-          onChange={handleTabChange}
-          aria-label="faturamento tabs"
-        >
-          <Tab label="Por Vencimento" />
-          <Tab label="Por Competência" />
-        </Tabs>
-      </Box>
-
       <CardContent
         sx={{
           display: "flex",
@@ -913,7 +885,9 @@ export function FinancialEvolutionWidget({
             );
           })}
         </Box>
-        {filteredData.length === 0 ? (
+        {isLoading ? (
+          <WidgetLoading height={380} />
+        ) : filteredData.length === 0 ? (
           <Box
             sx={{
               flex: 1,
@@ -1005,9 +979,7 @@ export function FinancialEvolutionWidget({
               series={isMobile ? paginatedSeries : aggregatedData.series}
               type="bar"
               height={
-                isMobile
-                  ? Math.max(250, paginatedCategories.length * 55) 
-                  : 380
+                isMobile ? Math.max(250, paginatedCategories.length * 55) : 380
               }
             />
           </Box>
