@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button } from '@mui/material';
+import { 
+  Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, 
+  MenuItem, ListItemIcon, ListItemText, Divider, Dialog, 
+  DialogContent, DialogActions, Button 
+} from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import useUser from '@auth/useUser';
-import { useToggleFavoriteWidget } from '../../hooks/useDashboard';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
@@ -35,22 +38,17 @@ function KPICard({
   gradientColors,
   subtitle,
   widgetId,
-  initialIsFavorite = false,
+
   showFilter = false,
   filterDate,
   onFilterChange,
   actionNode
 }: KPICardProps) {
   const { data: user } = useUser();
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
   const [tempDate, setTempDate] = useState<Date | null>(filterDate);
-  const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-  useEffect(() => {
-    setIsFavorite(initialIsFavorite);
-  }, [initialIsFavorite]);
 
   useEffect(() => {
     setTempDate(filterDate);
@@ -62,19 +60,7 @@ function KPICard({
       console.warn('KPICard: Missing user or widgetId', { user, widgetId });
       return;
     }
-    console.log('KPICard: Toggling favorite', { userId: user.id, widgetId, newStatus: !isFavorite });
 
-    const newStatus = !isFavorite;
-    setIsFavorite(newStatus);
-
-    toggleFavoriteMutation.mutate(
-      { codUsu: Number(user.id), widgetId, isFavorite: newStatus },
-      {
-        onError: () => {
-          setIsFavorite(!newStatus);
-        }
-      }
-    );
   };
 
   const handleFilterClick = (e: React.MouseEvent<HTMLElement>) => {
@@ -199,24 +185,6 @@ function KPICard({
           </Box>
 
           <Box sx={{ display: 'flex', gap: 0.5 }}>
-            {widgetId && (
-              <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-                <IconButton
-                  onClick={handleToggleFavorite}
-                  size="small"
-                  sx={{
-                    color: 'white',
-                    padding: 0,
-                    mr: 1,
-                    '&:hover': { background: alpha('#ffffff', 0.2) }
-                  }}
-                >
-                  <FuseSvgIcon size={20} sx={{ color: isFavorite ? "#FFD700" : "inherit" }}>
-                    {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
-                  </FuseSvgIcon>
-                </IconButton>
-              </Tooltip>
-            )}
             <FuseSvgIcon
               size={28}
               sx={{
@@ -335,7 +303,7 @@ function KPICard({
             variant="caption"
             sx={{
               opacity: 0.9,
-              fontSize: { xs: '1.063rem', sm: '1.125rem' },
+              fontSize: { xs: '1.25rem', sm: '1.35rem' },
               fontWeight: 500
             }}
           >
@@ -348,7 +316,8 @@ function KPICard({
             <FuseSvgIcon
               size={20}
               sx={{
-                color: trend.isPositive ? '#4ade80' : '#f87171',
+                color: trend.isPositive ? '#69f0ae' : '#ffb3b3',
+                fontSize: { xs: '1.25rem', sm: '1.35rem' },
               }}
             >
               {trend.isPositive ? 'heroicons-solid:trending-up' : 'heroicons-solid:trending-down'}
@@ -356,9 +325,9 @@ function KPICard({
             <Typography
               variant="caption"
               sx={{
-                fontSize: '1rem',
+                fontSize: { xs: '1.25rem', sm: '1.35rem' },
                 fontWeight: 600,
-                color: trend.isPositive ? '#4ade80' : '#f87171',
+                color: trend.isPositive ? '#69f0ae' : '#ffb3b3',
               }}
             >
               {trend.value}

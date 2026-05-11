@@ -1,77 +1,115 @@
-'use client';
+"use client";
 
-import { Box, Grid, Typography } from '@mui/material';
-import { PageHeader } from '../../components/ui/PageHeader';
-import { useUserFavoriteWidgets } from '../../hooks/useDashboard';
-import WidgetLoading from '../../components/ui/WidgetLoading';
-import useUser from '@auth/useUser';
-import { FaturamentoMensalWidget } from '../../components/widgets/FaturamentoMensalWidget';
-import { MensalidadeMediaWidget } from '../../components/widgets/MensalidadeMediaWidget';
-import { EvolucaoFaturamentoChartWidget } from '../../components/widgets/EvolucaoFaturamentoChartWidget';
-import { FaturamentoPorConvenioChartWidget } from '../../components/widgets/FaturamentoPorConvenioChartWidget';
-import { TotalFaturamentoPorConvenioWidget } from '../../components/widgets/TotalFaturamentoPorConvenioWidget';
+import { useMemo } from "react";
+import { Box, Grid } from "@mui/material";
+import { PageHeader } from "../../components/ui/PageHeader";
+import { useUserFavoriteWidgets } from "../../hooks/useDashboard";
+import WidgetLoading from "../../components/ui/WidgetLoading";
+import useUser from "@auth/useUser";
+import { useDateFilter } from "../../hooks/useDateFilter";
+import { DateRangeFilterWidget } from "../../components/widgets/DateRangeFilterWidget";
+import { FaturamentoMensalWidget } from "../../components/widgets/FaturamentoMensalWidget";
+import { MensalidadeMediaWidget } from "../../components/widgets/MensalidadeMediaWidget";
+import { ResultadoFinanceiroWidget } from "../../components/widgets/ResultadoFinanceiroWidget";
+import { TotalFaturamentoPorConvenioWidget } from "../../components/widgets/TotalFaturamentoPorConvenioWidget";
+import { FaturamentoPorConvenioDonutWidget } from "../../components/widgets/FaturamentoPorConvenioDonutWidget";
 
 function FinancialDashboard() {
   const { data: user } = useUser();
+  const dateFilter = useDateFilter();
 
-  // Fetch user's favorite widgets
-  const { data: favoriteWidgets, isLoading: isFavoritesLoading } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
+  const { data: favoriteWidgets, isLoading: isFavoritesLoading } =
+    useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
+
+  const conveniosIds = useMemo(() => 
+    dateFilter.convenios.map((item) => Number(item.id)).filter((id) => !Number.isNaN(id)),
+    [dateFilter.convenios]
+  );
+
+  const servicosIds = useMemo(() => 
+    dateFilter.servicos.map((item) => Number(item.id)).filter((id) => !Number.isNaN(id)),
+    [dateFilter.servicos]
+  );
+
+  const centrosCustoIds = useMemo(() => 
+    dateFilter.centrosCusto.map((item) => Number(item.id)).filter((id) => !Number.isNaN(id)),
+    [dateFilter.centrosCusto]
+  );
+
+  const planosContasIds = useMemo(() => 
+    dateFilter.planosContas.map((item) => Number(item.id)).filter((id) => !Number.isNaN(id)),
+    [dateFilter.planosContas]
+  );
+
+
+  const filterProps = useMemo(() => ({
+    startDate: dateFilter.startDate,
+    endDate: dateFilter.endDate,
+    tab: dateFilter.tab,
+    convenios: conveniosIds,
+    servicos: servicosIds,
+    centrosCusto: centrosCustoIds,
+    planosContas: planosContasIds,
+  }), [
+    dateFilter.startDate, 
+    dateFilter.endDate, 
+    dateFilter.tab, 
+    conveniosIds, 
+    servicosIds, 
+    centrosCustoIds, 
+    planosContasIds
+  ]);
 
   return (
-    <Box sx={{ width: '100%' }}>
-      <PageHeader
-        title="Financeiro"
-        subtitle="Acompanhamento detalhado de receitas, despesas e previsões orçamentárias."
-        icon={
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-          </svg>
-        }
+    <Box sx={{ width: "100%" }}>
+      <DateRangeFilterWidget
+        startDate={dateFilter.startDate}
+        endDate={dateFilter.endDate}
+        tab={dateFilter.tab}
+        convenios={dateFilter.convenios}
+        servicos={dateFilter.servicos}
+        centrosCusto={dateFilter.centrosCusto}
+        planosContas={dateFilter.planosContas}
+        setStartDate={dateFilter.setStartDate}
+        setEndDate={dateFilter.setEndDate}
+        setTab={dateFilter.setTab}
+        setConvenios={dateFilter.setConvenios}
+        setServicos={dateFilter.setServicos}
+        setCentrosCusto={dateFilter.setCentrosCusto}
+        setPlanosContas={dateFilter.setPlanosContas}
+        reset={dateFilter.reset}
       />
 
-      {/* KPI Cards */}
-      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3 } }}>
-        <Grid item xs={12} sm={6} md={3}>
-          {isFavoritesLoading ? (
-            <WidgetLoading height={160} />
-          ) : (
-            <FaturamentoMensalWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 4 && w.isFavorite)} />
-          )}
+      {/* KPI Cards + Donut */}
+      <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3 } }} alignItems="stretch">
+        <Grid item xs={12} md={4}>
+          <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
+            {isFavoritesLoading ? <WidgetLoading height={160} /> : <FaturamentoMensalWidget {...filterProps} />}
+            {isFavoritesLoading ? <WidgetLoading height={160} /> : <MensalidadeMediaWidget {...filterProps} />}
+          </Box>
+          
         </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          {isFavoritesLoading ? (
-            <WidgetLoading height={160} />
-          ) : (
-            <MensalidadeMediaWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 6 && w.isFavorite)} />
-          )}
+        <Grid item xs={12} md={8}>
+          <Box sx={{ height: "100%", minHeight: 340 }}>
+            {isFavoritesLoading ? <WidgetLoading height="100%" /> : <FaturamentoPorConvenioDonutWidget {...filterProps} />}
+          </Box>
         </Grid>
+        {/*<Grid item xs={12} md={4}>
+          {isFavoritesLoading ? <WidgetLoading height={160} /> : <ResultadoFinanceiroWidget {...filterProps} />}
+        </Grid>} */}
       </Grid>
 
-      {/* Charts Grid */}
-      <Grid container spacing={{ xs: 2, sm: 3 }}>
-        <Grid item xs={12} md={6}>
-          {isFavoritesLoading ? (
-            <WidgetLoading height={350} />
-          ) : (
-            <EvolucaoFaturamentoChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 7 && w.isFavorite)} />
-          )}
-        </Grid>
-        <Grid item xs={12} md={6}>
-          {isFavoritesLoading ? (
-            <WidgetLoading height={350} />
-          ) : (
-            <FaturamentoPorConvenioChartWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 9 && w.isFavorite)} />
-          )}
-        </Grid>
-      </Grid>
 
-      {/* Detailed Billing Table */}
+      {/* Tabela detalhada */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 2.5, sm: 3 } }}>
-        <Grid item xs={12}>
+        <Grid item xs={12} md={12}>
           {isFavoritesLoading ? (
             <WidgetLoading height={400} />
           ) : (
-            <TotalFaturamentoPorConvenioWidget initialIsFavorite={favoriteWidgets?.some(w => w.dashboardWidgetId === 15 && w.isFavorite)} />
+            <TotalFaturamentoPorConvenioWidget
+              {...filterProps}
+              initialIsFavorite={favoriteWidgets?.some((w) => w.dashboardWidgetId === 15 && w.isFavorite)}
+            />
           )}
         </Grid>
       </Grid>

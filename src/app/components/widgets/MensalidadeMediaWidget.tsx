@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
@@ -8,11 +8,14 @@ import WidgetLoading from '../../components/ui/WidgetLoading';
 import { Box, MenuItem, Select } from '@mui/material';
 
 interface MensalidadeMediaWidgetProps {
+  startDate?: Date | null;
+  endDate?: Date | null;
   initialIsFavorite?: boolean;
 }
 
-export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWidgetProps) {
+export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }: MensalidadeMediaWidgetProps) {
   const theme = useTheme();
+
   const [selectedDate, setSelectedDate] = useSessionUrlFilter<Date | null>(
     'financeiro_mens_media_selectedDate',
     new Date(),
@@ -20,18 +23,41 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
     (s) => (s ? new Date(s) : null)
   );
 
+  const startStr = useMemo(() => {
+      if (startDate) return format(startDate, "yyyy-MM-dd");
+      if (selectedDate)
+        return format(
+          new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+          "yyyy-MM-dd",
+        );
+      return undefined;
+    }, [startDate, selectedDate]);
+  
+    const endStr = useMemo(() => {
+      if (endDate) return format(endDate, "yyyy-MM-dd");
+      if (selectedDate)
+        return format(
+          new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0),
+          "yyyy-MM-dd",
+        );
+      return undefined;
+    }, [endDate, selectedDate]);
+
   const [selectedConvenio, setSelectedConvenio] = useSessionUrlFilter<string>(
     'financeiro_mens_media_convenio',
     'Todos'
   );
 
-  const apiDate = useMemo(() => {
-    if (!selectedDate) return undefined;
-    return format(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1), 'yyyy-MM-dd');
-  }, [selectedDate]);
+  // Filtro externo tem prioridade sobre o picker interno
+  const effectiveDate = startDate ?? selectedDate;
 
-  const { data: mensalidadeData, isLoading: isLoadingGeral } = useMensalidadeMedia(apiDate);
-  const { data: convenioData, isLoading: isLoadingConvenio } = useMensalidadeMediaPorConvenio(apiDate);
+  const apiDate = useMemo(() => {
+    if (!effectiveDate) return undefined;
+    return format(new Date(effectiveDate.getFullYear(), effectiveDate.getMonth(), 1), 'yyyy-MM-dd');
+  }, [effectiveDate]);
+
+  const { data: mensalidadeData, isLoading: isLoadingGeral } = useMensalidadeMedia(startStr, endStr);
+  const { data: convenioData, isLoading: isLoadingConvenio } = useMensalidadeMediaPorConvenio(startStr, endStr);
 
   const isLoading = isLoadingGeral || isLoadingConvenio;
 
@@ -41,8 +67,10 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
     let displayData = {
       average: mensalidadeData.average,
       percentageChange: mensalidadeData.percentageChange,
-      message: mensalidadeData.message || 'média mensal',
+      message: mensalidadeData.message || 'média do período',
     };
+
+    //
 
     if (selectedConvenio !== 'Todos' && convenioData) {
       const cov = convenioData.find((c: any) => c.nomeConvenio === selectedConvenio);
@@ -50,15 +78,43 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
         displayData = {
           average: cov.average,
           percentageChange: cov.percentageChange,
-          message: `média mensal - ${cov.nomeConvenio}`,
+          message: `média do período - ${cov.nomeConvenio}`,
         };
       } else {
         displayData = {
           average: 0,
           percentageChange: 0,
-          message: `média mensal - ${selectedConvenio} (sem dados)`,
+          message: `média do período - ${selectedConvenio} (sem dados)`,
         };
       }
+    }
+    let trendObj;
+
+    if (selectedConvenio !== 'Todos' && convenioData) {
+      const cov = convenioData.find((c: any) => c.nomeConvenio === selectedConvenio);
+      trendObj = {
+        value: (
+          <>
+            {displayData.percentageChange > 0 ? '+' : ''}
+            {displayData.percentageChange}% vs período anterior
+            <br />
+            {cov?.periodoAnterior} = {cov?.previousAverage}
+          </>
+        ),
+        isPositive: displayData.percentageChange >= 0,
+      };
+    } else {
+      trendObj = {
+        value: (
+          <>
+            {displayData.percentageChange > 0 ? '+' : ''}
+            {displayData.percentageChange}% vs período anterior
+            <br />
+            {mensalidadeData.periodoAnterior} = {mensalidadeData.previousAverage}
+          </>
+        ),
+        isPositive: displayData.percentageChange >= 0,
+      };
     }
 
     return {
@@ -67,10 +123,7 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
       subtitle: displayData.message,
       icon: 'heroicons-outline:currency-dollar',
       gradientColors: [theme.palette.info.main, theme.palette.info.dark] as [string, string],
-      trend: {
-        value: `${displayData.percentageChange > 0 ? '+' : ''}${displayData.percentageChange}% vs mês anterior`,
-        isPositive: displayData.percentageChange >= 0,
-      },
+      trend: trendObj as any,
       widgetId: 6,
     };
   }, [mensalidadeData, convenioData, selectedConvenio, theme]);
@@ -86,16 +139,7 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
         size="small"
         value={selectedConvenio}
         onChange={(e) => setSelectedConvenio(e.target.value)}
-        MenuProps={{
-          PaperProps: {
-            sx: {
-              mt: 1,
-              borderRadius: 2,
-              boxShadow: (theme) => theme.shadows[8],
-              maxHeight: 300
-            }
-          }
-        }}
+        MenuProps={{ PaperProps: { sx: { mt: 1, borderRadius: 2, boxShadow: (t) => t.shadows[8], maxHeight: 300 } } }}
         sx={{
           height: '38px',
           borderRadius: '14px',
@@ -103,23 +147,12 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
           backdropFilter: 'blur(10px)',
           border: `1px solid ${alpha('#ffffff', 0.2)}`,
           color: 'white',
-          '& .MuiSelect-select': {
-            py: 0.875,
-            px: 2,
-            minHeight: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            fontWeight: 600,
-            fontSize: '1rem',
-          },
+          '& .MuiSelect-select': { py: 0.875, px: 2, minHeight: 'auto', display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '1rem' },
           '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-          '&:hover': {
-            background: alpha('#ffffff', 0.25),
-          },
-          '& .MuiSvgIcon-root': { color: 'white', opacity: 0.7 }
+          '&:hover': { background: alpha('#ffffff', 0.25) },
+          '& .MuiSvgIcon-root': { color: 'white', opacity: 0.7 },
         }}
       >
-        <MenuItem value="Todos">Todos os Convênios</MenuItem>
         {conveniosOptions.map((c: any) => (
           <MenuItem key={c} value={c}>{c}</MenuItem>
         ))}
@@ -127,20 +160,15 @@ export function MensalidadeMediaWidget({ initialIsFavorite }: MensalidadeMediaWi
     </Box>
   );
 
-  if (isLoading) {
-    return <WidgetLoading height={160} />;
-  }
-
-  if (!kpiData) {
-    return null;
-  }
+  if (isLoading) return <WidgetLoading height={160} />;
+  if (!kpiData) return null;
 
   return (
     <KPICard
       {...kpiData}
       value={kpiData.value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-      showFilter={true}
-      filterDate={selectedDate}
+      showFilter={!startDate}
+      filterDate={effectiveDate}
       onFilterChange={setSelectedDate}
       initialIsFavorite={initialIsFavorite}
       actionNode={actionNode}

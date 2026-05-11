@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
 import { dashboardService } from '../services/dashboardService';
+import { end } from '@popperjs/core';
 
 export const useToggleFavoriteWidget = () => {
   const queryClient = useQueryClient();
@@ -109,17 +110,17 @@ export const useVidasPorConvenio = (date?: string) => {
   });
 };
 
-export const useFaturamentoMensal = (date?: string) => {
-  return useQuery({
-    queryKey: ['faturamentoMensal', date],
-    queryFn: () => dashboardService.getFaturamentoMensal(date)
-  });
-};
+  export const useFaturamentoMensal = (startDate?: string, endDate?: string) => {
+    return useQuery({
+      queryKey: ['faturamentoMensal', startDate, endDate],
+      queryFn: () => dashboardService.getFaturamentoMensal(startDate, endDate)
+    });
+  };
 
-export const useFaturamentoMensalReferencia = (date?: string) => {
+export const useFaturamentoMensalReferencia = (startDate?: string, endDate?: string) => {
   return useQuery({
-    queryKey: ['faturamentoMensalReferencia', date],
-    queryFn: () => dashboardService.getFaturamentoMensalReferencia(date)
+    queryKey: ['faturamentoMensalReferencia', startDate, endDate],
+    queryFn: () => dashboardService.getFaturamentoMensalReferencia(startDate, endDate)
   });
 };
 
@@ -130,17 +131,17 @@ export const useTaxaUtilizacao = (date?: string) => {
   });
 };
 
-export const useMensalidadeMedia = (date?: string) => {
+export const useMensalidadeMedia = (startDate?: string, endDate?: string) => {
   return useQuery({
-    queryKey: ['mensalidadeMedia', date],
-    queryFn: () => dashboardService.getMensalidadeMedia(date)
+    queryKey: ['mensalidadeMedia', startDate, endDate],
+    queryFn: () => dashboardService.getMensalidadeMedia(startDate, endDate)
   });
 };
 
-export const useMensalidadeMediaPorConvenio = (date?: string) => {
+export const useMensalidadeMediaPorConvenio = (startDate?: string, endDate?: string) => {
   return useQuery({
-    queryKey: ['mensalidadeMediaPorConvenio', date],
-    queryFn: () => dashboardService.getMensalidadeMediaPorConvenio(date)
+    queryKey: ['mensalidadeMediaPorConvenio', startDate, endDate],
+    queryFn: () => dashboardService.getMensalidadeMediaPorConvenio(startDate, endDate)
   });
 };
 
@@ -193,6 +194,27 @@ export const useTotalFaturamentoPorConvenio = (startDate?: string, searchBy?: st
   });
 };
 
+export const useFilterOptions = () => {
+  return useQuery({
+    queryKey: ['filterOptions'],
+    queryFn: () => dashboardService.getFilterOptions()
+  });
+};
+
+export const useTotalFaturamentoPorConvenioWithFilters = (
+  startDate?: string,
+  endDate?: string,
+  convenios?: number[],
+  servicos?: number[],
+  centrosCusto?: number[],
+  planosContas?: number[],
+) => {
+  return useQuery({
+    queryKey: ['totalFaturamentoPorConvenioWithFilters', startDate, endDate, convenios, servicos, centrosCusto, planosContas],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioWithFilters(startDate, endDate, convenios, servicos, centrosCusto, planosContas)
+  });
+};
+
 export const useTotalDespesasPorConvenio = (dateMonth?: string, tipoPesquisa?: string) => {
   return useQuery({
     queryKey: ['totalDespesasPorConvenio', dateMonth],
@@ -200,10 +222,24 @@ export const useTotalDespesasPorConvenio = (dateMonth?: string, tipoPesquisa?: s
   });
 };
 
-export const useTotalFaturamentoPorConvenioReferencia = (date?: string) => {
+export const useTotalFaturamentoPorConvenioReferencia = (startDate?: string, endDate?: string) => {
   return useQuery({
-    queryKey: ['totalFaturamentoPorConvenioReferencia', date],
-    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioReferencia(date)
+    queryKey: ['totalFaturamentoPorConvenioReferencia', startDate, endDate],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioReferencia(startDate, endDate)
+  });
+};
+
+export const useTotalFaturamentoPorConvenioReferenciaWithFilters = (
+  startDate?: string,
+  endDate?: string,
+  convenios?: number[],
+  servicos?: number[],
+  centrosCusto?: number[],
+  planosContas?: number[],
+) => {
+  return useQuery({
+    queryKey: ['totalFaturamentoPorConvenioReferenciaWithFilters', startDate, endDate, convenios, servicos, centrosCusto, planosContas],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioReferenciaWithFilters(startDate, endDate, convenios, servicos, centrosCusto, planosContas)
   });
 };
 

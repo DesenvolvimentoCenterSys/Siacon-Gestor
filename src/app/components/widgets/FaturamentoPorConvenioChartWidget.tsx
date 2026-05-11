@@ -271,14 +271,6 @@ export function FaturamentoPorConvenioChartWidget({ initialIsFavorite = false }:
             </MenuItem>
           </Menu>
 
-          {/* Favorite Toggle */}
-          <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-            <IconButton onClick={handleToggleFavorite} size="small">
-              <FuseSvgIcon sx={{ color: isFavorite ? "#FFD700" : "inherit" }} size={20}>
-                {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
-              </FuseSvgIcon>
-            </IconButton>
-          </Tooltip>
         </Box>
       </Box>
 

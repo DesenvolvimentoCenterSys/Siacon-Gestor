@@ -1,155 +1,118 @@
-import { useMemo, useState } from 'react';
-import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
-import { useTheme, alpha } from '@mui/material/styles';
-import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, ListItemIcon, ListItemText, Divider, Dialog, DialogContent, DialogActions, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Avatar, Chip, LinearProgress, Tabs, Tab } from '@mui/material';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import { useTotalFaturamentoPorConvenio, useTotalFaturamentoPorConvenioReferencia, useToggleFavoriteWidget } from '../../hooks/useDashboard';
-import WidgetLoading from '../ui/WidgetLoading';
-import useUser from '@auth/useUser';
-import { format, subMonths } from 'date-fns';
-import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ptBR } from 'date-fns/locale';
-import { ResumoFaturamentoDto } from '../../services/dashboardService';
+import { useTheme, alpha } from "@mui/material/styles";
+import {
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Avatar,
+  LinearProgress,
+  useMediaQuery,
+  Divider,
+} from "@mui/material";
+import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
+import { ptBR } from "date-fns/locale";
+import { format } from "date-fns";
+
+import type { DateFilterTab } from "../../hooks/useDateFilter";
+import {
+  useTotalFaturamentoPorConvenioWithFilters,
+  useTotalFaturamentoPorConvenioReferenciaWithFilters,
+} from "../../hooks/useDashboard";
+import WidgetLoading from "../ui/WidgetLoading";
+import { ResumoFaturamentoDto } from "../../services/dashboardService";
 
 interface TotalFaturamentoPorConvenioWidgetProps {
   initialIsFavorite?: boolean;
+  startDate?: Date | null;
+  endDate?: Date | null;
+  tab?: DateFilterTab;
+  convenios?: number[];
+  servicos?: number[];
+  centrosCusto?: number[];
+  planosContas?: number[];
 }
 
-function MetricItem({ label, value, color, money = false, bold = false }: { label: string, value: number, color: string, money?: boolean, bold?: boolean }) {
+// Componente auxiliar para renderizar os valores financeiros
+function MetricItem({
+  label,
+  value,
+  color,
+  money = false,
+  bold = false,
+}: {
+  label: string;
+  value: number;
+  color: string;
+  money?: boolean;
+  bold?: boolean;
+}) {
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+    <Box sx={{ display: "flex", flexDirection: "column" }}>
       <Typography variant="caption" color="text.secondary" fontWeight={500}>
         {label}
       </Typography>
-      <Typography variant="body2" fontWeight={bold ? 700 : 500} sx={{ color: color }}>
+      <Typography
+        variant="body2"
+        fontWeight={bold ? 700 : 500}
+        sx={{ color: color }}
+      >
         {money
-          ? value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
-          : value.toLocaleString('pt-BR')}
+          ? value.toLocaleString("pt-BR", {
+              style: "currency",
+              currency: "BRL",
+            })
+          : value.toLocaleString("pt-BR")}
       </Typography>
     </Box>
   );
 }
 
-function SummaryCard({ title, data, icon, color }: { title: string, data: ResumoFaturamentoDto, icon: string, color: string }) {
-  return (
-    <Box sx={{
-      p: 2,
-      borderRadius: 2,
-      bgcolor: alpha(color, 0.05),
-      border: `1px solid ${alpha(color, 0.2)}`,
-      flex: 1,
-      minWidth: { xs: '100%', sm: 200 },
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 2
-    }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, color: color }}>
-        <FuseSvgIcon size={20}>{icon}</FuseSvgIcon>
-        <Typography variant="subtitle1" fontWeight={700} color="text.primary">
-          {title}
-        </Typography>
-      </Box>
-
-      <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
-        <MetricItem label="Total Geral" value={data.totalGeral} color="text.primary" money bold />
-        <MetricItem label="Pago" value={data.totalPago} color="success.main" money />
-        <MetricItem label="Aberto" value={data.totalAberto} color="warning.main" money />
-        <MetricItem label="Vencido" value={data.totalVencido} color="error.main" money />
-      </Box>
-    </Box>
-  );
-}
-
-export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }: TotalFaturamentoPorConvenioWidgetProps) {
+export function TotalFaturamentoPorConvenioWidget({
+  initialIsFavorite = false,
+  startDate = null,
+  endDate = null,
+  tab = "vencimento",
+  convenios = [],
+  servicos = [],
+  centrosCusto = [],
+  planosContas = [],
+}: TotalFaturamentoPorConvenioWidgetProps) {
   const theme = useTheme();
-  const { data: user } = useUser();
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
 
-  const [filterDate, setFilterDate] = useSessionUrlFilter<Date>(
-    'financeiro_total_fat_conv_filterDate',
-    new Date(),
-    (d) => d.toISOString(),
-    (s) => new Date(s)
-  );
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const apiDate = useMemo(() => {
-    return format(new Date(filterDate.getFullYear(), filterDate.getMonth(), 1), 'yyyy-MM-dd');
-  }, [filterDate]);
+  const startStr = startDate ? format(startDate, "yyyy-MM-dd") : undefined;
+  const endStr = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const openMenu = Boolean(anchorEl);
-  const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [tempDate, setTempDate] = useState<Date>(filterDate);
-
-  const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
-    'financeiro_total_fat_conv_tabIndex',
-    0,
-    String,
-    Number
-  );
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
-  };
-
-  const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleSelectMonth = (monthsAgo: number) => {
-    const newDate = new Date();
-    newDate.setMonth(newDate.getMonth() - monthsAgo);
-    setFilterDate(newDate);
-    handleCloseMenu();
-  };
-
-  const handleCustomDateClick = () => {
-    handleCloseMenu();
-    setDatePickerOpen(true);
-  };
-
-  const handleDatePickerClose = () => {
-    setDatePickerOpen(false);
-    setTempDate(filterDate);
-  };
-
-  const handleDatePickerConfirm = () => {
-    if (tempDate) {
-      setFilterDate(tempDate);
-    }
-    setDatePickerOpen(false);
-  };
-
-  const getFilterLabel = () => {
-    const month = filterDate.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric' });
-    return month.charAt(0).toUpperCase() + month.slice(1);
-  };
-
-  const { data: vencimentoData, isLoading: isVencimentoLoading } = useTotalFaturamentoPorConvenio(apiDate);
-  const { data: competenciaData, isLoading: isCompetenciaLoading } = useTotalFaturamentoPorConvenioReferencia(apiDate);
-
-  const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
-  const isLoading = tabIndex === 0 ? isVencimentoLoading : isCompetenciaLoading;
-
-  const toggleFavoriteMutation = useToggleFavoriteWidget();
-
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user?.id) return;
-    const newStatus = !isFavorite;
-    setIsFavorite(newStatus);
-    toggleFavoriteMutation.mutate(
-      { codUsu: Number(user.id), widgetId: 15, isFavorite: newStatus },
-      { onError: () => setIsFavorite(!newStatus) }
+  const { data: vencimentoData, isLoading: isVencimentoLoading } =
+    useTotalFaturamentoPorConvenioWithFilters(
+      startStr,
+      endStr,
+      convenios,
+      servicos,
+      centrosCusto,
+      planosContas,
     );
-  };
+  const { data: competenciaData, isLoading: isCompetenciaLoading } =
+    useTotalFaturamentoPorConvenioReferenciaWithFilters(
+      startStr,
+      endStr,
+      convenios,
+      servicos,
+      centrosCusto,
+      planosContas,
+    );
+
+  const isVencimento = tab === "vencimento";
+  const tipoDataLabel = isVencimento ? "Por Vencimento" : "Por Competência";
+  const widgetData = isVencimento ? vencimentoData : competenciaData;
+  const isLoading = isVencimento ? isVencimentoLoading : isCompetenciaLoading;
 
   if (isLoading) return <WidgetLoading height={400} />;
 
@@ -157,241 +120,441 @@ export function TotalFaturamentoPorConvenioWidget({ initialIsFavorite = false }:
     totalGeral: 0,
     totalPago: 0,
     totalAberto: 0,
-    totalVencido: 0
+    totalVencido: 0,
   };
-
   const data = widgetData || {
     dataReferencia: new Date().toISOString(),
     geral: defaultResumo,
-    porConvenio: []
+    porConvenio: [],
   };
-
   const safeResumo = (resumo?: ResumoFaturamentoDto) => resumo || defaultResumo;
 
+  const periodoText =
+    startDate && endDate
+      ? `${format(startDate, "dd/MM/yyyy")} a ${format(endDate, "dd/MM/yyyy")}`
+      : format(new Date(), "MMM/yyyy", { locale: ptBR });
+
   return (
-    <Card elevation={0} sx={{ height: { xs: 'auto', md: '100%' }, overflow: 'hidden', border: `1px solid ${theme.palette.divider}` }}>
-      <CardContent sx={{ p: 0, height: { xs: 'auto', md: '100%' }, display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ p: { xs: 2, md: 3 }, pb: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, justifyContent: 'space-between', alignItems: { xs: 'flex-start', sm: 'center' }, borderBottom: `1px solid ${theme.palette.divider}`, gap: 2 }}>
+    <Card
+      elevation={0}
+      sx={{
+        height: { xs: "auto", md: "100%" },
+        overflow: "hidden",
+        border: `1px solid ${theme.palette.divider}`,
+      }}
+    >
+      <CardContent
+        sx={{
+          p: 0,
+          height: { xs: "auto", md: "100%" },
+          display: "flex",
+          flexDirection: "column",
+        }}
+      >
+        <Box
+          sx={{
+            p: 2,
+            display: "flex",
+            flexDirection: "column",
+            gap: 2,
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            bgcolor: alpha(theme.palette.background.default, 0.4),
+          }}
+        >
           <Box>
-            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }}>
+            <Typography variant="h6" fontWeight={700}>
               Faturamento por Convênio
             </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: '0.75rem', md: '0.875rem' } }}>
-              {format(filterDate, 'MMM/yyyy', { locale: ptBR })}
+            <Typography variant="body2" color="text.secondary">
+              Período visualizado: {periodoText} ({tipoDataLabel})
             </Typography>
           </Box>
+        </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={(e: any) => setAnchorEl(e.currentTarget)}
-              startIcon={<FuseSvgIcon size={16}>heroicons-outline:calendar</FuseSvgIcon>}
-              endIcon={<FuseSvgIcon size={16}>heroicons-solid:chevron-down</FuseSvgIcon>}
-              sx={{ borderRadius: '8px', textTransform: 'none', color: 'text.secondary', borderColor: theme.palette.divider, minHeight: 44, whiteSpace: 'nowrap', flexShrink: 0 }}
+        <Box
+          sx={{
+            flex: 1,
+            overflow: "auto",
+            p: 0,
+            bgcolor: isMobile
+              ? alpha(theme.palette.background.default, 0.5)
+              : "transparent",
+          }}
+        >
+          {isMobile ? (
+            <Box
+              sx={{ display: "flex", flexDirection: "column", gap: 2, p: 2, width: "100%" }}
             >
-              {format(filterDate, 'MMM yyyy', { locale: ptBR })}
-            </Button>
-
-            <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-              <IconButton size="small" onClick={handleToggleFavorite} sx={{ minWidth: 44, minHeight: 44 }}>
-                <FuseSvgIcon size={20} sx={{ color: isFavorite ? "#FFD700" : "action.disabled" }}>
-                  {isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
-                </FuseSvgIcon>
-              </IconButton>
-            </Tooltip>
-          </Box>
-        </Box>
-
-        <Divider />
-
-        <Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
-          <Tabs value={tabIndex} onChange={handleTabChange} aria-label="faturamento tabs">
-            <Tab label="Por Vencimento" />
-            <Tab label="Por Competência" />
-          </Tabs>
-        </Box>
-
-        <Box sx={{ flex: 1, overflow: 'auto', p: 0 }}>
-          <TableContainer>
-            <Table size="small" stickyHeader>
-              <TableHead>
-                <TableRow>
-                  <TableCell sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Convênio</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, width: { xs: 80, sm: 100 } }}>% Total</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2 }}>Faturamento</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Pago</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Aberto</TableCell>
-                  <TableCell align="right" sx={{ fontWeight: 600, bgcolor: 'background.paper', py: 2, display: { xs: 'none', sm: 'table-cell' } }}>Vencido</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {data.porConvenio.map((item) => {
-                  const safeFaturamento = safeResumo(item.faturamento);
-                  return (
-                    <TableRow key={item.codConvenio} hover>
-                      <TableCell>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                          <Avatar
-                            sx={{
-                              width: 32,
-                              height: 32,
-                              bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              color: theme.palette.primary.main,
-                              fontSize: '0.875rem',
-                              fontWeight: 600
-                            }}
-                          >
-                            {item.nomeConvenio ? item.nomeConvenio.charAt(0) : '?'}
-                          </Avatar>
-                          <Typography variant="body2" fontWeight={500}>
-                            {item.nomeConvenio || 'Sem Nome'}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="center">
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <LinearProgress
-                            variant="determinate"
-                            value={item.percentual || 0}
-                            sx={{
-                              width: { xs: 30, sm: 50 },
-                              height: 6,
-                              borderRadius: 1,
-                              bgcolor: alpha(theme.palette.primary.main, 0.1),
-                              '& .MuiLinearProgress-bar': {
-                                borderRadius: 1
-                              }
-                            }}
-                          />
-                          <Typography variant="caption" color="text.secondary" sx={{ fontSize: { xs: '0.65rem', sm: '0.75rem' } }}>
-                            {(item.percentual || 0).toFixed(1)}%
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="right">
-                        <Typography variant="body2" fontWeight={700}>
-                          {safeFaturamento.totalGeral.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+              {data.porConvenio.map((item) => {
+                const safeFaturamento = safeResumo(item.faturamento);
+                console.log(safeFaturamento);
+                return (
+                  <Card
+                    key={item.codConvenio}
+                    variant="outlined"
+                    sx={{ borderRadius: 2 }}
+                  >
+                    <CardContent sx={{ p: 2, "&:last-child": { pb: 2 } }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          mb: 2,
+                        }}
+                      >
+                        <Avatar
+                          sx={{
+                            width: 32,
+                            height: 32,
+                            bgcolor: "#000000",
+                            color: "#ffffff",
+                            fontSize: "0.875rem",
+                            fontWeight: 600,
+                          }}
+                        >
+                          {item.nomeConvenio
+                            ? item.nomeConvenio.charAt(0).toUpperCase()
+                            : "?"}
+                        </Avatar>
+                        <Typography variant="subtitle2" fontWeight={700}>
+                          {item.nomeConvenio || "Sem Nome"}
                         </Typography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                        <Typography variant="body2" color="success.main" fontWeight={500}>
-                          {safeFaturamento.totalPago.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                        <Typography variant="body2" color="warning.main" fontWeight={500}>
-                          {safeFaturamento.totalAberto.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </Typography>
-                      </TableCell>
-                      <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
-                        <Typography variant="body2" color="error.main" fontWeight={500}>
-                          {safeFaturamento.totalVencido.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
-                        </Typography>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-                {data.porConvenio.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={6} align="center" sx={{ py: 6, color: 'text.secondary' }}>
-                      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
-                        <FuseSvgIcon size={40} color="action">heroicons-outline:inbox</FuseSvgIcon>
-                        <Typography>Nenhum dado encontrado para o período selecionado.</Typography>
                       </Box>
+                      <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 1.5,
+                        mb: 2,
+                      }}>
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ minWidth: 45, fontWeight: 600 }} >
+                          Quantidade: {item.associados}
+                          </Typography>
+                      </Box>
+                      {/* Barra de Progresso */}
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 1.5,
+                          mb: 2,
+                        }}
+                      >
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ minWidth: 45, fontWeight: 600 }}
+                        >
+                          % Total:
+                        </Typography>
+                        <LinearProgress
+                          variant="determinate"
+                          value={item.percentual || 0}
+                          sx={{
+                            flex: 1,
+                            height: 6,
+                            borderRadius: 1,
+                            bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            "& .MuiLinearProgress-bar": { borderRadius: 1 },
+                          }}
+                        />
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          fontWeight={700}
+                        >
+                          {(item.percentual || 0).toFixed(1)}%
+                        </Typography>
+                      </Box>
+
+                      <Divider sx={{ mb: 2, borderStyle: "dashed" }} />
+
+                      {/* Grid com os Valores Financeiros (reaproveitando MetricItem) */}
+                      <Box
+                        sx={{
+                          display: "grid",
+                          gridTemplateColumns: "1fr 1fr",
+                          gap: 2,
+                        }}
+                      >
+                        <MetricItem
+                          label="Faturamento"
+                          value={safeFaturamento.totalGeral}
+                          color="text.primary"
+                          money
+                          bold
+                        />
+                        <MetricItem
+                          label="Pago"
+                          value={safeFaturamento.totalPago}
+                          color="success.main"
+                          money
+                        />
+                        <MetricItem
+                          label="Aberto"
+                          value={safeFaturamento.totalAberto}
+                          color="warning.main"
+                          money
+                        />
+                        <MetricItem
+                          label="Vencido"
+                          value={safeFaturamento.totalVencido}
+                          color="error.main"
+                          money
+                        />
+                      </Box>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+
+              {data.porConvenio.length === 0 && (
+                <Box
+                  sx={{
+                    py: 6,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    gap: 1,
+                    color: "text.secondary",
+                    textAlign: "center",
+                  }}
+                >
+                  <FuseSvgIcon size={40} color="action">
+                    heroicons-outline:inbox
+                  </FuseSvgIcon>
+                  <Typography>
+                    Nenhum dado encontrado para os filtros aplicados.
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+          ) : (
+            
+            <TableContainer>
+              <Table size="small" stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                      }}
+                    >
+                      Convênio
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                      }}
+                    >
+                      Qtde.
+                    </TableCell>
+                    <TableCell
+                      align="center"
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                        width: 100,
+                      }}
+                    >
+                      % Total
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                      }}
+                    >
+                      Faturamento
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                      }}
+                    >
+                      Pago
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                      }}
+                    >
+                      Aberto
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        fontWeight: 600,
+                        bgcolor: "background.paper",
+                        py: 2,
+                      }}
+                    >
+                      Vencido
                     </TableCell>
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                </TableHead>
+                <TableBody>
+                  {data.porConvenio.map((item) => {
+                    const safeFaturamento = safeResumo(item.faturamento);
+                    console.log(safeFaturamento);
+                    return (
+                      <TableRow key={item.codConvenio} hover>
+                        <TableCell>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1.5,
+                            }}
+                          >
+                            <Avatar
+                              sx={{
+                                width: 32,
+                                height: 32,
+                                bgcolor: "#000000",
+                                color: "#ffffff",
+                                fontSize: "0.875rem",
+                                fontWeight: 600,
+                              }}
+                            >
+                              {item.nomeConvenio
+                                ? item.nomeConvenio.charAt(0).toUpperCase()
+                                : "?"}
+                            </Avatar>
+                            <Typography variant="body2" fontWeight={500}>
+                              {item.nomeConvenio || "Sem Nome"}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2" fontWeight={500}>
+                            {item.associados}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
+                            <LinearProgress
+                              variant="determinate"
+                              value={item.percentual || 0}
+                              sx={{
+                                width: 50,
+                                height: 6,
+                                borderRadius: 1,
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                "& .MuiLinearProgress-bar": { borderRadius: 1 },
+                              }}
+                            />
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                              sx={{ fontSize: "0.75rem" }}
+                            >
+                              {(item.percentual || 0).toFixed(1)}%
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography variant="body2" fontWeight={700}>
+                            {safeFaturamento.totalGeral.toLocaleString(
+                              "pt-BR",
+                              { style: "currency", currency: "BRL" },
+                            )}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography
+                            variant="body2"
+                            color="success.main"
+                            fontWeight={500}
+                          >
+                            {safeFaturamento.totalPago.toLocaleString("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                            })}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography
+                            variant="body2"
+                            color="warning.main"
+                            fontWeight={500}
+                          >
+                            {safeFaturamento.totalAberto.toLocaleString(
+                              "pt-BR",
+                              { style: "currency", currency: "BRL" },
+                            )}
+                          </Typography>
+                        </TableCell>
+                        <TableCell align="right">
+                          <Typography
+                            variant="body2"
+                            color="error.main"
+                            fontWeight={500}
+                          >
+                            {safeFaturamento.totalVencido.toLocaleString(
+                              "pt-BR",
+                              { style: "currency", currency: "BRL" },
+                            )}
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                  {data.porConvenio.length === 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={6}
+                        align="center"
+                        sx={{ py: 6, color: "text.secondary" }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 1,
+                          }}
+                        >
+                          <FuseSvgIcon size={40} color="action">
+                            heroicons-outline:inbox
+                          </FuseSvgIcon>
+                          <Typography>
+                            Nenhum dado encontrado para os filtros aplicados.
+                          </Typography>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          )}
         </Box>
-
-        <Menu
-          anchorEl={anchorEl}
-          open={openMenu}
-          onClose={handleCloseMenu}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'left' }}
-          slotProps={{
-            paper: {
-              sx: {
-                mt: 1,
-                minWidth: 220,
-                borderRadius: 2,
-                boxShadow: (theme) => theme.shadows[8],
-              }
-            }
-          }}
-        >
-          <MenuItem onClick={() => handleSelectMonth(0)} selected={filterDate?.getMonth() === new Date().getMonth()}>
-            <ListItemIcon>
-              <FuseSvgIcon size={18}>heroicons-outline:calendar</FuseSvgIcon>
-            </ListItemIcon>
-            <ListItemText>Mês atual</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handleSelectMonth(1)}>
-            <ListItemIcon>
-              <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-            </ListItemIcon>
-            <ListItemText>Mês passado</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={() => handleSelectMonth(2)}>
-            <ListItemIcon>
-              <FuseSvgIcon size={18}>heroicons-outline:arrow-left</FuseSvgIcon>
-            </ListItemIcon>
-            <ListItemText>Há 2 meses</ListItemText>
-          </MenuItem>
-          <Divider sx={{ my: 0.5 }} />
-          <MenuItem onClick={handleCustomDateClick}>
-            <ListItemIcon>
-              <FuseSvgIcon size={18}>heroicons-outline:adjustments-horizontal</FuseSvgIcon>
-            </ListItemIcon>
-            <ListItemText>Selecionar data...</ListItemText>
-          </MenuItem>
-        </Menu>
-
-        <Dialog
-          open={datePickerOpen}
-          onClose={handleDatePickerClose}
-          PaperProps={{
-            sx: {
-              borderRadius: 3,
-              minWidth: 320,
-            }
-          }}
-        >
-          <DialogContent sx={{ pt: 3 }}>
-            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
-              <DatePicker
-                views={['year', 'month']}
-                label="Selecione o mês e ano"
-                value={tempDate}
-                onChange={(newValue) => setTempDate(newValue || filterDate)}
-                slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { mb: 2 }
-                  },
-                  popper: {
-                    sx: {
-                      zIndex: 99999,
-                    }
-                  }
-                }}
-              />
-            </LocalizationProvider>
-          </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 2 }}>
-            <Button onClick={handleDatePickerClose} color="inherit">
-              Cancelar
-            </Button>
-            <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">
-              Confirmar
-            </Button>
-          </DialogActions>
-        </Dialog>
       </CardContent>
-    </Card >
+    </Card>
   );
 }

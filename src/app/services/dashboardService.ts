@@ -1,4 +1,5 @@
 import { apiClient } from '@/lib/apiClient';
+import { FiltroOption } from 'src/app/hooks/useDateFilter';
 
 const dashboardBaseUrl = process.env.NODE_ENV === 'development'
   ? 'https://localhost:15001/'
@@ -54,7 +55,10 @@ export interface ClientesPorSexoDto {
 
 export interface FaturamentoMensalDto {
   total: number;
+  anterior:number;
   percentageChange: number;
+  periodoSelecionado: string;
+  periodoAnterior: string;
   message: string;
 }
 
@@ -66,13 +70,19 @@ export interface TaxaUtilizacaoDto {
 
 export interface MensalidadeMediaDto {
   average: number;
+  previousAverage: number;
+  periodoSelecionado: string;
+  periodoAnterior: string;
   percentageChange: number;
   message: string;
 }
 
 export interface MensalidadeMediaPorConvenioDto {
   nomeConvenio: string;
+  previousAverage: number;
   average: number;
+  periodoSelecionado: string;
+  periodoAnterior: string;
   percentageChange: number;
 }
 
@@ -147,12 +157,31 @@ export interface FaturamentoDetalhadoConvenioDto {
   codConvenio: number;
   nomeConvenio: string;
   percentual: number;
+  associados: number;
   faturamento: ResumoFaturamentoDto;
 }
 
 export interface TotalFaturamentoPorConvenioDto {
   dataReferencia: string;
   geral: ResumoFaturamentoDto;
+  porConvenio: FaturamentoDetalhadoConvenioDto[];
+}
+
+export interface PagamentoCentroCustoDto {
+  valorTotal: number;
+  emAberto: number;
+  liquidado: number;
+  valorVencido: number;
+}
+
+export interface TotalFaturamentoDto {
+  dataReferencia: string;
+  geral: ResumoFaturamentoDto;
+  quantidadeClientes: number;
+  despesas: PagamentoCentroCustoDto;
+  fluxoCaixa: PagamentoCentroCustoDto;
+  resultadoPrevisto: number;
+  resultadoRealizado: number;
   porConvenio: FaturamentoDetalhadoConvenioDto[];
 }
 
@@ -271,6 +300,15 @@ export interface GrupoBancoDto {
   codigo : number;
 }
 
+export interface FiltrosDashboardDto 
+{
+  convenios: FiltroOption[],
+  servicos: FiltroOption[],
+  centrosCusto: FiltroOption[],
+  planosConta: FiltroOption[]
+}
+
+
 export const dashboardService = {
   toggleFavoriteWidget: async (codUsu: number, widgetId: number, isFavorite: boolean) => {
     return dashboardClient.post('api/UsuarioDashboardWidgets/favorite', {
@@ -280,6 +318,9 @@ export const dashboardService = {
         IsFavorite: isFavorite
       }
     }).json();
+  },
+  getFilterOptions: async () : Promise<FiltrosDashboardDto> => {
+    return dashboardClient.get('api/Dashboard/filtros-dashboard').json<FiltrosDashboardDto>();
   },
   getUserFavoriteWidgets: async (codUsu: number): Promise<UsuarioDashboardWidgetDto[]> => {
     return dashboardClient.get(`api/UsuarioDashboardWidgets/usuario/${codUsu}`).json<UsuarioDashboardWidgetDto[]>();
@@ -330,17 +371,19 @@ export const dashboardService = {
       searchParams
     }).json<VidasPorConvenioDto[]>();
   },
-  getFaturamentoMensal: async (date?: string): Promise<FaturamentoMensalDto> => {
+  getFaturamentoMensal: async (startDate?: string, endDate?: string): Promise<FaturamentoMensalDto> => {
     const searchParams: Record<string, string> = {};
-    if (date) searchParams.date = date;
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
 
     return dashboardClient.get('api/Dashboard/faturamento-mensal', {
       searchParams
     }).json<FaturamentoMensalDto>();
   },
-  getFaturamentoMensalReferencia: async (date?: string): Promise<FaturamentoMensalDto> => {
+  getFaturamentoMensalReferencia: async (startDate?: string, endDate?: string): Promise<FaturamentoMensalDto> => {
     const searchParams: Record<string, string> = {};
-    if (date) searchParams.date = date;
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
 
     return dashboardClient.get('api/Dashboard/faturamento-mensal-referencia', {
       searchParams
@@ -352,14 +395,20 @@ export const dashboardService = {
       searchParams
     }).json<TaxaUtilizacaoDto>();
   },
-  getMensalidadeMedia: async (date?: string): Promise<MensalidadeMediaDto> => {
-    const searchParams = date ? { date } : undefined;
+  getMensalidadeMedia: async (startDate?: string, endDate?: string): Promise<MensalidadeMediaDto> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
     return dashboardClient.get('api/Dashboard/mensalidade-media', {
       searchParams
     }).json<MensalidadeMediaDto>();
   },
-  getMensalidadeMediaPorConvenio: async (date?: string): Promise<MensalidadeMediaPorConvenioDto[]> => {
-    const searchParams = date ? { date } : undefined;
+  getMensalidadeMediaPorConvenio: async (startDate?: string, endDate?: string): Promise<MensalidadeMediaPorConvenioDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
     return dashboardClient.get('api/Dashboard/mensalidade-media-por-convenio', {
       searchParams
     }).json<MensalidadeMediaPorConvenioDto[]>();
@@ -415,6 +464,27 @@ export const dashboardService = {
     }).json<TotalFaturamentoPorConvenioDto>();
   },
 
+  getTotalFaturamentoPorConvenioWithFilters: async (
+    startDate?: string,
+    endDate?: string,
+    convenios?: number[],
+    servicos?: number[],
+    centrosCusto?: number[],
+    planosContas?: number[],
+  ): Promise<TotalFaturamentoDto> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    if (convenios && convenios.length > 0) searchParams.convenios = convenios.join(',');
+    if (servicos && servicos.length > 0) searchParams.servicos = servicos.join(',');
+    if (centrosCusto && centrosCusto.length > 0) searchParams.centrosCusto = centrosCusto.join(',');
+    if (planosContas && planosContas.length > 0) searchParams.planosContas = planosContas.join(',');
+
+    return dashboardClient.get('api/Dashboard/total-faturamento-convenio-filters', {
+      searchParams
+    }).json<TotalFaturamentoDto>();
+  },
+
   getTotalDespesasPorConvenio: async (date?: string, tipoPesquisa?: string): Promise<TotalDespesasPorConvenioDto> => {
     const searchParams : Record<string,string> = {}
     if(date) searchParams.date = date;
@@ -424,11 +494,35 @@ export const dashboardService = {
     }).json<TotalDespesasPorConvenioDto>();
   },
 
-  getTotalFaturamentoPorConvenioReferencia: async (date?: string): Promise<TotalFaturamentoPorConvenioDto> => {
-    const searchParams = date ? { date } : undefined;
+  getTotalFaturamentoPorConvenioReferencia: async (startDate?: string, endDate?: string): Promise<TotalFaturamentoPorConvenioDto> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+
     return dashboardClient.get('api/Dashboard/total-faturamento-convenio-referencia', {
       searchParams
     }).json<TotalFaturamentoPorConvenioDto>();
+  },
+
+  getTotalFaturamentoPorConvenioReferenciaWithFilters: async (
+    startDate?: string,
+    endDate?: string,
+    convenios?: number[],
+    servicos?: number[],
+    centrosCusto?: number[],
+    planosContas?: number[],
+  ): Promise<TotalFaturamentoDto> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    if (convenios && convenios.length > 0) searchParams.convenios = convenios.join(',');
+    if (servicos && servicos.length > 0) searchParams.servicos = servicos.join(',');
+    if (centrosCusto && centrosCusto.length > 0) searchParams.centrosCusto = centrosCusto.join(',');
+    if (planosContas && planosContas.length > 0) searchParams.planosContas = planosContas.join(',');
+
+    return dashboardClient.get('api/Dashboard/total-faturamento-convenio-referencia-filters', {
+      searchParams
+    }).json<TotalFaturamentoDto>();
   },
   getEventAnalytics: async (date?: string): Promise<EventAnalyticsDto[]> => {
     const searchParams = date ? { date } : undefined;
