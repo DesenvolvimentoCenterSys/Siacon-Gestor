@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import { format } from 'date-fns';
@@ -24,28 +24,29 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
   );
 
   const startStr = useMemo(() => {
-      if (startDate) return format(startDate, "yyyy-MM-dd");
-      if (selectedDate)
-        return format(
-          new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
-          "yyyy-MM-dd",
-        );
-      return undefined;
-    }, [startDate, selectedDate]);
-  
-    const endStr = useMemo(() => {
-      if (endDate) return format(endDate, "yyyy-MM-dd");
-      if (selectedDate)
-        return format(
-          new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0),
-          "yyyy-MM-dd",
-        );
-      return undefined;
-    }, [endDate, selectedDate]);
+    if (startDate) return format(startDate, 'yyyy-MM-dd');
+    if (selectedDate)
+      return format(
+        new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1),
+        'yyyy-MM-dd',
+      );
+    return undefined;
+  }, [startDate, selectedDate]);
 
+  const endStr = useMemo(() => {
+    if (endDate) return format(endDate, 'yyyy-MM-dd');
+    if (selectedDate)
+      return format(
+        new Date(selectedDate.getFullYear(), selectedDate.getMonth() + 1, 0),
+        'yyyy-MM-dd',
+      );
+    return undefined;
+  }, [endDate, selectedDate]);
+
+  // Inicia vazio — será preenchido com o primeiro convênio assim que os dados chegarem
   const [selectedConvenio, setSelectedConvenio] = useSessionUrlFilter<string>(
     'financeiro_mens_media_convenio',
-    'Todos'
+    ''
   );
 
   // Filtro externo tem prioridade sobre o picker interno
@@ -61,6 +62,15 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
 
   const isLoading = isLoadingGeral || isLoadingConvenio;
 
+  useEffect(() => {
+    if (!selectedConvenio && convenioData && convenioData.length > 0) {
+      const sorted = [...convenioData].sort((a: any, b: any) =>
+        a.nomeConvenio.localeCompare(b.nomeConvenio)
+      );
+      setSelectedConvenio(sorted[0].nomeConvenio);
+    }
+  }, [convenioData, selectedConvenio, setSelectedConvenio]);
+
   const kpiData = useMemo(() => {
     if (!mensalidadeData) return null;
 
@@ -70,9 +80,7 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
       message: mensalidadeData.message || 'média do período',
     };
 
-    //
-
-    if (selectedConvenio !== 'Todos' && convenioData) {
+    if (selectedConvenio && convenioData) {
       const cov = convenioData.find((c: any) => c.nomeConvenio === selectedConvenio);
       if (cov) {
         displayData = {
@@ -88,9 +96,10 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
         };
       }
     }
+
     let trendObj;
 
-    if (selectedConvenio !== 'Todos' && convenioData) {
+    if (selectedConvenio && convenioData) {
       const cov = convenioData.find((c: any) => c.nomeConvenio === selectedConvenio);
       trendObj = {
         value: (
@@ -128,9 +137,10 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
     };
   }, [mensalidadeData, convenioData, selectedConvenio, theme]);
 
+
   const conveniosOptions = useMemo(() => {
     if (!convenioData) return [];
-    return Array.from(new Set(convenioData.map((c: any) => c.nomeConvenio))).sort();
+    return Array.from(new Set(convenioData.map((c: any) => c.nomeConvenio))).sort() as string[];
   }, [convenioData]);
 
   const actionNode = (
@@ -139,7 +149,12 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
         size="small"
         value={selectedConvenio}
         onChange={(e) => setSelectedConvenio(e.target.value)}
-        MenuProps={{ PaperProps: { sx: { mt: 1, borderRadius: 2, boxShadow: (t) => t.shadows[8], maxHeight: 300 } } }}
+        displayEmpty
+        MenuProps={{
+          PaperProps: {
+            sx: { mt: 1, borderRadius: 2, boxShadow: (t) => t.shadows[8], maxHeight: 300 },
+          },
+        }}
         sx={{
           height: '38px',
           borderRadius: '14px',
@@ -147,13 +162,21 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
           backdropFilter: 'blur(10px)',
           border: `1px solid ${alpha('#ffffff', 0.2)}`,
           color: 'white',
-          '& .MuiSelect-select': { py: 0.875, px: 2, minHeight: 'auto', display: 'flex', alignItems: 'center', fontWeight: 600, fontSize: '1rem' },
+          '& .MuiSelect-select': {
+            py: 0.875,
+            px: 2,
+            minHeight: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            fontWeight: 600,
+            fontSize: '1rem',
+          },
           '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
           '&:hover': { background: alpha('#ffffff', 0.25) },
           '& .MuiSvgIcon-root': { color: 'white', opacity: 0.7 },
         }}
       >
-        {conveniosOptions.map((c: any) => (
+        {conveniosOptions.map((c) => (
           <MenuItem key={c} value={c}>{c}</MenuItem>
         ))}
       </Select>

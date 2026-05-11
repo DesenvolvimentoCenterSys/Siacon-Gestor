@@ -201,7 +201,6 @@ export function FaturamentoPorConvenioDonutWidget({
     [chartData],
   );
 
-  // Slices pequenos que não aparecem no gráfico como label — vão para legenda inferior
   const smallSlices = useMemo(
     () => chartData.filter((d) => d.percent < LABEL_THRESHOLD),
     [chartData],
