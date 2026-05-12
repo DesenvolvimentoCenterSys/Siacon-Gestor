@@ -146,9 +146,9 @@ export function FinancialEvolutionWidget({
   );
 
   // Colors
-  const colorReceber = "linear-gradient(135deg, rgb(21, 101, 192) 0%, rgb(13, 71, 161) 100%)"; // verde metálico
-  const colorPagar = "linear-gradient(135deg, rgb(250, 96, 13) 0%, rgb(240, 72, 22) 100%)"; // vermelho metálico
-  const colorSaldo = "linear-gradient(135deg, rgb(35, 163, 41) 0%, rgb(34, 146, 41) 100%)"; // verde metálico
+  const colorReceber = "rgb(21, 101, 192)"; 
+  const colorPagar = " rgb(250, 96, 13)"; 
+  const colorSaldo = "rgb(35, 163, 41)"; 
 
   // Derived data
   const banks = useMemo(() => {
@@ -527,7 +527,7 @@ export function FinancialEvolutionWidget({
     {
       label: "Receitas",
       value: rawData.totals.receber,
-      color: "linear-gradient(135deg, rgb(21, 101, 192) 0%, rgb(13, 71, 161) 100%)",
+      color: "rgb(21, 101, 192)",
       fontSize: "0.95rem",
       icon: "heroicons-outline:arrow-trending-up",
       key: "receber",
@@ -535,7 +535,7 @@ export function FinancialEvolutionWidget({
     {
       label: "Despesas",
       value: rawData.totals.pagar,
-      color: "linear-gradient(135deg, rgb(250, 96, 13) 0%, rgb(240, 72, 22) 100%)",
+      color: "rgb(250, 96, 13)",
       fontSize: "0.95rem",
       icon: "heroicons-outline:arrow-trending-down",
       key: "pagar",
@@ -543,7 +543,7 @@ export function FinancialEvolutionWidget({
     {
       label: "Lucro/Prejuízo do Período",
       value: rawData.totals.receber - rawData.totals.pagar,
-      color: "linear-gradient(135deg, rgb(35, 163, 41) 0%, rgb(34, 146, 41) 100%)",
+      color: "rgb(35, 163, 41)",
       fontSize: "0.95rem",
       icon: "heroicons-outline:chart-bar-square",
       key: "saldo",
@@ -551,7 +551,7 @@ export function FinancialEvolutionWidget({
     {
       label: "Saldo Atual",
       value: rawData.totals.saldoDia,
-      color: "linear-gradient(135deg, rgb(183, 0, 207) 0%, rgb(126, 0, 88) 100%)",
+      color: "rgb(183, 0, 207)",
       fontSize: "0.95rem",
       icon: "heroicons-outline:calendar-days",
       key: "saldo_dia",
