@@ -424,7 +424,42 @@ export function AccumulatedDelinquencyWidget({}: AccumulatedDelinquencyWidgetPro
       intersect: false,
       theme: theme.palette.mode,
       style: { fontSize: "13px" },
-      y: { formatter: (v) => formatCurrency(v) },
+      y: {
+        formatter: (value, { seriesIndex, dataPointIndex }) => {
+          const formattedValue = formatCurrency(value);
+
+          if (!isMobile) {
+            return formattedValue;
+          }
+
+          const totalAnual = processedData?.totalMensal ?? 0;
+          if (totalAnual === 0) return formattedValue;
+
+          const percentage = ((value / totalAnual) * 100).toFixed(1);
+          return `${formattedValue}<br><span style="font-size: 11px; color: ${theme.palette.text.secondary};">${percentage}% do total anual</span>`;
+        }
+      },
+      custom: !isMobile ? ({ series, seriesIndex, dataPointIndex, w }) => {
+        const totalAnual = processedData?.totalMensal ?? 0;
+        if (totalAnual === 0) {
+          return `<div style="padding: 8px; background: ${theme.palette.background.paper}; border: 1px solid ${theme.palette.divider}; border-radius: 4px;">
+            <div style="font-weight: 600; margin-bottom: 4px;">${MONTHS[dataPointIndex]}</div>
+            <div>Mensal: ${formatCurrency(series[0][dataPointIndex])}</div>
+            <div>Acumulado: ${formatCurrency(series[1][dataPointIndex])}</div>
+          </div>`;
+        }
+
+        const mensalValue = series[0][dataPointIndex];
+        const acumuladoValue = series[1][dataPointIndex];
+        const mensalPercentage = ((mensalValue / totalAnual) * 100).toFixed(1);
+
+        return `<div style="padding: 8px; background: ${theme.palette.background.paper}; border: 1px solid ${theme.palette.divider}; border-radius: 4px;">
+          <div style="font-weight: 600; margin-bottom: 4px;">${MONTHS[dataPointIndex]}</div>
+          <div>Mensal: ${formatCurrency(mensalValue)}</div>
+          <div style="font-size: 11px; color: ${theme.palette.text.secondary};">${mensalPercentage}% do total anual</div>
+          <div>Acumulado: ${formatCurrency(acumuladoValue)}</div>
+        </div>`;
+      } : undefined,
     },
     legend: {
       show: !isMobile,
