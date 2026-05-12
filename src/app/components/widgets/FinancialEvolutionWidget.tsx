@@ -147,7 +147,7 @@ export function FinancialEvolutionWidget({
 
   // Colors
   const colorReceber = "rgb(21, 101, 192)"; 
-  const colorPagar = " rgb(250, 96, 13)"; 
+  const colorPagar = "rgb(250, 96, 13)"; 
   const colorSaldo = "rgb(35, 163, 41)"; 
 
   // Derived data
