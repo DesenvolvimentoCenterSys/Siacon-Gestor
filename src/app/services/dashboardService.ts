@@ -18,6 +18,11 @@ const dashboardClient = apiClient.extend({
   }
 });
 
+export interface OverviewAcummulatedDelinquencyDto{
+  lastMonthTaxVariation: number;
+  accumulatedDelinquency: AccumulatedDelinquencyDto[];
+}
+
 export interface TotalVidasDto {
   total: number;
   message: string;
@@ -559,13 +564,13 @@ export const dashboardService = {
       searchParams
     }).json<FinancialEvolutionDto[]>();
   },
-  getAccumulatedDelinquency: async (year?: number): Promise<AccumulatedDelinquencyDto[]> => {
+  getAccumulatedDelinquency: async (year?: number): Promise<OverviewAcummulatedDelinquencyDto> => {
     const searchParams: Record<string, string> = {};
     if (year) searchParams.year = year.toString();
 
     return dashboardClient.get('api/Dashboard/accumulated-delinquency', {
       searchParams
-    }).json<AccumulatedDelinquencyDto[]>();
+    }).json<OverviewAcummulatedDelinquencyDto>();
   },
   getAccumulatedDelinquencyReferencia: async (year?: number): Promise<AccumulatedDelinquencyDto[]> => {
     const searchParams: Record<string, string> = {};
@@ -593,8 +598,13 @@ export const dashboardService = {
       searchParams
     }).json<DailyDelinquencyDto[]>();
   },
-  getDelinquencyAging: async (): Promise<DelinquencyAgingDto[]> => {
-    return dashboardClient.get('api/Dashboard/delinquency-aging').json<DelinquencyAgingDto[]>();
+  getDelinquencyAging: async (referenceYear?: number): Promise<DelinquencyAgingDto[]> => {
+    const searchParams: Record<string, string> = {};
+    if (referenceYear) searchParams.referenceYear = referenceYear.toString();
+
+    return dashboardClient.get('api/Dashboard/delinquency-aging', {
+      searchParams
+    }).json<DelinquencyAgingDto[]>();
   },
   getDelinquencyAgingReferencia: async (): Promise<DelinquencyAgingDto[]> => {
     return dashboardClient.get('api/Dashboard/delinquency-aging-referencia').json<DelinquencyAgingDto[]>();

@@ -1,551 +1,877 @@
-'use client';
+"use client";
 
-import { useMemo, useState, useEffect } from 'react';
-import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
-import { useTheme, alpha } from '@mui/material/styles';
-import ReactApexChart from 'react-apexcharts';
-import { ApexOptions } from 'apexcharts';
+import { useMemo, useState } from "react";
+import { useSessionUrlFilter } from "@auth/useSessionUrlFilter";
+import { useTheme, alpha } from "@mui/material/styles";
+import ReactApexChart from "react-apexcharts";
+import { ApexOptions } from "apexcharts";
 import {
-	Card,
-	CardContent,
-	Typography,
-	Box,
-	IconButton,
-	Tooltip,
-	Menu,
-	MenuItem,
-	ListItemText,
-	Chip,
-	Avatar,
-	Tabs,
-	Tab
-} from '@mui/material';
-import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
-import useUser from '@auth/useUser';
-import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
-import { useAccumulatedDelinquency, useAccumulatedDelinquencyReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
-import { AccumulatedDelinquencyDto } from '../../services/dashboardService';
-import WidgetLoading from '../ui/WidgetLoading';
+  Card,
+  CardContent,
+  Typography,
+  Box,
+  Menu,
+  MenuItem,
+  ListItemText,
+  Tabs,
+  Tab,
+} from "@mui/material";
+import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
+import useThemeMediaQuery from "@fuse/hooks/useThemeMediaQuery";
+import {
+  useAccumulatedDelinquency,
+  useDelinquencyAging,
+} from "../../hooks/useDashboard";
+import WidgetLoading from "../ui/WidgetLoading";
 
-interface AccumulatedDelinquencyWidgetProps {
-	initialIsFavorite?: boolean;
+const MONTHS = [
+  "Jan",
+  "Fev",
+  "Mar",
+  "Abr",
+  "Mai",
+  "Jun",
+  "Jul",
+  "Ago",
+  "Set",
+  "Out",
+  "Nov",
+  "Dez",
+];
+
+const COLORS = {
+  red: ["#db2020", "#c7281d"] as [string, string],
+  orange: ["#fa600d", "#f04816"] as [string, string],
+  green: ["#23a329", "#229229"] as [string, string],
+  blue: ["#1565C0", "#0D47A1"] as [string, string],
+  purple: ["#b700cf", "#7e0058"] as [string, string],
+};
+
+const AGING_COLORS = ["#e2aa1c", "#F57C00", "#D84315", "#D32F2F", "#8A0000"];
+
+interface GradientKPIProps {
+  title: string;
+  mainValue: string;
+  icon: string;
+  gradientColors: [string, string];
+  sub?: string | null;
+  compactSpaces?: boolean;
 }
 
-const WIDGET_ID = 19;
+function GradientKPI({
+  title,
+  mainValue,
+  icon,
+  gradientColors,
+  sub,
+  compactSpaces,
+}: GradientKPIProps) {
+  return (
+    <Card
+      elevation={3}
+      sx={{
+        background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+        color: "white",
+        height: "100%",
+        position: "relative",
+        overflow: "hidden",
+        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+        "&:hover": {
+          transform: "translateY(-4px)",
+          boxShadow: (theme: any) => theme.shadows[8],
+        },
+      }}
+    >
+      <CardContent
+        sx={{
+          position: "relative",
+          zIndex: 1,
+          p: compactSpaces ? 1.3 : { xs: 2.3, sm: 2.5 },
+          "&:last-child": { pb: compactSpaces ? 1.3 : { xs: 2.3, sm: 2.5 } },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "flex-start",
+            mb: compactSpaces ? 0.5 : 2,
+          }}
+        >
+          <Typography
+            sx={{
+              opacity: 0.9,
+              fontWeight: 700,
+              fontSize: { xs: "1.5rem", sm: "1.5rem", md: "1.5rem" },
+              letterSpacing: 0.3,
+            }}
+          >
+            {title}
+          </Typography>
+          <FuseSvgIcon size={32} sx={{ opacity: 0.3 }}>
+            {icon}
+          </FuseSvgIcon>
+        </Box>
 
-const MONTHS = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+        <Typography
+          sx={{
+            fontWeight: 800,
+            mb: sub ? 0.5 : 0,
+            fontSize: { xs: "1.8rem", sm: "2.0rem", md: "2.2rem" },
+            lineHeight: 1.1,
+          }}
+        >
+          {mainValue}
+        </Typography>
 
-export function AccumulatedDelinquencyWidget({ initialIsFavorite = false }: AccumulatedDelinquencyWidgetProps) {
-	const theme = useTheme();
-	const { data: user } = useUser();
-	const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
+        {sub && (
+          <Typography
+            sx={{
+              opacity: 0.85,
+              fontSize: { xs: "1.25rem", sm: "1.25rem" },
+              fontWeight: 500,
+            }}
+          >
+            {sub}
+          </Typography>
+        )}
+      </CardContent>
 
-	const currentYear = new Date().getFullYear();
-	const availableYears = useMemo(() => Array.from({ length: 5 }, (_, i) => currentYear - i), [currentYear]);
+      <Box
+        sx={{
+          position: "absolute",
+          right: -20,
+          bottom: -20,
+          width: 120,
+          height: 120,
+          borderRadius: "50%",
+          background: alpha("#ffffff", 0.1),
+          zIndex: 0,
+        }}
+      />
+      <Box
+        sx={{
+          position: "absolute",
+          right: 35,
+          bottom: 35,
+          width: 70,
+          height: 70,
+          borderRadius: "50%",
+          background: alpha("#ffffff", 0.06),
+          zIndex: 0,
+        }}
+      />
+    </Card>
+  );
+}
 
-	const [selectedYear, setSelectedYear] = useSessionUrlFilter<number>(
-		'inadimplencia_acc_selectedYear',
-		currentYear,
-		String,
-		Number
-	);
+interface AccumulatedDelinquencyWidgetProps {}
 
-	const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-	const openMenu = Boolean(anchorEl);
+export function AccumulatedDelinquencyWidget({}: AccumulatedDelinquencyWidgetProps) {
+  const theme = useTheme();
+  const isMobile = useThemeMediaQuery((t) => t.breakpoints.down("md"));
+  const currentYear = new Date().getFullYear();
+  const availableYears = useMemo(
+    () => Array.from({ length: 5 }, (_, i) => currentYear - i),
+    [currentYear],
+  );
+  const [selectedYear, setSelectedYear] = useSessionUrlFilter<number>(
+    "inadimplencia_acc_selectedYear",
+    currentYear,
+    String,
+    Number,
+  );
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const openMenu = Boolean(anchorEl);
+  const handleClickMenu = (e: React.MouseEvent<HTMLElement>) =>
+    setAnchorEl(e.currentTarget);
+  const handleCloseMenu = () => setAnchorEl(null);
+  const handleSelectYear = (year: number) => {
+    setSelectedYear(year);
+    handleCloseMenu();
+  };
 
-	const handleClickMenu = (e: React.MouseEvent<HTMLElement>) => setAnchorEl(e.currentTarget);
-	const handleCloseMenu = () => setAnchorEl(null);
-	const handleSelectYear = (year: number) => {
-		setSelectedYear(year);
-		handleCloseMenu();
-	};
+  // ── Novo estado para controlar a aba ativa no mobile ──
+  const [mobileTab, setMobileTab] = useState<"mensal" | "acumulado">("mensal");
 
-	const [tabIndex, setTabIndex] = useSessionUrlFilter<number>(
-		'inadimplencia_acc_tabIndex',
-		0,
-		String,
-		Number
-	);
+  const { data: widgetData, isLoading } =
+    useAccumulatedDelinquency(selectedYear);
+  const { data: agingData } = useDelinquencyAging(selectedYear);
+  const processedData = useMemo(() => {
+    if (!widgetData || widgetData.accumulatedDelinquency.length === 0)
+      return null;
+    const sorted = [...widgetData.accumulatedDelinquency].sort(
+      (a, b) => a.mes - b.mes,
+    );
+    const categories = sorted.map((d) => MONTHS[d.mes - 1] ?? `Mês ${d.mes}`);
+    const seriesMensal = sorted.map((d) => d.valorMensal);
+    const seriesAcumulado = sorted.map((d) => d.valorAcumulado);
+    const totalMensal = sorted.reduce((s, d) => s + d.valorMensal, 0);
+    const totalAcumulado =
+      sorted.length > 0 ? sorted[sorted.length - 1].valorAcumulado : 0;
+    const peakMonth = sorted.reduce(
+      (max, d) => (d.valorMensal > max.valorMensal ? d : max),
+      sorted[0],
+    );
+    const avgMensal = totalMensal / sorted.length;
+    const variation = widgetData.lastMonthTaxVariation ?? 0;
+    return {
+      categories,
+      seriesMensal,
+      seriesAcumulado,
+      totalMensal,
+      totalAcumulado,
+      peakMonth,
+      avgMensal,
+      variation,
+    };
+  }, [widgetData]);
 
-	const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-		setTabIndex(newValue);
-	};
+  const agingBuckets = useMemo(() => {
+    if (!agingData) return [];
+    const buckets = [
+      { label: "Até 10 dias", min: 0, max: 10, color: AGING_COLORS[0] },
+      { label: "11 à 30 dias", min: 11, max: 30, color: AGING_COLORS[1] },
+      { label: "31 à 60 dias", min: 31, max: 60, color: AGING_COLORS[2] },
+      { label: "61 à 90 dias", min: 61, max: 90, color: AGING_COLORS[3] },
+      {
+        label: "Acima de 90 dias",
+        min: 91,
+        max: Infinity,
+        color: AGING_COLORS[4],
+      },
+    ];
+    const mappedBuckets = buckets.map((bucket) => {
+      const filtered = agingData.filter(
+        (item) =>
+          item.diasVencido >= bucket.min && item.diasVencido <= bucket.max,
+      );
 
-	const { data: vencimentoData, isLoading: isLoadingVencimento } = useAccumulatedDelinquency(selectedYear);
-	const { data: competenciaData, isLoading: isLoadingCompetencia } = useAccumulatedDelinquencyReferencia(selectedYear);
+      return {
+        ...bucket,
+        valor: filtered.reduce((s, i) => s + i.valor, 0),
+        quantidade: filtered.reduce((s, i) => s + i.quantidade, 0),
+      };
+    });
 
-	const widgetData = tabIndex === 0 ? vencimentoData : competenciaData;
-	const isLoading = tabIndex === 0 ? isLoadingVencimento : isLoadingCompetencia;
+    const valorTotal = mappedBuckets.reduce((s, bucket) => s + bucket.valor, 0);
 
-	const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
-	const toggleFavoriteMutation = useToggleFavoriteWidget();
+    return mappedBuckets.map((bucket) => ({
+      ...bucket,
+      percentual:
+        valorTotal > 0
+          ? Number(((bucket.valor / valorTotal) * 100).toFixed(2))
+          : 0,
+    }));
+  }, [agingData]);
 
-	const backendIsFavorite = useMemo(() => {
-		if (!favoriteWidgets) return initialIsFavorite;
+  const formatCurrency = (v: number) =>
+    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
-		return favoriteWidgets.some(
-			(w: { dashboardWidgetId: number; isFavorite: boolean }) => w.dashboardWidgetId === WIDGET_ID && w.isFavorite
-		);
-	}, [favoriteWidgets, initialIsFavorite]);
+  const colorMensal = theme.palette.mode === "dark" ? "#3B82F6" : "#2563EB";
+  const colorAcumulado = "#FF5722";
 
-	const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(null);
-	const isFavorite = optimisticStatus !== null ? optimisticStatus : backendIsFavorite;
+  const activeMobileColor =
+    mobileTab === "mensal" ? colorMensal : colorAcumulado;
 
-	useEffect(() => {
-		if (optimisticStatus !== null && backendIsFavorite === optimisticStatus) setOptimisticStatus(null);
-	}, [backendIsFavorite, optimisticStatus]);
+  const chartOptions: ApexOptions = {
+    chart: {
+      type: isMobile ? "bar" : "line",
+      stacked: false,
+      toolbar: { show: false },
+      zoom: { enabled: false },
+      fontFamily: "inherit",
+      animations: { enabled: !isMobile, speed: 600 },
+      dropShadow: isMobile
+        ? { enabled: false }
+        : {
+            enabled: true,
+            enabledOnSeries: [1],
+            top: 4,
+            left: 0,
+            blur: 4,
+            color: colorAcumulado,
+            opacity: 0.3,
+          },
+    },
+    colors: isMobile ? [activeMobileColor] : [colorMensal, colorAcumulado],
+    stroke: {
+      width: isMobile ? [0] : [0, 4],
+      curve: "smooth",
+    },
+    plotOptions: {
+      bar: {
+        horizontal: isMobile,
+        columnWidth: "45%",
+        barHeight: isMobile ? "60%" : undefined,
+        borderRadius: 6,
+        borderRadiusApplication: "end",
+        dataLabels: {
+          position: "top",
+        },
+      },
+    },
+    fill: {
+      type: isMobile ? ["solid"] : ["solid", "solid"],
+      opacity: isMobile ? [1] : [0.8, 1],
+    },
+    dataLabels: {
+      enabled: isMobile,
+      formatter: (v) => {
+        const numVal = Number(v);
+        if (Number.isNaN(numVal)) return "";
 
-	const handleToggleFavorite = (e: React.MouseEvent) => {
-		e.stopPropagation();
+        return numVal >= 1000000
+          ? `${(numVal / 1000000).toFixed(1)}M`
+          : numVal >= 1000
+            ? `${(numVal / 1000).toFixed(0)}k`
+            : `${numVal.toFixed(0)}`;
+      },
+      style: {
+        fontSize: "11px",
+        fontWeight: 700,
+        colors: [theme.palette.text.primary],
+      },
+      offsetX: 20,
+    },
+    xaxis: isMobile
+      ? {
+          labels: {
+            formatter: (v) => {
+              const numVal = Number(v);
+              if (Number.isNaN(numVal)) return String(v);
 
-		if (!user?.id) return;
+              return numVal >= 1000000
+                ? `R$${(numVal / 1000000).toFixed(1)}M`
+                : numVal >= 1000
+                  ? `R$${(numVal / 1000).toFixed(0)}k`
+                  : `R$${numVal.toFixed(0)}`;
+            },
+            style: { fontSize: "11px", colors: theme.palette.text.secondary },
+          },
+          axisBorder: { show: false },
+          axisTicks: { show: false },
+        }
+      : {
+          categories: processedData?.categories ?? [],
+          axisBorder: { show: false },
+          axisTicks: { show: false },
+          labels: {
+            style: {
+              colors: theme.palette.text.secondary,
+              fontSize: "13px",
+              fontWeight: 600,
+            },
+          },
+        },
+    yaxis: isMobile
+      ? {
+          labels: {
+            style: {
+              colors: theme.palette.text.secondary,
+              fontSize: "12px",
+              fontWeight: 600,
+            },
+          },
+        }
+      : [
+          {
+            seriesName: "Mensal",
+            min: 0,
+            forceNiceScale: true,
+            title: {
+              text: "Inadimplência Mensal",
+              style: { color: colorMensal, fontSize: "12px", fontWeight: 600 },
+            },
+            labels: {
+              style: { colors: colorMensal, fontSize: "12px", fontWeight: 600 },
+              formatter: (v) =>
+                v >= 1000000
+                  ? `R$${(v / 1000000).toFixed(1)}M`
+                  : v >= 1000
+                    ? `R$${(v / 1000).toFixed(0)}k`
+                    : `R$${v.toFixed(0)}`,
+            },
+          },
+          {
+            seriesName: "Acumulado",
+            opposite: true,
+            title: {
+              text: "Acumulado",
+              style: {
+                color: colorAcumulado,
+                fontSize: "12px",
+                fontWeight: 600,
+              },
+            },
+            labels: {
+              style: {
+                colors: colorAcumulado,
+                fontSize: "12px",
+                fontWeight: 600,
+              },
+              formatter: (v) =>
+                v >= 1000000
+                  ? `R$${(v / 1000000).toFixed(1)}M`
+                  : v >= 1000
+                    ? `R$${(v / 1000).toFixed(0)}k`
+                    : `R$${v.toFixed(0)}`,
+            },
+          },
+        ],
+    tooltip: {
+      shared: !isMobile,
+      intersect: false,
+      theme: theme.palette.mode,
+      style: { fontSize: "13px" },
+      y: { formatter: (v) => formatCurrency(v) },
+    },
+    legend: {
+      show: !isMobile,
+      position: "top",
+      horizontalAlign: "center",
+      fontSize: "13px",
+      fontWeight: 600,
+      itemMargin: { horizontal: 16, vertical: 6 },
+      labels: { colors: theme.palette.text.secondary },
+    },
+    grid: {
+      borderColor: theme.palette.divider,
+      strokeDashArray: 4,
+      yaxis: { lines: { show: !isMobile } },
+      xaxis: { lines: { show: isMobile } },
+      padding: { left: isMobile ? 5 : 15, right: isMobile ? 15 : 20 },
+    },
+    markers: isMobile
+      ? { size: 0 }
+      : {
+          size: [0, 4],
+          colors: ["transparent", theme.palette.background.paper],
+          strokeColors: [colorMensal, colorAcumulado],
+          strokeWidth: 2,
+          hover: { size: 7 },
+        },
+  };
 
-		const newStatus = !isFavorite;
-		setOptimisticStatus(newStatus);
-		toggleFavoriteMutation.mutate(
-			{ codUsu: Number(user.id), widgetId: WIDGET_ID, isFavorite: newStatus },
-			{ onError: () => setOptimisticStatus(null) }
-		);
-	};
+  const chartSeries = isMobile
+    ? [
+        {
+          name: mobileTab === "mensal" ? "Mensal" : "Acumulado",
+          data:
+            mobileTab === "mensal"
+              ? processedData?.seriesMensal ?? []
+              : processedData?.seriesAcumulado ?? [],
+          type: "bar",
+        },
+      ]
+    : [
+        {
+          name: "Mensal",
+          type: "column",
+          data: processedData?.seriesMensal ?? [],
+        },
+        {
+          name: "Acumulado",
+          type: "line",
+          data: processedData?.seriesAcumulado ?? [],
+        },
+      ];
 
-	const processedData = useMemo(() => {
-		if (!widgetData || widgetData.length === 0) return null;
+  const mobileChartHeight = Math.max(
+    320,
+    (processedData?.categories?.length ?? 0) * 35,
+  );
 
-		const sorted = [...widgetData].sort((a, b) => a.mes - b.mes);
-		const categories = sorted.map((d) => MONTHS[d.mes - 1] ?? `Mês ${d.mes}`);
-		const seriesMensal = sorted.map((d) => d.valorMensal);
-		const seriesAcumulado = sorted.map((d) => d.valorAcumulado);
+  if (isLoading) return <WidgetLoading height={520} />;
 
-		const totalMensal = sorted.reduce((s, d) => s + d.valorMensal, 0);
-		const totalAcumulado = sorted.length > 0 ? sorted[sorted.length - 1].valorAcumulado : 0;
-		const peakMonth = sorted.reduce((max, d) => (d.valorMensal > max.valorMensal ? d : max), sorted[0]);
-		const avgMensal = totalMensal / sorted.length;
+  const variationGradient: [string, string] =
+    processedData && processedData.variation < 0
+      ? COLORS.purple
+      : COLORS.purple;
 
-		const lastTwo = sorted.slice(-2);
-		const variation =
-			lastTwo.length === 2 && lastTwo[0].valorMensal !== 0
-				? ((lastTwo[1].valorMensal - lastTwo[0].valorMensal) / lastTwo[0].valorMensal) * 100
-				: 0;
+  return (
+    <Card
+      elevation={0}
+      sx={{
+        border: `1px solid ${theme.palette.divider}`,
+        borderRadius: 2,
+        height: "100%",
+        overflow: "visible",
+      }}
+    >
+      <CardContent
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          "&:last-child": { pb: { xs: 2, sm: 2.5 } },
+        }}
+      >
+        <Box sx={{ mb: 3, display: "flex", alignItems: "center", gap: 1.5 }}>
+          <Box
+            sx={{
+              width: 44,
+              height: 44,
+              borderRadius: 2,
+              bgcolor: alpha("#B71C1C", 0.1),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <FuseSvgIcon sx={{ color: "#B71C1C" }} size={24}>
+              heroicons-outline:exclamation-triangle
+            </FuseSvgIcon>
+          </Box>
+          <Box>
+            <Typography variant="caption" color="text.secondary">
+              Acompanhamento de valores inadimplentes — acumulado mensal (anual)
+            </Typography>
+          </Box>
+        </Box>
+        <Box
+          sx={{
+            borderBottom: `1px solid ${theme.palette.divider}`,
+            mb: 3,
+            width: "100%",
+          }}
+        />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-start",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Typography
+            variant="caption"
+            sx={{
+              fontSize: "1.5rem",
+              fontWeight: 600,
+              letterSpacing: "0.02em",
+              mr: 1,
+              ml: 0.7,
+            }}
+          >
+            Ano de referência:
+          </Typography>
+          <Box
+            onClick={handleClickMenu}
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+			  width: "auto",
+              gap: 0.75,
+              px: 2,
+              py: 0.7,
+              borderRadius: "12px",
+              background: alpha("#ffffff", 0.15),
+              backdropFilter: "blur(10px)",
+              border: `1px solid ${alpha(theme.palette.divider, 1)}`,
+              cursor: "pointer",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                background: alpha(theme.palette.action.hover, 1),
+                color: "#ffff",
+                transform: "translateY(-1px)",
+              },
+            }}
+          >
+            <FuseSvgIcon size={18} sx={{ opacity: 0.9 }}>
+              heroicons-outline:calendar
+            </FuseSvgIcon>
+            <Typography
+              variant="caption"
+              sx={{
+                fontSize: "1.5rem",
+                fontWeight: 600,
+                letterSpacing: "0.02em",
+              }}
+            >
+              {selectedYear}
+            </Typography>
+            <FuseSvgIcon size={16} sx={{ opacity: 0.7 }}>
+              heroicons-solid:chevron-down
+            </FuseSvgIcon>
+          </Box>
 
-		return {
-			categories,
-			seriesMensal,
-			seriesAcumulado,
-			totalMensal,
-			totalAcumulado,
-			peakMonth,
-			avgMensal,
-			variation
-		};
-	}, [widgetData]);
+          <Menu
+            anchorEl={anchorEl}
+            open={openMenu}
+            onClose={handleCloseMenu}
+            anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+            transformOrigin={{ vertical: "top", horizontal: "left" }}
+            slotProps={{
+              paper: {
+                sx: {
+                  mt: 1,
+                  minWidth: 120,
+                  borderRadius: 2,
+                  boxShadow: theme.shadows[8],
+                },
+              },
+            }}
+          >
+            {availableYears.map((year) => (
+              <MenuItem
+                key={year}
+                selected={year === selectedYear}
+                onClick={() => handleSelectYear(year)}
+              >
+                <ListItemText>{year}</ListItemText>
+              </MenuItem>
+            ))}
+          </Menu>
+        </Box>
+        {/* ── KPI Cards ── */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md: "repeat(3, 1fr)" },
+            gap: 2.5,
+            mb: 2.5,
+          }}
+        >
+          <GradientKPI
+            title="Total Anual"
+            mainValue={formatCurrency(processedData?.totalMensal ?? 0)}
+            icon="heroicons-outline:banknotes"
+            gradientColors={COLORS.red}
+          />
+          <GradientKPI
+            title="Pico Mensal"
+            mainValue={
+              processedData?.peakMonth
+                ? formatCurrency(processedData.peakMonth.valorMensal)
+                : "—"
+            }
+            icon="heroicons-outline:arrow-up-circle"
+            gradientColors={COLORS.orange}
+            sub={
+              processedData?.peakMonth
+                ? MONTHS[processedData.peakMonth.mes - 1]
+                : null
+            }
+          />
+          <GradientKPI
+            title="Variação Último Mês"
+            mainValue={
+              processedData
+                ? `${processedData.variation > 0 ? "+" : ""}${processedData.variation.toFixed(1)}%`
+                : "—"
+            }
+            icon={
+              processedData && processedData.variation >= 0
+                ? "heroicons-outline:arrow-trending-up"
+                : "heroicons-outline:arrow-trending-down"
+            }
+            gradientColors={variationGradient}
+            sub="vs. mês anterior"
+          />
+        </Box>
+		{isMobile && (<Box
+          sx={{
+            borderTop: `1px solid ${theme.palette.divider}`,
+            mb: 3,
+            width: "100%",
+			display: "flex",
+			justifyContent: "center",
+          }}
+        >
+		<Typography 
+			variant="caption" 
+			color="text.secondary" 
+			sx={{ 
+				mt: 2, 
+				textAlign: "center", 
+				display: "block", 
+				fontSize: "1.25rem", 
+				fontWeight: 600, 
+				letterSpacing: "0.02em",
+				border: `1px solid ${alpha(theme.palette.divider, 1)}`,
+				borderRadius: 1,
+				background: alpha("#ffffff", 0.15), 
+				width: "50%"
+				}}>
+			Envelhecimento
+		</Typography>
+		</Box>)}
+        {/* ── Aging Buckets ── */}
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "repeat(2, 1fr)",
+              md: "repeat(5, 1fr)",
+            },
+            gap: 2,
+            mb: 2.5,
+          }}
+        >
+          {agingBuckets.map((bucket) => (
+            <Card
+              key={bucket.label}
+              elevation={3}
+              sx={{
+                background: bucket.color,
+                color: "white",
+                position: "relative",
+                overflow: "hidden",
+                transition:
+                  "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+                "&:hover": {
+                  transform: "translateY(-4px)",
+                  boxShadow: theme.shadows[8],
+                },
+              }}
+            >
+              <CardContent
+                sx={{
+                  position: "relative",
+                  zIndex: 1,
+                  p: 2.5,
+                  "&:last-child": { pb: 1.5 },
+                }}
+              >
+                <Typography
+                  sx={{
+                    opacity: 0.9,
+                    fontWeight: 700,
+                    fontSize: "1.5rem",
+                    mb: 0.5,
+                  }}
+                >
+                  {bucket.label}
+                </Typography>
+                <Typography
+                  sx={{ fontWeight: 800, fontSize: "1.25rem", lineHeight: 1.1 }}
+                >
+                  {formatCurrency(bucket.valor)}
+                </Typography>
+                <Typography
+                  sx={{
+                    opacity: 0.8,
+                    fontSize: "1rem",
+                    mt: 0.3,
+                    fontWeight: 500,
+                    color: "#ffff",
+                  }}
+                >
+                  {bucket.quantidade} títulos
+                </Typography>
+                <Typography
+                  sx={{
+                    opacity: 0.8,
+                    fontSize: "1rem",
+                    mt: 0.3,
+                    fontWeight: 500,
+                    color: "#ffff",
+                  }}
+                >
+                  {bucket.percentual} % do total
+                </Typography>
+              </CardContent>
+              <Box
+                sx={{
+                  position: "absolute",
+                  right: -12,
+                  bottom: -12,
+                  width: 60,
+                  height: 60,
+                  borderRadius: "50%",
+                  background: alpha("#ffffff", 0.1),
+                  zIndex: 0,
+                }}
+              />
+            </Card>
+          ))}
+        </Box>
 
-	const formatCurrency = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+        {/* ── Gráfico ── */}
+        <Card
+          elevation={0}
+          sx={{ border: `1px solid ${theme.palette.divider}`, borderRadius: 2 }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 1,
+              px: 3,
+              py: 2,
+              borderBottom: `1px solid ${theme.palette.divider}`,
+            }}
+          >
+            <Typography
+              sx={{
+                fontWeight: 700,
+                fontSize: { xs: "1.1rem", sm: "1.3rem" },
+                color: "text.primary",
+              }}
+            >
+              Inadimplência — {selectedYear}
+            </Typography>
 
-	const colorMensal = '#B71C1C';
-	const colorAcumulado = '#FF6F00';
-	const colorGrid = theme.palette.divider;
+            {/* Renderiza as abas no cabeçalho do card apenas em telas mobile */}
+            {isMobile && (
+              <Tabs
+                value={mobileTab}
+                onChange={(_, v) => setMobileTab(v)}
+                sx={{
+                  minHeight: 32,
+                  "& .MuiTab-root": {
+                    minHeight: 32,
+                    py: 0.5,
+                    px: 1.5,
+                    fontSize: "0.85rem",
+                    fontWeight: 600,
+                  },
+                }}
+              >
+                <Tab label="Mensal" value="mensal" />
+                <Tab label="Acumulado" value="acumulado" />
+              </Tabs>
+            )}
+          </Box>
 
-	const chartOptions: ApexOptions = {
-		chart: {
-			type: 'line',
-			stacked: false,
-			toolbar: { show: false },
-			zoom: { enabled: false },
-			fontFamily: 'inherit',
-			animations: { enabled: !isMobile, speed: 600 }
-		},
-		colors: [colorMensal, colorAcumulado],
-		stroke: { width: [0, 3], curve: 'smooth' },
-		plotOptions: {
-			bar: {
-				columnWidth: '50%',
-				borderRadius: 4,
-				borderRadiusApplication: 'end'
-			}
-		},
-		fill: {
-			type: ['gradient', 'solid'],
-			gradient: {
-				shade: 'dark',
-				type: 'vertical',
-				shadeIntensity: 0.4,
-				opacityFrom: 0.9,
-				opacityTo: 0.6,
-				stops: [0, 100]
-			}
-		},
-		dataLabels: { enabled: false },
-		xaxis: {
-			categories: processedData?.categories ?? [],
-			axisBorder: { show: false },
-			axisTicks: { show: false },
-			labels: {
-				style: { colors: theme.palette.text.secondary, fontSize: isMobile ? '10px' : '12px' },
-				rotate: isMobile ? -45 : 0
-			},
-			tooltip: { enabled: false }
-		},
-		yaxis: isMobile
-			? {
-				labels: {
-					formatter: (v) => {
-						if (v >= 1000) return `${(v / 1000).toFixed(1)}k`;
-
-						return v.toFixed(0);
-					},
-					style: { fontSize: '10px' }
-				}
-			}
-			: [
-				{
-					seriesName: 'Mensal',
-					min: 0,
-					forceNiceScale: true,
-					title: {
-						text: 'Inadimplência Mensal',
-						style: { color: colorMensal, fontSize: '11px' }
-					},
-					labels: {
-						style: { colors: colorMensal },
-						formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v.toFixed(0)}`)
-					}
-				},
-				{
-					seriesName: 'Acumulado',
-					opposite: true,
-					title: {
-						text: 'Acumulado',
-						style: { color: colorAcumulado, fontSize: '11px' }
-					},
-					labels: {
-						style: { colors: colorAcumulado },
-						formatter: (v) => (v >= 1000 ? `R$${(v / 1000).toFixed(0)}k` : `R$${v.toFixed(0)}`)
-					}
-				}
-			],
-		tooltip: {
-			shared: true,
-			intersect: false,
-			theme: theme.palette.mode,
-			y: { formatter: (v) => formatCurrency(v) },
-			fixed: {
-				enabled: isMobile,
-				position: 'topRight',
-				offsetX: 0,
-				offsetY: 0
-			}
-		},
-		legend: {
-			show: !isMobile,
-			position: 'top',
-			horizontalAlign: 'center',
-			labels: { colors: theme.palette.text.secondary }
-		},
-		grid: {
-			borderColor: colorGrid,
-			strokeDashArray: 3,
-			padding: {
-				left: isMobile ? 10 : 20,
-				right: 20
-			}
-		},
-		markers: {
-			size: [0, 4],
-			colors: [colorMensal, colorAcumulado],
-			strokeWidth: 0,
-			hover: { size: 7 }
-		}
-	};
-
-	const chartSeries = [
-		{ name: 'Mensal', type: 'column', data: processedData?.seriesMensal ?? [] },
-		{ name: 'Acumulado', type: 'line', data: processedData?.seriesAcumulado ?? [] }
-	];
-
-	if (isLoading) return <WidgetLoading height={520} />;
-
-	return (
-		<Card
-			elevation={0}
-			sx={{
-				border: `1px solid ${theme.palette.divider}`,
-				display: 'flex',
-				flexDirection: 'column',
-				borderRadius: 3,
-				overflow: 'hidden',
-				background:
-					theme.palette.mode === 'dark'
-						? `linear-gradient(145deg, ${alpha('#B71C1C', 0.06)} 0%, ${theme.palette.background.paper} 40%)`
-						: `linear-gradient(145deg, ${alpha('#B71C1C', 0.03)} 0%, ${theme.palette.background.paper} 40%)`
-			}}
-		>
-			<Box
-				sx={{
-					display: 'flex',
-					alignItems: 'center',
-					justifyContent: 'space-between',
-					px: 3,
-					py: 2.5,
-					borderBottom: `1px solid ${theme.palette.divider}`,
-					background: alpha(colorMensal, 0.04)
-				}}
-			>
-				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-					<Avatar
-						sx={{
-							bgcolor: alpha(colorMensal, 0.12),
-							width: 40,
-							height: 40,
-							color: colorMensal
-						}}
-					>
-						<FuseSvgIcon size={22}>heroicons-outline:exclamation-triangle</FuseSvgIcon>
-					</Avatar>
-					<Box>
-						<Typography
-							variant="h6"
-							sx={{ fontWeight: 700, lineHeight: 1.2, color: theme.palette.text.primary }}
-						>
-							Inadimplência Acumulada
-						</Typography>
-						<Typography
-							variant="caption"
-							sx={{ color: theme.palette.text.secondary }}
-						>
-							Evolução mensal e acumulada · {selectedYear}
-						</Typography>
-					</Box>
-				</Box>
-
-				<Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-					<Tooltip title="Filtrar por ano">
-						<Chip
-							label={selectedYear}
-							size="small"
-							onClick={handleClickMenu}
-							icon={<FuseSvgIcon size={14}>heroicons-outline:calendar</FuseSvgIcon>}
-							sx={{
-								fontWeight: 700,
-								bgcolor: alpha(colorMensal, 0.1),
-								color: colorMensal,
-								border: `1px solid ${alpha(colorMensal, 0.3)}`,
-								'&:hover': { bgcolor: alpha(colorMensal, 0.18) }
-							}}
-						/>
-					</Tooltip>
-					<Menu
-						anchorEl={anchorEl}
-						open={openMenu}
-						onClose={handleCloseMenu}
-					>
-						{availableYears.map((year) => (
-							<MenuItem
-								key={year}
-								selected={year === selectedYear}
-								onClick={() => handleSelectYear(year)}
-							>
-								<ListItemText>{year}</ListItemText>
-							</MenuItem>
-						))}
-					</Menu>
-
-					<Tooltip title={isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}>
-						<IconButton
-							onClick={handleToggleFavorite}
-							size="small"
-						>
-							<FuseSvgIcon
-								sx={{ color: isFavorite ? '#FFD700' : 'action.active' }}
-								size={20}
-							>
-								{isFavorite ? 'heroicons-solid:star' : 'heroicons-outline:star'}
-							</FuseSvgIcon>
-						</IconButton>
-					</Tooltip>
-				</Box>
-			</Box>
-
-			<Box sx={{ borderBottom: 1, borderColor: 'divider', px: { xs: 2, md: 3 } }}>
-				<Tabs value={tabIndex} onChange={handleTabChange} aria-label="accumulated delinquency tabs">
-					<Tab label="Por Vencimento" />
-					<Tab label="Por Competência" />
-				</Tabs>
-			</Box>
-
-			<CardContent
-				sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', p: 3, '&:last-child': { pb: 3 } }}
-			>
-				<Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(4, 1fr)' }, gap: 2, mb: 3 }}>
-					{[
-						{
-							label: 'Total Mensal (ano)',
-							value: formatCurrency(processedData?.totalMensal ?? 0),
-							icon: 'heroicons-outline:banknotes',
-							color: colorMensal,
-							sub: null
-						},
-						{
-							label: 'Saldo Acumulado',
-							value: formatCurrency(processedData?.totalAcumulado ?? 0),
-							icon: 'heroicons-outline:arrow-trending-up',
-							color: colorAcumulado,
-							sub: null
-						},
-						{
-							label: 'Pico Mensal',
-							value: processedData?.peakMonth ? formatCurrency(processedData.peakMonth.valorMensal) : '—',
-							icon: 'heroicons-outline:arrow-up-circle',
-							color: '#C62828',
-							sub: processedData?.peakMonth ? MONTHS[processedData.peakMonth.mes - 1] : null
-						},
-						{
-							label: 'Variação Último Mês',
-							value: processedData
-								? `${processedData.variation > 0 ? '+' : ''}${processedData.variation.toFixed(1)}%`
-								: '—',
-							icon:
-								processedData && processedData.variation >= 0
-									? 'heroicons-outline:arrow-trending-up'
-									: 'heroicons-outline:arrow-trending-down',
-							color: processedData && processedData.variation >= 0 ? '#C62828' : '#2E7D32',
-							sub: 'vs. mês anterior'
-						}
-					].map((card) => (
-						<Box
-							key={card.label}
-							sx={{
-								p: 2,
-								borderRadius: 2,
-								bgcolor: alpha(card.color, 0.06),
-								border: `1px solid ${alpha(card.color, 0.18)}`
-							}}
-						>
-							<Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.8 }}>
-								<FuseSvgIcon
-									size={17}
-									sx={{ color: card.color }}
-								>
-									{card.icon}
-								</FuseSvgIcon>
-								<Typography
-									sx={{ color: theme.palette.text.secondary, fontWeight: 700, fontSize: '0.9rem' }}
-								>
-									{card.label}
-								</Typography>
-							</Box>
-							<Typography
-								sx={{ fontWeight: 800, color: card.color, fontSize: '1.6rem', lineHeight: 1.1 }}
-							>
-								{card.value}
-							</Typography>
-							{card.sub && (
-								<Typography
-									variant="caption"
-									sx={{ color: theme.palette.text.disabled, fontSize: '0.65rem' }}
-								>
-									{card.sub}
-								</Typography>
-							)}
-						</Box>
-					))}
-				</Box>
-
-				{!processedData ? (
-					<Box sx={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-						<Box sx={{ textAlign: 'center' }}>
-							<FuseSvgIcon
-								size={48}
-								sx={{ color: alpha(colorMensal, 0.3), mb: 1 }}
-							>
-								heroicons-outline:face-smile
-							</FuseSvgIcon>
-							<Typography
-								color="text.secondary"
-								variant="body2"
-								fontWeight={500}
-							>
-								Nenhuma inadimplência registrada em {selectedYear} 🎉
-							</Typography>
-						</Box>
-					</Box>
-				) : (
-					<Box sx={{ flex: 1, minHeight: 300 }}>
-						<ReactApexChart
-							options={chartOptions}
-							series={chartSeries}
-							type="line"
-							height={320}
-						/>
-					</Box>
-				)}
-
-				{processedData && widgetData && widgetData.length > 0 && !isMobile && (
-					<Box
-						sx={{
-							mt: 2,
-							borderRadius: 2,
-							border: `1px solid ${theme.palette.divider}`,
-							overflow: 'hidden'
-						}}
-					>
-						<Box
-							sx={{
-								display: 'grid',
-								gridTemplateColumns: '2fr 2fr 2fr',
-								px: 2,
-								py: 1,
-								bgcolor: alpha(colorMensal, 0.07),
-								borderBottom: `1px solid ${theme.palette.divider}`
-							}}
-						>
-							{['Mês', 'Mensal', 'Acumulado'].map((h) => (
-								<Typography
-									key={h}
-									variant="caption"
-									sx={{ fontWeight: 700, color: theme.palette.text.secondary }}
-								>
-									{h}
-								</Typography>
-							))}
-						</Box>
-						{[...widgetData]
-							.sort((a, b) => a.mes - b.mes)
-							.map((row: AccumulatedDelinquencyDto) => (
-								<Box
-									key={row.mes}
-									sx={{
-										display: 'grid',
-										gridTemplateColumns: '2fr 2fr 2fr',
-										px: 2,
-										py: 0.8,
-										borderBottom: `1px solid ${alpha(theme.palette.divider, 0.5)}`,
-										'&:last-child': { borderBottom: 'none' },
-										'&:hover': { bgcolor: alpha(colorMensal, 0.03) }
-									}}
-								>
-									<Typography
-										variant="caption"
-										sx={{ fontWeight: 600, color: theme.palette.text.primary }}
-									>
-										{MONTHS[row.mes - 1]}
-									</Typography>
-									<Typography
-										variant="caption"
-										sx={{ color: colorMensal, fontWeight: 600 }}
-									>
-										{formatCurrency(row.valorMensal)}
-									</Typography>
-									<Typography
-										variant="caption"
-										sx={{ color: colorAcumulado, fontWeight: 600 }}
-									>
-										{formatCurrency(row.valorAcumulado)}
-									</Typography>
-								</Box>
-							))}
-					</Box>
-				)}
-			</CardContent>
-		</Card>
-	);
+          <Box
+            sx={{ p: { xs: 1.5, md: 2.5 }, minHeight: { xs: 300, md: 380 } }}
+          >
+            {!processedData ? (
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  height: 300,
+                  gap: 1,
+                }}
+              >
+                <FuseSvgIcon size={48} sx={{ color: colorMensal }}>
+                  heroicons-outline:face-smile
+                </FuseSvgIcon>
+                <Typography
+                  color="text.secondary"
+                  variant="body2"
+                  fontWeight={500}
+                >
+                  Nenhuma inadimplência registrada em {selectedYear} 🎉
+                </Typography>
+              </Box>
+            ) : (
+              <ReactApexChart
+                options={chartOptions}
+                series={chartSeries}
+                type="bar"
+                height={isMobile ? mobileChartHeight : 380}
+              />
+            )}
+          </Box>
+        </Card>
+      </CardContent>
+    </Card>
+  );
 }
