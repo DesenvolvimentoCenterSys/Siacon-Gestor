@@ -11,8 +11,8 @@ import generateMetadata from '../utils/generateMetadata';
 import App from './App';
 
 export const metadata = await generateMetadata({
-	title: 'Dashboard',
-	description: 'Dashboard',
+	title: 'Painel do Gestor',
+	description: 'Painel do Gestor',
 	cardImage: '/card.png',
 	robots: 'follow, index',
 	favicon: '/favicon.ico',

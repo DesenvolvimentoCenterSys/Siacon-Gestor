@@ -11,7 +11,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { ptBR } from 'date-fns/locale';
-import { ResumoUsuariosDto } from '../../services/dashboardService';
+import { ResumoUsuariosDto } from '@/types/dashboardTypes';
 
 interface TotalUsuariosConvenioWidgetProps {
   initialIsFavorite?: boolean;

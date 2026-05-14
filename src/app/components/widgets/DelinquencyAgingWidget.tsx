@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useDelinquencyAging, useDelinquencyAgingReferencia, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
-import { DelinquencyAgingDto } from '../../services/dashboardService';
+import { DelinquencyAgingDto } from '@/types/dashboardTypes';
 import WidgetLoading from '../ui/WidgetLoading';
 import useUser from '@auth/useUser';
 

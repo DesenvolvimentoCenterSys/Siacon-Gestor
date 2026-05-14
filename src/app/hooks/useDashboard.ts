@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
+import { DashboardFaturamentoPayloadDto } from '@/types/dashboardTypes';
 import { dashboardService } from '../services/dashboardService';
 import { end } from '@popperjs/core';
 
@@ -34,6 +35,20 @@ export const useToggleFavoriteWidget = () => {
         anchorOrigin: { vertical: 'bottom', horizontal: 'right' },
       });
     }
+  });
+};
+
+export const useDashboardFaturamentoPayload = (
+  startDate?: string,
+  endDate?: string,
+  dataType?: 'simulacao' | 'previsto_realizado',
+  searchBy?: string,
+) => {
+  return useQuery<DashboardFaturamentoPayloadDto>({
+    queryKey: ['dashboardFaturamentoPayload', startDate, endDate, dataType, searchBy],
+    queryFn: () =>
+      dashboardService.getDashboardFaturamentoPayload(startDate!, endDate!, dataType!, searchBy!),
+    enabled: !!(startDate && endDate && dataType && searchBy),
   });
 };
 
@@ -208,10 +223,12 @@ export const useTotalFaturamentoPorConvenioWithFilters = (
   servicos?: number[],
   centrosCusto?: number[],
   planosContas?: number[],
+  searchBy?: string,
+  dataType?: string,
 ) => {
   return useQuery({
-    queryKey: ['totalFaturamentoPorConvenioWithFilters', startDate, endDate, convenios, servicos, centrosCusto, planosContas],
-    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioWithFilters(startDate, endDate, convenios, servicos, centrosCusto, planosContas)
+    queryKey: ['totalFaturamentoPorConvenioWithFilters', startDate, endDate, convenios, servicos, centrosCusto, planosContas, searchBy, dataType],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioWithFilters(startDate, endDate, convenios, servicos, centrosCusto, planosContas, searchBy, dataType)
   });
 };
 
@@ -236,10 +253,12 @@ export const useTotalFaturamentoPorConvenioReferenciaWithFilters = (
   servicos?: number[],
   centrosCusto?: number[],
   planosContas?: number[],
+  searchBy?: string,
+  dataType?: string,
 ) => {
   return useQuery({
-    queryKey: ['totalFaturamentoPorConvenioReferenciaWithFilters', startDate, endDate, convenios, servicos, centrosCusto, planosContas],
-    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioReferenciaWithFilters(startDate, endDate, convenios, servicos, centrosCusto, planosContas)
+    queryKey: ['totalFaturamentoPorConvenioReferenciaWithFilters', startDate, endDate, convenios, servicos, centrosCusto, planosContas, searchBy, dataType],
+    queryFn: () => dashboardService.getTotalFaturamentoPorConvenioReferenciaWithFilters(startDate, endDate, convenios, servicos, centrosCusto, planosContas, searchBy, dataType)
   });
 };
 
@@ -334,17 +353,34 @@ export const useDelinquencySummaryReferencia = (startDate?: string, endDate?: st
   });
 };
 
-export const useResumoMensalFinanceiro = (year?: number) => {
+export const useResumoMensalFinanceiro = (
+  year?: number,
+  startDate?: string,
+  endDate?: string,
+  searchBy?: string,
+  dataType?: string,
+) => {
   return useQuery({
-    queryKey: ['resumoMensalFinanceiro', year],
-    queryFn: () => dashboardService.getResumoMensalFinanceiro(year)
+    queryKey: ['resumoMensalFinanceiro', year, startDate, endDate, searchBy, dataType],
+    queryFn: () =>
+      startDate && endDate
+        ? dashboardService.getResumoMensalFinanceiroPorPeriodo(startDate, endDate, searchBy, dataType)
+        : dashboardService.getResumoMensalFinanceiro(year, searchBy, dataType),
+    enabled: !!(year || (startDate && endDate))
   });
 };
 
-export const useResumoMensalFinanceiroPorPeriodo = (startDate?: string, endDate?: string) => {
+
+export const useResumoMensalFinanceiroPorPeriodo = (
+  startDate?: string,
+  endDate?: string,
+  searchBy?: string,
+  dataType?: string,
+) => {
   return useQuery({
-    queryKey: ['resumoMensalFinanceiroPorPeriodo', startDate, endDate],
-    queryFn: () => dashboardService.getResumoMensalFinanceiroPorPeriodo(startDate!, endDate!),
+    queryKey: ['resumoMensalFinanceiroPorPeriodo', startDate, endDate, searchBy, dataType],
+    queryFn: () =>
+      dashboardService.getResumoMensalFinanceiroPorPeriodo(startDate!, endDate!, searchBy, dataType),
     enabled: !!startDate && !!endDate
   });
 };

@@ -1,89 +1,130 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
+import { useMemo } from 'react';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Box,
-  Tooltip,
-  Menu,
-  MenuItem,
-  ListItemText,
-  Button
-} from '@mui/material';
+import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import useThemeMediaQuery from '@fuse/hooks/useThemeMediaQuery';
-import { useResumoMensalFinanceiro } from '../../hooks/useDashboard';
-import WidgetLoading from '../ui/WidgetLoading';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import type { PrevisaoFaturamentoPagamentoResumoDto } from '@/types/dashboardTypes';
 
-const MONTH_NAMES = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+interface GradientKPIProps {
+  title: string;
+  mainValue: string;
+  icon: string;
+  gradientColors: [string, string];
+  sub?: string | null;
+  compactSpaces?: boolean;
+}
 
-export function PrevisaoFaturamentoVsPagamentoWidget() {
-  const theme = useTheme();
-  const isMobile = useThemeMediaQuery((theme) => theme.breakpoints.down('md'));
-  const [selectedYear, setSelectedYear] = useSessionUrlFilter<number>(
-    'financeiro_prev_fat_pag_year',
-    new Date().getFullYear(),
-    String,
-    Number
+function GradientKPI({ title, mainValue, icon, gradientColors, sub, compactSpaces }: GradientKPIProps) {
+  return (
+    <Card
+      elevation={3}
+      sx={{
+        background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+        color: 'white',
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        '&:hover': { transform: 'translateY(-4px)', boxShadow: (t: any) => t.shadows[8] },
+      }}
+    >
+      <CardContent
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          p: compactSpaces ? 1.3 : { xs: 2, sm: 2.5 },
+          '&:last-child': { pb: compactSpaces ? 1.3 : { xs: 2, sm: 2.5 } },
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: compactSpaces ? 0.5 : 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography sx={{ opacity: 0.9, fontWeight: 700, fontSize: { xs: '1.5rem', sm: '1.25rem', md: '1.35rem' }, letterSpacing: 0.3 }}>
+              {title}
+            </Typography>
+          </Box>
+          <FuseSvgIcon size={32} sx={{ opacity: 0.3 }}>{icon}</FuseSvgIcon>
+        </Box>
+        <Typography sx={{ fontWeight: 800, mb: sub ? 0.5 : 0, fontSize: { xs: '2rem', sm: '2.2rem', md: '2.5rem' }, lineHeight: 1.1 }}>
+          {mainValue}
+        </Typography>
+        {sub && (
+          <Typography sx={{ opacity: 0.85, fontSize: { xs: '1.1rem', sm: '1.15rem' }, fontWeight: 500 }}>
+            {sub}
+          </Typography>
+        )}
+      </CardContent>
+      <Box sx={{ position: 'absolute', right: -20, bottom: -20, width: 120, height: 120, borderRadius: '50%', background: alpha('#ffffff', 0.1), zIndex: 0 }} />
+      <Box sx={{ position: 'absolute', right: 35, bottom: 35, width: 70, height: 70, borderRadius: '50%', background: alpha('#ffffff', 0.06), zIndex: 0 }} />
+    </Card>
   );
+}
 
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const openMenu = Boolean(anchorEl);
+interface PrevisaoWidgetProps {
+  data: PrevisaoFaturamentoPagamentoResumoDto[];
+}
 
-  const handleClickMenu = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+export function PrevisaoFaturamentoVsPagamentoWidget({ data }: PrevisaoWidgetProps) {
+  const theme = useTheme();
+  const isMobile = useThemeMediaQuery((t) => t.breakpoints.down('md'));
 
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleSelectYear = (year: number) => {
-    setSelectedYear(year);
-    handleCloseMenu();
-  };
-
-  const availableYears = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    return Array.from({ length: 5 }, (_, i) => currentYear - i);
-  }, []);
-
-  const { data, isLoading } = useResumoMensalFinanceiro(selectedYear);
-
-  const { categories, cobrancaSemVencidoData, vencidoData, pagamentoData, totals } = useMemo(() => {
+  const { categories, receitaData, despesaData, lucroData, totals } = useMemo(() => {
     if (!data || data.length === 0) {
-      return {
-        categories: MONTH_NAMES,
-        cobrancaSemVencidoData: [],
-        vencidoData: [],
-        pagamentoData: [],
-        totals: { totalCobranca: 0, totalPagamento: 0, totalVencido: 0 }
-      };
+      return { categories: [], receitaData: [], despesaData: [], lucroData: [], totals: { totalReceita: 0, totalDespesa: 0, totalLucro: 0 } };
     }
 
-    const sortedData = [...data].sort((a, b) => a.mes - b.mes);
+    const sorted = [...data].sort((a, b) =>
+      a.competencia.localeCompare(b.competencia, 'pt-BR', { numeric: true })
+    );
 
-    const totalCobranca = sortedData.reduce((sum, item) => sum + item.totalCobranca, 0);
-    const totalPagamento = sortedData.reduce((sum, item) => sum + item.totalPagamento, 0);
-    const totalVencido = sortedData.reduce((sum, item) => sum + (item.totalVencido || 0), 0);
+    const formatCompetencia = (competencia: string): string => {
+      if (!competencia) return '';
+
+      if (/^\d{2}\/\d{4}$/.test(competencia)) {
+        return competencia;
+      }
+
+      const brMatch = competencia.match(/^\d{2}\/(\d{2})\/(\d{4})$/);
+      if (brMatch) {
+        return `${brMatch[1]}/${brMatch[2]}`;
+      }
+
+      const iso = /^\d{4}-\d{2}-\d{2}$/.test(competencia) ? new Date(competencia) : null;
+      const monthOnly = /^\d{4}-\d{2}$/.test(competencia)
+        ? new Date(Number(competencia.slice(0, 4)), Number(competencia.slice(5, 7)) - 1, 1)
+        : iso || new Date(competencia);
+
+      if (!monthOnly || Number.isNaN(monthOnly.getTime())) {
+        return competencia;
+      }
+
+      return format(monthOnly, 'MM/yyyy', { locale: ptBR });
+    };
 
     return {
-      categories: sortedData.map((item) => MONTH_NAMES[item.mes - 1] || `Mês ${item.mes}`),
-      cobrancaSemVencidoData: sortedData.map((item) => {
-        const vencido = item.totalVencido || 0;
-        return Math.max(item.totalCobranca - vencido, 0);
-      }),
-      vencidoData: sortedData.map((item) => item.totalVencido || 0),
-      pagamentoData: sortedData.map((item) => item.totalPagamento),
-      totals: { totalCobranca, totalPagamento, totalVencido }
+      categories: sorted.map((i) => formatCompetencia(i.competencia)),
+      receitaData: sorted.map((i) => i.receita),
+      despesaData: sorted.map((i) => i.despesa),
+      lucroData: sorted.map((i) => i.lucratividade),
+      totals: {
+        totalReceita: sorted.reduce((s, i) => s + i.receita, 0),
+        totalDespesa: sorted.reduce((s, i) => s + i.despesa, 0),
+        totalLucro: sorted.reduce((s, i) => s + i.lucratividade, 0),
+      },
     };
   }, [data]);
+
+  const chartDynamicHeight = useMemo(() => {
+    const baseHeight = 300;
+    const itemHeight = 45; 
+    const calculated = categories.length * itemHeight + 100;
+    return calculated > baseHeight ? calculated : baseHeight;
+  }, [categories.length]);
 
   const chartOptions: ApexOptions = {
     chart: {
@@ -91,282 +132,154 @@ export function PrevisaoFaturamentoVsPagamentoWidget() {
       stacked: true,
       toolbar: { show: false },
       fontFamily: 'inherit',
-      animations: {
-        enabled: !isMobile
-      },
-      dropShadow: {
-        enabled: true,
-        color: '#000',
-        top: 2,
-        left: 0,
-        blur: 3,
-        opacity: 0.15
-      }
+      animations: { enabled: !isMobile },
+      dropShadow: { enabled: true, color: '#000', top: 2, left: 0, blur: 3, opacity: 0.15 },
     },
     plotOptions: {
       bar: {
+        horizontal: isMobile,
         columnWidth: '55%',
+        barHeight: '60%',
         borderRadius: 4,
-      }
+        dataLabels: {
+          position: 'top',
+        },
+      },
     },
-    colors: [
-      theme.palette.success.main,
-      theme.palette.warning.main,
-      theme.palette.error.main
-    ],
-    fill: {
-      type: 'gradient',
-      gradient: {
-        shade: 'dark',
-        type: 'vertical',
-        shadeIntensity: 0.5,
-        gradientToColors: [
-          theme.palette.success.light,
-          theme.palette.warning.light,
-          theme.palette.error.light
-        ],
-        inverseColors: true,
-        opacityFrom: 1,
-        opacityTo: 0.8,
-        stops: [0, 50, 100]
-      }
-    },
+    colors: ['#23a329', '#fa600d', '#e4c725'],
+    fill: { type: 'solid' },
+    
     dataLabels: {
-      enabled: false
+      enabled: isMobile,
+      offsetX: 24,
+      style: {
+        fontSize: '10px',
+        fontWeight: 600,
+        colors: [theme.palette.text.primary],
+      },
+      formatter: (val: number, opts?: any) => {
+        const originalSeriesArray = [receitaData, despesaData, lucroData];
+        if (opts && opts.seriesIndex !== undefined && opts.dataPointIndex !== undefined) {
+          const realVal = originalSeriesArray[opts.seriesIndex]?.[opts.dataPointIndex] ?? val;
+          if (Math.abs(realVal) >= 1_000_000) return `${(realVal / 1_000_000).toFixed(1)}M`;
+          if (Math.abs(realVal) >= 1_000) return `${(realVal / 1_000).toFixed(0)}k`;
+          return realVal.toFixed(0);
+        }
+        return val.toString();
+      },
     },
-    stroke: {
-      show: true,
-      width: 2,
-      colors: ['transparent']
-    },
-    xaxis: {
+    
+    stroke: { show: true, width: 2, colors: ['transparent'] },
+    
+    xaxis: isMobile ? {
       categories,
       labels: {
-        style: {
-          colors: theme.palette.text.secondary,
-          fontSize: isMobile ? '10px' : '12px'
-        }
+        style: { colors: theme.palette.text.secondary, fontSize: '10px' },
+        formatter: (v: string | number) => {
+          const num = Number(v);
+          if (Number.isNaN(num)) return String(v);
+          if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`;
+          if (num >= 1_000) return `${(num / 1_000).toFixed(0)}k`;
+          return num.toFixed(0);
+        },
       },
       axisBorder: { show: false },
-      axisTicks: { show: false }
+      axisTicks: { show: false },
+    } : {
+      categories,
+      labels: { style: { colors: theme.palette.text.secondary, fontSize: '12px' } },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
     },
-    yaxis: isMobile
-      ? {
-        labels: {
-          formatter: (value) => {
-            if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-            if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-            return value.toFixed(0);
-          },
-          style: { fontSize: '10px' }
-        }
-      }
-      : {
-        labels: {
-          style: {
-            colors: theme.palette.text.secondary,
-            fontSize: '12px'
-          },
-          formatter: (value) => {
-            if (value >= 1000000) return `R$ ${(value / 1000000).toFixed(1)}M`;
-            if (value >= 1000) return `R$ ${(value / 1000).toFixed(0)}k`;
-            return `R$ ${value.toFixed(0)}`;
-          }
-        }
+    
+    yaxis: isMobile ? {
+      labels: {
+        style: { colors: theme.palette.text.secondary, fontSize: '11px', fontWeight: 600 },
       },
+    } : {
+      labels: {
+        style: { colors: theme.palette.text.secondary, fontSize: '12px' },
+        formatter: (v) => {
+          if (v >= 1_000_000) return `R$ ${(v / 1_000_000).toFixed(1)}M`;
+          if (v >= 1_000) return `R$ ${(v / 1_000).toFixed(0)}k`;
+          return `R$ ${v.toFixed(0)}`;
+        },
+      },
+    },
+    
     grid: {
       borderColor: theme.palette.divider,
       strokeDashArray: 4,
-      yaxis: {
-        lines: { show: true }
-      },
-      xaxis: {
-        lines: { show: false }
-      },
-      padding: {
-        left: isMobile ? 10 : 20,
-        right: isMobile ? 10 : 20
-      }
+      yaxis: { lines: { show: !isMobile } }, 
+      xaxis: { lines: { show: isMobile } },  
+      padding: { left: 10, right: isMobile ? 45 : 20 },
     },
     tooltip: {
       theme: theme.palette.mode,
-      y: {
-        formatter(val) {
+      y: { 
+        formatter: (val: number, opts?: any) => {
+          const originalSeriesArray = [receitaData, despesaData, lucroData];
+          if (opts && opts.seriesIndex !== undefined && opts.dataPointIndex !== undefined) {
+            const realVal = originalSeriesArray[opts.seriesIndex]?.[opts.dataPointIndex] ?? val;
+            return realVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          }
           return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        }
-      }
+        } 
+      },
     },
     legend: {
       show: !isMobile,
       position: 'top',
       horizontalAlign: 'right',
-      offsetY: 10,
-      itemMargin: {
-        horizontal: 10,
-        vertical: 5
-      }
+      offsetY: 0,
+      itemMargin: { horizontal: 10, vertical: 5 },
     },
     responsive: [
-      {
-        breakpoint: 600,
-        options: {
-          legend: {
-            show: true,
-            position: 'bottom',
-            horizontalAlign: 'center'
-          }
-        }
+      { 
+        breakpoint: 600, 
+        options: { 
+          legend: { show: true, position: 'bottom', horizontalAlign: 'center' },
+        } 
       }
-    ]
+    ],
   };
 
   const series = [
-    { name: 'Previsão Faturamento', group: 'cobranca', data: cobrancaSemVencidoData },
-    { name: 'Vencido / Inadimplência', group: 'cobranca', data: vencidoData },
-    { name: 'Pagamento', group: 'pagamento', data: pagamentoData }
+    { name: 'Receita', group: 'receita', data: isMobile ? receitaData.map(Math.abs) : receitaData },
+    { name: 'Despesa', group: 'despesa', data: isMobile ? despesaData.map(Math.abs) : despesaData },
+    { name: 'Lucro', group: 'lucro', data: isMobile ? lucroData.map(Math.abs) : lucroData },
   ];
 
-  const formatCurrency = (value: number) =>
-    value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-
-  if (isLoading) return <WidgetLoading height={350} />;
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const lucro = totals.totalReceita - totals.totalDespesa;
 
   return (
     <Card
       className="w-full shadow-sm rounded-2xl overflow-hidden"
       elevation={0}
-      sx={{
-        border: `1px solid ${theme.palette.divider}`,
-        height: '100%',
-        display: 'flex',
-        flexDirection: 'column'
-      }}
+      sx={{ border: `1px solid ${theme.palette.divider}`, height: '100%', display: 'flex', flexDirection: 'column' }}
     >
-      <Box className="flex items-center justify-between px-6 py-4 border-b">
-        <Typography className="text-lg font-semibold truncate text-primary">
+      <Box className="flex items-center justify-between px-6 py-4 border-b p-2 ml-2">
+        <Typography className="text-lg font-semibold truncate text-primary ml-5 mt-10">
           Previsão Faturamento VS Pagamento
         </Typography>
-        <Box className="flex items-center gap-2">
-          <Tooltip title="Filtrar por ano">
-            <Button
-              size="small"
-              onClick={handleClickMenu}
-              endIcon={<FuseSvgIcon size={16}>heroicons-outline:calendar</FuseSvgIcon>}
-              sx={{
-                mr: 2,
-                borderRadius: 2,
-                backgroundColor: (theme) => alpha(theme.palette.info.main, 0.1),
-                color: 'info.main',
-                textTransform: 'none',
-                minWidth: 'auto',
-                px: 2,
-                '&:hover': {
-                  backgroundColor: (theme) => alpha(theme.palette.info.main, 0.2)
-                }
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{ fontWeight: 'bold' }}
-              >
-                {selectedYear}
-              </Typography>
-            </Button>
-          </Tooltip>
-          <Menu
-            anchorEl={anchorEl}
-            open={openMenu}
-            onClose={handleCloseMenu}
-          >
-            {availableYears.map((year) => (
-              <MenuItem
-                key={year}
-                onClick={() => handleSelectYear(year)}
-                selected={year === selectedYear}
-              >
-                <ListItemText>{year}</ListItemText>
-              </MenuItem>
-            ))}
-          </Menu>
-        </Box>
       </Box>
 
-      {/* Painel de Totais */}
-      <Box
-        sx={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: 2,
-          px: { xs: 2, md: 3 },
-          pt: 2,
-        }}
-      >
-        <Box
-          sx={{
-            flex: '1 1 auto',
-            minWidth: 140,
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: alpha(theme.palette.success.main, 0.08),
-            borderLeft: `4px solid ${theme.palette.success.main}`,
-          }}
-        >
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            Total Previsão Faturamento
-          </Typography>
-          <Typography variant="subtitle1" fontWeight={700} color="success.main">
-            {formatCurrency(totals.totalCobranca)}
-          </Typography>
-        </Box>
+      <CardContent className="p-6" sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}>
+        <Grid container spacing={2} mb={3}>
+          <Grid item xs={12} sm={6} md={4}>
+            <GradientKPI title="Receitas" mainValue={fmt(totals.totalReceita)} icon="heroicons-outline:banknotes" gradientColors={['#23a329', '#229229']} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <GradientKPI title="Despesas" mainValue={fmt(totals.totalDespesa)} icon="heroicons-outline:credit-card" gradientColors={['#fa600d', '#f04816']} />
+          </Grid>
+          <Grid item xs={12} sm={6} md={4}>
+            <GradientKPI title="Lucro" mainValue={fmt(lucro)} icon="heroicons-outline:badge-check" gradientColors={['#e4c725', '#ddbf14']} sub="Receita - Despesa" />
+          </Grid>
+        </Grid>
 
-        <Box
-          sx={{
-            flex: '1 1 auto',
-            minWidth: 140,
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: alpha(theme.palette.error.main, 0.08),
-            borderLeft: `4px solid ${theme.palette.error.main}`,
-          }}
-        >
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            Total Pagamento
-          </Typography>
-          <Typography variant="subtitle1" fontWeight={700} color="error.main">
-            {formatCurrency(totals.totalPagamento)}
-          </Typography>
-        </Box>
-
-        <Box
-          sx={{
-            flex: '1 1 auto',
-            minWidth: 140,
-            p: 1.5,
-            borderRadius: 2,
-            backgroundColor: alpha(theme.palette.warning.main, 0.08),
-            borderLeft: `4px solid ${theme.palette.warning.main}`,
-          }}
-        >
-          <Typography variant="caption" color="text.secondary" fontWeight={600}>
-            Total Vencido / Inadimplência
-          </Typography>
-          <Typography variant="subtitle1" fontWeight={700} color="warning.main">
-            {formatCurrency(totals.totalVencido)}
-          </Typography>
-        </Box>
-      </Box>
-
-      <CardContent
-        className="p-6"
-        sx={{ flexGrow: 1, p: { xs: 2, md: 3 } }}
-      >
-        <Box sx={{ flex: 1, minHeight: { xs: 250, md: 320 } }}>
-          <ReactApexChart
-            options={chartOptions}
-            series={series}
-            type="bar"
-            height="100%"
-          />
+        <Box sx={{ flex: 1, minHeight: isMobile ? chartDynamicHeight : 350 }}>
+          <ReactApexChart options={chartOptions} series={series} type="bar" height="100%" />
         </Box>
       </CardContent>
     </Card>

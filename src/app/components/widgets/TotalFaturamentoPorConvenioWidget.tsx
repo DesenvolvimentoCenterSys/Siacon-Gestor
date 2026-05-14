@@ -25,7 +25,7 @@ import {
   useTotalFaturamentoPorConvenioReferenciaWithFilters,
 } from "../../hooks/useDashboard";
 import WidgetLoading from "../ui/WidgetLoading";
-import { ResumoFaturamentoDto } from "../../services/dashboardService";
+import { ResumoFaturamentoDto } from "@/types/dashboardTypes";
 
 interface TotalFaturamentoPorConvenioWidgetProps {
   initialIsFavorite?: boolean;

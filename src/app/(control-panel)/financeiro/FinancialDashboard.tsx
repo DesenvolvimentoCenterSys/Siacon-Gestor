@@ -80,7 +80,7 @@ function FinancialDashboard() {
         reset={dateFilter.reset}
       />
 
-      {/* KPI Cards + Donut */}
+
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mb: { xs: 2, sm: 3 } }} alignItems="stretch">
         <Grid item xs={12} md={4}>
           <Box sx={{ height: "100%", display: "flex", flexDirection: "column", gap: 2 }}>
@@ -94,13 +94,9 @@ function FinancialDashboard() {
             {isFavoritesLoading ? <WidgetLoading height="100%" /> : <FaturamentoPorConvenioDonutWidget {...filterProps} />}
           </Box>
         </Grid>
-        {/*<Grid item xs={12} md={4}>
-          {isFavoritesLoading ? <WidgetLoading height={160} /> : <ResultadoFinanceiroWidget {...filterProps} />}
-        </Grid>} */}
       </Grid>
 
 
-      {/* Tabela detalhada */}
       <Grid container spacing={{ xs: 2, sm: 3 }} sx={{ mt: { xs: 2.5, sm: 3 } }}>
         <Grid item xs={12} md={12}>
           {isFavoritesLoading ? (

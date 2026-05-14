@@ -2,12 +2,145 @@
 
 import { useMemo } from 'react';
 import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
-import { Card, CardContent, Typography, Grid } from '@mui/material';
-import { useTheme } from '@mui/material/styles';
+import { Card, CardContent, Typography, Grid, Box } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
+import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useResumoMensalFinanceiro } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
+import { yellow } from '@mui/material/colors';
 
-export function ResumoAnualFaturamentoVsPagamentoWidget() {
+const COLORS = {
+  red: ['#db2020', '#c7281d'] as [string, string],
+  orange: ['#fa600d', '#f04816'] as [string, string],
+  green: ['#23a329', '#229229'] as [string, string],
+  blue: ['#1565C0', '#0D47A1'] as [string, string],
+  purple: ['#b700cf', '#7e0058'] as [string, string],
+  yellow: ['#f1bd12', '#e6b000'] as [string, string],
+};
+
+interface ResumoWidgetProps {
+  startDate?: string;
+  endDate?: string;
+  searchBy?: string;
+  dataType?: 'simulacao' | 'previsto_realizado';
+}
+interface GradientKPIProps {
+  title: string;
+  mainValue: string;
+  icon: string;
+  gradientColors: [string, string];
+  sub?: string | null;
+  compactSpaces?: boolean;
+}
+
+function GradientKPI({
+  title,
+  mainValue,
+  icon,
+  gradientColors,
+  sub,
+  compactSpaces,
+}: GradientKPIProps) {
+  return (
+    <Card
+      sx={{
+        background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
+        color: 'white',
+        height: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        '&:hover': {
+          transform: 'translateY(-4px)',
+          boxShadow: (theme: any) => theme.shadows[8],
+        },
+      }}
+      elevation={3}
+    >
+      <CardContent
+        sx={{
+          position: 'relative',
+          zIndex: 1,
+          p: compactSpaces ? 1.3 : { xs: 2, sm: 2.5 },
+          '&:last-child': { pb: compactSpaces ? 1.3 : { xs: 2, sm: 2.5 } },
+        }}
+      >
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: compactSpaces ? 0.5 : 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography
+              sx={{
+                opacity: 0.9,
+                fontWeight: 700,
+                fontSize: { xs: '1.8rem', sm: '1.25rem', md: '1.35rem' },
+                letterSpacing: 0.3,
+              }}
+            >
+              {title}
+            </Typography>
+          </Box>
+          <FuseSvgIcon
+            size={32}
+            sx={{
+              opacity: 0.3,
+            }}
+          >
+            {icon}
+          </FuseSvgIcon>
+        </Box>
+
+        <Typography
+          sx={{
+            fontWeight: 800,
+            mb: sub ? 0.5 : 0,
+            fontSize: { xs: '2.2rem', sm: '2.0rem', md: '2.5rem' },
+            lineHeight: 1.1,
+          }}
+        >
+          {mainValue}
+        </Typography>
+
+        {sub && (
+          <Typography
+            sx={{
+              opacity: 0.85,
+              fontSize: { xs: '1.25rem', sm: '1.25rem' },
+              fontWeight: 500,
+            }}
+          >
+            {sub}
+          </Typography>
+        )}
+      </CardContent>
+
+      <Box
+        sx={{
+          position: 'absolute',
+          right: -20,
+          bottom: -20,
+          width: 120,
+          height: 120,
+          borderRadius: '50%',
+          background: alpha('#ffffff', 0.1),
+          zIndex: 0,
+        }}
+      />
+      <Box
+        sx={{
+          position: 'absolute',
+          right: 35,
+          bottom: 35,
+          width: 70,
+          height: 70,
+          borderRadius: '50%',
+          background: alpha('#ffffff', 0.06),
+          zIndex: 0,
+        }}
+      />
+    </Card>
+  );
+}
+
+export function ResumoAnualFaturamentoVsPagamentoWidget({startDate, endDate, searchBy, dataType}: ResumoWidgetProps) {
   const theme = useTheme();
   const [selectedYear] = useSessionUrlFilter<number>(
     'financeiro_prev_fat_pag_year',
@@ -16,7 +149,13 @@ export function ResumoAnualFaturamentoVsPagamentoWidget() {
     Number
   );
 
-  const { data, isLoading } = useResumoMensalFinanceiro(selectedYear);
+  const { data, isLoading } = useResumoMensalFinanceiro(
+    selectedYear,
+    startDate,
+    endDate,
+    searchBy,
+    dataType
+  );
 
   const { totalCobranca, totalPagamento, totalVencido } = useMemo(() => {
     if (!data || data.length === 0) {
@@ -42,86 +181,46 @@ export function ResumoAnualFaturamentoVsPagamentoWidget() {
   if (isLoading) return <WidgetLoading height={120} />;
 
   return (
-    <Grid container spacing={{ xs: 2, sm: 3 }}>
-      <Grid item xs={12} sm={6} md={3}>
-        <Card
-          className="w-full shadow-sm rounded-2xl overflow-hidden"
-          elevation={0}
-          sx={{ border: `1px solid ${theme.palette.divider}` }}
-        >
-          <CardContent className="p-6">
-            <Typography className="text-sm font-medium text-secondary mb-2 whitespace-nowrap">
-              Previsão Faturamento Acumulado ({selectedYear})
-            </Typography>
-            <Typography
-              className="text-3xl font-bold tracking-tight"
-              sx={{ color: theme.palette.success.main }}
-            >
-              {formatCurrency(totalCobranca)}
-            </Typography>
-          </CardContent>
-        </Card>
+    <Card
+    elevation={0}
+      sx={{
+        border: `none`,
+        background: 'transparent',
+        borderRadius: 2,
+        height: "100%",
+        overflow: "visible"
+      }}
+    >
+
+     <Grid container spacing={{ xs: 2, sm: 3 }}>
+      <Grid item xs={12} sm={6} md={4}>
+        <GradientKPI
+          title={`Receitas`}
+          mainValue={formatCurrency(totalCobranca)}
+          icon="heroicons-outline:banknotes"
+          gradientColors={COLORS.green}
+        />
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
-        <Card
-          className="w-full shadow-sm rounded-2xl overflow-hidden"
-          elevation={0}
-          sx={{ border: `1px solid ${theme.palette.divider}` }}
-        >
-          <CardContent className="p-6">
-            <Typography className="text-sm font-medium text-secondary mb-2 whitespace-nowrap">
-              Pagamento Acumulado ({selectedYear})
-            </Typography>
-            <Typography
-              className="text-3xl font-bold tracking-tight"
-              sx={{ color: theme.palette.error.main }}
-            >
-              {formatCurrency(totalPagamento)}
-            </Typography>
-          </CardContent>
-        </Card>
+      <Grid item xs={12} sm={6} md={4}>
+        <GradientKPI
+          title={`Despesas`}
+          mainValue={formatCurrency(totalPagamento)}
+          icon="heroicons-outline:credit-card"
+          gradientColors={COLORS.red}
+        />
       </Grid>
 
-      <Grid item xs={12} sm={6} md={3}>
-        <Card
-          className="w-full shadow-sm rounded-2xl overflow-hidden"
-          elevation={0}
-          sx={{ border: `1px solid ${theme.palette.divider}` }}
-        >
-          <CardContent className="p-6">
-            <Typography className="text-sm font-medium text-secondary mb-2 whitespace-nowrap">
-              Total Vencido / Inadimplência ({selectedYear})
-            </Typography>
-            <Typography
-              className="text-3xl font-bold tracking-tight"
-              sx={{ color: theme.palette.warning.main }}
-            >
-              {formatCurrency(totalVencido)}
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid>
-
-      <Grid item xs={12} sm={6} md={3}>
-        <Card
-          className="w-full shadow-sm rounded-2xl overflow-hidden"
-          elevation={0}
-          sx={{ border: `1px solid ${theme.palette.divider}` }}
-        >
-          <CardContent className="p-6">
-            <Typography className="text-sm font-medium text-secondary mb-2 whitespace-nowrap">
-              Saldo / Diferença ({selectedYear})
-            </Typography>
-            <Typography
-              className="text-3xl font-bold tracking-tight"
-              sx={{ color: saldo >= 0 ? theme.palette.info.main : theme.palette.error.main }}
-            >
-              {formatCurrency(saldo)}
-            </Typography>
-          </CardContent>
-        </Card>
+      <Grid item xs={12} sm={6} md={4}>
+        <GradientKPI
+          title={`% Lucratividade`}
+          mainValue={formatCurrency(totalVencido)}
+          icon="heroicons-outline:exclamation-triangle"
+          gradientColors={COLORS.yellow}
+        />
       </Grid>
     </Grid>
+    </Card>
+   
   );
 }

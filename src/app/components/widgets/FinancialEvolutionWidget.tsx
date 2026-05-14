@@ -41,7 +41,7 @@ import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { ptBR } from "date-fns/locale";
 import useThemeMediaQuery from "@fuse/hooks/useThemeMediaQuery";
 import WidgetLoading from "../ui/WidgetLoading";
-import { FinancialEvolutionDto } from "../../services/dashboardService";
+import { FinancialEvolutionDto } from "@/types/dashboardTypes";
 import {
   useFinancialEvolution,
   useToggleFavoriteWidget,
