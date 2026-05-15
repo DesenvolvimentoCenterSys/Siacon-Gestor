@@ -354,3 +354,20 @@ export interface FiltrosDashboardDto {
   centrosCusto: FiltroOption[];
   planosConta: FiltroOption[];
 }
+
+export interface EvolucaoFinanceiraItemDto {
+  competencia: string;
+  faturamento: number;
+  receitaEntradaCaixa: number;
+  despesaSaidaCaixa: number;
+  lucroPrejuizo: number;
+}
+
+export interface EvolucaoFinanceiraPayloadDto {
+  items: EvolucaoFinanceiraItemDto[];
+  totalFaturamento: number;
+  totalReceitaEntradaCaixa: number;
+  totalDespesaSaidaCaixa: number;
+  totalLucroPrejuizo: number;
+}
+

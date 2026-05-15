@@ -45,6 +45,8 @@ import {
   TotalDespesasPorConvenioDto,
   GrupoBancoDto,
   FiltrosDashboardDto,
+  EvolucaoFinanceiraItemDto,
+  EvolucaoFinanceiraPayloadDto
 } from '@/types/dashboardTypes';
 
 const dashboardBaseUrl = process.env.NODE_ENV === 'development'
@@ -439,7 +441,17 @@ export const dashboardService = {
     return dashboardClient.get('api/dashboard/get-faturamento-comparativo',{
       searchParams
     }).json<DashboardFaturamentoPayloadDto>();
-  }
+  },
+
+  getEvolucaoFinanceiraPorPeriodo: async (
+  startDate: string,
+  endDate: string,
+): Promise<EvolucaoFinanceiraPayloadDto> => {
+  const searchParams: Record<string, string> = { startDate, endDate };
+  return dashboardClient
+    .get('api/dashboard/evolucao-financeira-periodo', { searchParams })
+    .json<EvolucaoFinanceiraPayloadDto>();
+}
   
 };
 

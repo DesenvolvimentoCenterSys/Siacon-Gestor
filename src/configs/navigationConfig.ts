@@ -13,14 +13,14 @@ i18n.addResourceBundle('ar', 'navigation', ar);
  */
 const navigationConfig: FuseNavItemType[] = [
 	// ─── C ──────────────────────────────────────────────────────────────────────
-	{
-		id: 'convenios',
-		title: 'Convênios',
-		translate: 'Convênios',
-		type: 'item',
-		icon: 'heroicons-outline:building-office-2',
-		url: 'convenios'
-	},
+	// {
+	// 	id: 'convenios',
+	// 	title: 'Convênios',
+	// 	translate: 'Convênios',
+	// 	type: 'item',
+	// 	icon: 'heroicons-outline:building-office-2',
+	// 	url: 'convenios'
+	// },
 	// ─── D ──────────────────────────────────────────────────────────────────────
 	{
 		id: 'dashboard-geral',
@@ -39,14 +39,14 @@ const navigationConfig: FuseNavItemType[] = [
 		url: 'painel'
 	},
 	// ─── E ──────────────────────────────────────────────────────────────────────
-	{
-		id: 'eventos',
-		title: 'Eventos',
-		translate: 'Eventos',
-		type: 'item',
-		icon: 'heroicons-outline:ticket',
-		url: 'eventos'
-	},
+	// {
+	// 	id: 'eventos',
+	// 	title: 'Eventos',
+	// 	translate: 'Eventos',
+	// 	type: 'item',
+	// 	icon: 'heroicons-outline:ticket',
+	// 	url: 'eventos'
+	// },
 	// ─── F ──────────────────────────────────────────────────────────────────────
 	{
 		id: 'financeiro',
@@ -99,39 +99,47 @@ const navigationConfig: FuseNavItemType[] = [
 						lineHeight: '1.2 !important'
 					}
 				}
+			},
+			{
+				id: 'evolucao-financeira',
+				title: 'Evolução Financeira',
+				translate: 'EVOLUCAO_FINANCEIRA',
+				type: 'item',
+				icon: 'heroicons-outline:arrow-trending-up',
+				url: 'evolucao-financeira'
 			}
 		]
 	},
 	// ─── P ──────────────────────────────────────────────────────────────────────
-	{
-		id: 'pessoas',
-		title: 'Pessoas',
-		type: 'collapse',
-		icon: 'heroicons-outline:users',
-		children: [
-			{
-				id: 'associados',
-				title: 'Associados/Filiados',
-				type: 'item',
-				icon: 'heroicons-outline:identification',
-				url: 'pessoas/associados'
-			},
-			{
-				id: 'beneficiarios',
-				title: 'Beneficiários de Planos',
-				type: 'item',
-				icon: 'heroicons-outline:heart',
-				url: 'pessoas/beneficiarios'
-			},
-			{
-				id: 'cadastros',
-				title: 'Cadastros',
-				type: 'item',
-				icon: 'heroicons-outline:clipboard-document-list',
-				url: 'pessoas/cadastros'
-			}
-		]
-	}
+	// {
+	// 	id: 'pessoas',
+	// 	title: 'Pessoas',
+	// 	type: 'collapse',
+	// 	icon: 'heroicons-outline:users',
+	// 	children: [
+	// 		{
+	// 			id: 'associados',
+	// 			title: 'Associados/Filiados',
+	// 			type: 'item',
+	// 			icon: 'heroicons-outline:identification',
+	// 			url: 'pessoas/associados'
+	// 		},
+	// 		{
+	// 			id: 'beneficiarios',
+	// 			title: 'Beneficiários de Planos',
+	// 			type: 'item',
+	// 			icon: 'heroicons-outline:heart',
+	// 			url: 'pessoas/beneficiarios'
+	// 		},
+	// 		{
+	// 			id: 'cadastros',
+	// 			title: 'Cadastros',
+	// 			type: 'item',
+	// 			icon: 'heroicons-outline:clipboard-document-list',
+	// 			url: 'pessoas/cadastros'
+	// 		}
+	// 	]
+	// }
 ];
 
 export default navigationConfig;

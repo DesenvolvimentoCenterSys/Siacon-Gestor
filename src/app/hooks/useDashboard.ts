@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
-import { DashboardFaturamentoPayloadDto } from '@/types/dashboardTypes';
+import { DashboardFaturamentoPayloadDto, EvolucaoFinanceiraPayloadDto } from '@/types/dashboardTypes';
 import { dashboardService } from '../services/dashboardService';
 import { end } from '@popperjs/core';
 
@@ -382,5 +382,19 @@ export const useResumoMensalFinanceiroPorPeriodo = (
     queryFn: () =>
       dashboardService.getResumoMensalFinanceiroPorPeriodo(startDate!, endDate!, searchBy, dataType),
     enabled: !!startDate && !!endDate
+  });
+};
+
+
+export const useResumoFinanceiroMensal = (
+  startDate?: string,
+  endDate?: string,
+) => {
+  return useQuery<EvolucaoFinanceiraPayloadDto>({
+    queryKey: ['resumoFinanceiroMensal', startDate, endDate],
+    queryFn: () =>
+      dashboardService.getEvolucaoFinanceiraPorPeriodo(startDate!, endDate!),
+    enabled: !!(startDate && endDate),
+    placeholderData: (prev) => prev,
   });
 };
