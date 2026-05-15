@@ -39,14 +39,14 @@ const navigationConfig: FuseNavItemType[] = [
 		url: 'painel'
 	},
 	// ─── E ──────────────────────────────────────────────────────────────────────
-	// {
-	// 	id: 'eventos',
-	// 	title: 'Eventos',
-	// 	translate: 'Eventos',
-	// 	type: 'item',
-	// 	icon: 'heroicons-outline:ticket',
-	// 	url: 'eventos'
-	// },
+	{
+		id: 'eventos',
+		title: 'Eventos',
+		translate: 'Eventos',
+		type: 'item',
+		icon: 'heroicons-outline:ticket',
+		url: 'eventos'
+	},
 	// ─── F ──────────────────────────────────────────────────────────────────────
 	{
 		id: 'financeiro',
@@ -110,36 +110,35 @@ const navigationConfig: FuseNavItemType[] = [
 			}
 		]
 	},
-	// ─── P ──────────────────────────────────────────────────────────────────────
-	// {
-	// 	id: 'pessoas',
-	// 	title: 'Pessoas',
-	// 	type: 'collapse',
-	// 	icon: 'heroicons-outline:users',
-	// 	children: [
-	// 		{
-	// 			id: 'associados',
-	// 			title: 'Associados/Filiados',
-	// 			type: 'item',
-	// 			icon: 'heroicons-outline:identification',
-	// 			url: 'pessoas/associados'
-	// 		},
-	// 		{
-	// 			id: 'beneficiarios',
-	// 			title: 'Beneficiários de Planos',
-	// 			type: 'item',
-	// 			icon: 'heroicons-outline:heart',
-	// 			url: 'pessoas/beneficiarios'
-	// 		},
-	// 		{
-	// 			id: 'cadastros',
-	// 			title: 'Cadastros',
-	// 			type: 'item',
-	// 			icon: 'heroicons-outline:clipboard-document-list',
-	// 			url: 'pessoas/cadastros'
-	// 		}
-	// 	]
-	// }
+	{
+		id: 'pessoas',
+		title: 'Pessoas',
+		type: 'collapse',
+		icon: 'heroicons-outline:users',
+		children: [
+			{
+				id: 'associados',
+				title: 'Associados/Filiados',
+				type: 'item',
+				icon: 'heroicons-outline:identification',
+				url: 'pessoas/associados'
+			},
+			{
+				id: 'beneficiarios',
+				title: 'Beneficiários de Planos',
+				type: 'item',
+				icon: 'heroicons-outline:heart',
+				url: 'pessoas/beneficiarios'
+			},
+			{
+				id: 'cadastros',
+				title: 'Cadastros',
+				type: 'item',
+				icon: 'heroicons-outline:clipboard-document-list',
+				url: 'pessoas/cadastros'
+			}
+		]
+	}
 ];
 
 export default navigationConfig;
