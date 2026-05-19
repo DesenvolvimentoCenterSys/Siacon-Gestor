@@ -155,6 +155,14 @@ export interface TotalFaturamentoPorConvenioDto {
   porConvenio: FaturamentoDetalhadoConvenioDto[];
 }
 
+export interface TotalFaturamentoDto {
+  dataReferencia: string;
+  totalGeral: number;
+  totalPago: number;
+  totalAberto: number;
+  totalVencido: number;
+}
+
 export interface PagamentoCentroCustoDto {
   valorTotal: number;
   emAberto: number;
@@ -272,7 +280,9 @@ export interface ResumoMensalFinanceiroDto {
   mes: number;
   totalCobranca: number;
   totalPagamento: number;
+  totalFaturado: number;
   totalVencido: number;
+  totalAberto: number;
   resultado: number;
 }
 

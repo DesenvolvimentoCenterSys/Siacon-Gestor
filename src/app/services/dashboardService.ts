@@ -222,6 +222,16 @@ export const dashboardService = {
     }).json<TotalFaturamentoPorConvenioDto>();
   },
 
+  getTotalFaturamentoGeral: async (date?: string, searchBy?: string): Promise<TotalFaturamentoDto> => {
+    const searchParams: Record<string, string> = {};
+    if (date) searchParams.date = date;
+    if (searchBy) searchParams.searchBy = searchBy;
+
+    return dashboardClient.get('api/Dashboard/total-faturamento-geral', {
+      searchParams
+    }).json<TotalFaturamentoDto>();
+  },
+
   getTotalFaturamentoPorConvenioWithFilters: async (
     startDate?: string,
     endDate?: string,

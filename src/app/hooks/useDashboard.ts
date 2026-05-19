@@ -209,6 +209,13 @@ export const useTotalFaturamentoPorConvenio = (startDate?: string, searchBy?: st
   });
 };
 
+export const useTotalFaturamentoGeral = (date?: string, searchBy?: string) => {
+  return useQuery({
+    queryKey: ['totalFaturamentoGeral', date, searchBy],
+    queryFn: () => dashboardService.getTotalFaturamentoGeral(date, searchBy)
+  });
+};
+
 export const useFilterOptions = () => {
   return useQuery({
     queryKey: ['filterOptions'],

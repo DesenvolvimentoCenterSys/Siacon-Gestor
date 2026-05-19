@@ -5,49 +5,74 @@ interface PageHeaderProps {
   title: string;
   subtitle?: string;
   icon?: ReactNode;
+  compact?: boolean; 
 }
 
-export function PageHeader({ title, subtitle, icon }: PageHeaderProps) {
+export function PageHeader({ title, subtitle, icon, compact }: PageHeaderProps) {
   const theme = useTheme();
 
   return (
-    <Box sx={{ mb: 4, display: 'flex', alignItems: 'flex-start' }}>
+    <Box
+      sx={{
+        mb: compact ? 2 : 4,
+        display: 'flex',
+        alignItems: 'center', 
+        gap: compact ? 1.5 : 3,
+        flexWrap: 'nowrap',
+        minWidth: 0, 
+      }}
+    >
       {icon && (
         <Box
           sx={{
-            mr: 3,
-            p: 1.5,
+            flexShrink: 0, 
+            p: compact ? 1 : 1.5,
             borderRadius: '12px',
-            backgroundColor: (theme) => theme.palette.mode === 'light' ? 'rgba(0, 0, 0, 0.05)' : 'rgba(255, 255, 255, 0.05)',
+            backgroundColor:
+              theme.palette.mode === 'light'
+                ? 'rgba(0, 0, 0, 0.05)'
+                : 'rgba(255, 255, 255, 0.05)',
             color: 'text.primary',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
+            '& svg': {
+              width: compact ? 20 : 32,
+              height: compact ? 20 : 32,
+            },
           }}
         >
           {icon}
         </Box>
       )}
-      <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-        <Typography
-          variant="h4"
-          sx={{
-            color: 'text.primary',
-            fontWeight: 800,
-            letterSpacing: '-0.025em',
-            lineHeight: 1.2,
-            mb: 0.5,
-          }}
-        >
-          {title}
-        </Typography>
+
+      <Box sx={{ minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        {title && (
+          <Typography
+            variant={compact ? 'subtitle1' : 'h4'}
+            sx={{
+              color: 'text.primary',
+              fontWeight: 800,
+              letterSpacing: '-0.025em',
+              lineHeight: 1.2,
+              mb: subtitle ? 0.5 : 0,
+              whiteSpace: { xs: 'normal', sm: 'nowrap' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {title}
+          </Typography>
+        )}
         {subtitle && (
           <Typography
-            variant="subtitle1"
+            variant={compact ? 'body1' : 'subtitle1'}
             sx={{
               color: 'text.secondary',
-              maxWidth: '600px',
-              lineHeight: 1.5,
+              lineHeight: 1.4,
+              whiteSpace: { xs: 'normal', sm: 'nowrap' },
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
             {subtitle}

@@ -30,14 +30,14 @@ const navigationConfig: FuseNavItemType[] = [
 		icon: 'heroicons-outline:chart-bar-square',
 		url: 'dashboard-geral'
 	},
-	{
+	/* {
 		id: 'dashboard',
 		title: 'DASHBOARD',
 		translate: 'DASHBOARD',
 		type: 'item',
 		icon: 'heroicons-outline:clipboard-document-check',
 		url: 'painel'
-	},
+	}, */
 	// ─── E ──────────────────────────────────────────────────────────────────────
 	{
 		id: 'eventos',
