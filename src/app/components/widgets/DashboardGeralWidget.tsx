@@ -686,7 +686,7 @@ export function DashboardGeralWidget() {
         ? {
             mounted(chartCtx: any) {
               chartCtx.hideSeries("Faturamento");
-              chartCtx.hideSeries("Inadimplente");
+              chartCtx.hideSeries("Inadimplência");
             },
           }
         : {},
@@ -827,7 +827,7 @@ export function DashboardGeralWidget() {
         : chartInfo.pagamentoData,
     },
     {
-      name: "Inadimplente",
+      name: "Inadimplência",
       data: chartInfo.vencidoData,
     },
     {
@@ -1320,7 +1320,7 @@ export function DashboardGeralWidget() {
               color: "text.primary",
             }}
           >
-            Faturamento / Receitas / Despesas / Inadimplente / Resultado
+            Faturamento / Receitas / Despesas / Inadimplência / Resultado
             (Período Selecionado)
           </Typography>
         </Box>
