@@ -39,23 +39,17 @@ import { parse, format, startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
-import { mt, ptBR } from "date-fns/locale";
-import { string } from "zod";
+import { ptBR } from "date-fns/locale";
 import { PageHeader } from "../ui/PageHeader";
 
+const SERIES_NAMES = ["Faturamento", "Receitas", "Despesas", "Inadimplência", "Resultado"] as const;
+type SeriesName = typeof SERIES_NAMES[number];
+
+const ALL_SERIES = new Set<SeriesName>(SERIES_NAMES);
+
 const MONTH_NAMES = [
-  "Jan",
-  "Fev",
-  "Mar",
-  "Abr",
-  "Mai",
-  "Jun",
-  "Jul",
-  "Ago",
-  "Set",
-  "Out",
-  "Nov",
-  "Dez",
+  "Jan", "Fev", "Mar", "Abr", "Mai", "Jun",
+  "Jul", "Ago", "Set", "Out", "Nov", "Dez",
 ];
 
 function formatCurrency(value: number): string {
@@ -86,7 +80,6 @@ function toApiDate(d: Date): string {
   return format(d, "yyyy-MM-dd");
 }
 
-// ─── KPI-style Gradient Card ─────────────────────────────────────
 interface GradientKPIProps {
   title: string;
   mainValue: string;
@@ -96,6 +89,7 @@ interface GradientKPIProps {
   filterDate?: Date | null;
   onFilterChange?: (date: Date) => void;
   compactSpaces?: boolean;
+  dimmed?: boolean;
 }
 
 function GradientKPI({
@@ -107,14 +101,11 @@ function GradientKPI({
   filterDate,
   onFilterChange,
   compactSpaces,
+  dimmed,
 }: GradientKPIProps) {
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
-    null,
-  );
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null);
   const [datePickerOpen, setDatePickerOpen] = useState(false);
-  const [tempDate, setTempDate] = useState<Date | null>(
-    filterDate || new Date(),
-  );
+  const [tempDate, setTempDate] = useState<Date | null>(filterDate || new Date());
 
   const handleFilterClick = (e: React.MouseEvent<HTMLElement>) => {
     e.stopPropagation();
@@ -152,10 +143,7 @@ function GradientKPI({
 
   const getFilterLabel = () => {
     if (!filterDate) return "Mês atual";
-    const month = filterDate.toLocaleDateString("pt-BR", {
-      month: "short",
-      year: "numeric",
-    });
+    const month = filterDate.toLocaleDateString("pt-BR", { month: "short", year: "numeric" });
     return month.charAt(0).toUpperCase() + month.slice(1);
   };
 
@@ -168,7 +156,8 @@ function GradientKPI({
         height: "100%",
         position: "relative",
         overflow: "hidden",
-        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
+        opacity: dimmed ? 0.45 : 1,
+        transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, opacity 0.3s ease-in-out",
         "&:hover": {
           transform: "translateY(-4px)",
           boxShadow: (theme: any) => theme.shadows[8],
@@ -249,10 +238,7 @@ function GradientKPI({
               </Tooltip>
             )}
           </Box>
-          <FuseSvgIcon
-            size={32}
-            sx={{ opacity: 0.3, mt: onFilterChange ? 0 : 0 }}
-          >
+          <FuseSvgIcon size={32} sx={{ opacity: 0.3, mt: onFilterChange ? 0 : 0 }}>
             {icon}
           </FuseSvgIcon>
         </Box>
@@ -319,32 +305,19 @@ function GradientKPI({
           open={datePickerOpen}
           onClose={handleDatePickerClose}
           PaperProps={{
-            sx: {
-              borderRadius: 3,
-              minWidth: 320,
-            },
+            sx: { borderRadius: 3, minWidth: 320 },
           }}
         >
           <DialogContent sx={{ pt: 3 }}>
-            <LocalizationProvider
-              dateAdapter={AdapterDateFns}
-              adapterLocale={ptBR}
-            >
+            <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
               <DatePicker
                 views={["year", "month"]}
                 label="Selecione o mês e ano"
                 value={tempDate}
                 onChange={(newValue) => setTempDate(newValue)}
                 slotProps={{
-                  textField: {
-                    fullWidth: true,
-                    sx: { mb: 2 },
-                  },
-                  popper: {
-                    sx: {
-                      zIndex: 99999,
-                    },
-                  },
+                  textField: { fullWidth: true, sx: { mb: 2 } },
+                  popper: { sx: { zIndex: 99999 } },
                 }}
               />
             </LocalizationProvider>
@@ -353,11 +326,7 @@ function GradientKPI({
             <Button onClick={handleDatePickerClose} color="inherit">
               Cancelar
             </Button>
-            <Button
-              onClick={handleDatePickerConfirm}
-              variant="contained"
-              color="primary"
-            >
+            <Button onClick={handleDatePickerConfirm} variant="contained" color="primary">
               Confirmar
             </Button>
           </DialogActions>
@@ -374,12 +343,9 @@ function GradientKPI({
           {mainValue}
         </Typography>
 
-        {children && (
-          <Box sx={{ mt: compactSpaces ? 0.5 : 1.5 }}>{children}</Box>
-        )}
+        {children && <Box sx={{ mt: compactSpaces ? 0.5 : 1.5 }}>{children}</Box>}
       </CardContent>
 
-      {/* Decorative circles */}
       <Box
         sx={{
           position: "absolute",
@@ -408,12 +374,10 @@ function GradientKPI({
   );
 }
 
-// ─── Metric line inside KPI card ─────────────────────────────────
 function KPIMetric({
   label,
   value,
   valueColor,
-  fontSize,
 }: {
   label: string;
   value: string;
@@ -429,13 +393,7 @@ function KPIMetric({
         py: 0.4,
       }}
     >
-      <Typography
-        sx={{
-          opacity: 0.9,
-          fontWeight: 600,
-          fontSize: { xs: "1.35rem", sm: "1.25rem" },
-        }}
-      >
+      <Typography sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "1.35rem", sm: "1.25rem" } }}>
         {label}
       </Typography>
       <Typography
@@ -455,7 +413,6 @@ function KPIDivider() {
   return <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.25)", my: 1 }} />;
 }
 
-// ─── Main Dashboard Widget ──────────────────────────────────────
 export function DashboardGeralWidget() {
   const theme = useTheme();
   const isMobile = useThemeMediaQuery((t) => t.breakpoints.down("md"));
@@ -463,12 +420,12 @@ export function DashboardGeralWidget() {
   const [startMonth, setStartMonth] = useState(getDefaultStartMonth());
   const [dateMonth, setDateMonth] = useState(getDefaultEndMonth());
   const [endMonth, setEndMonth] = useState(getDefaultEndMonth());
-  const [appliedDateMonth, setAppliedDateMonth] =
-    useState(getDefaultEndMonth());
+  const [appliedDateMonth, setAppliedDateMonth] = useState(getDefaultEndMonth());
   const [appliedStart, setAppliedStart] = useState(getDefaultStartMonth());
   const [appliedEnd, setAppliedEnd] = useState(getDefaultEndMonth());
   const [searchBy, setSearchBy] = useState("V");
   const [appliedSearchBy, setAppliedSearchBy] = useState("V");
+  const [visibleSeries, setVisibleSeries] = useState<Set<SeriesName>>(new Set(ALL_SERIES));
 
   const handleDateModeFilterChange = (event: SelectChangeEvent) => {
     setSearchBy(event.target.value as string);
@@ -477,11 +434,13 @@ export function DashboardGeralWidget() {
   const handleApplySummaryFilter = () => {
     setAppliedDateMonth(dateMonth);
     setAppliedSearchBy(searchBy);
+    setVisibleSeries(new Set(ALL_SERIES));
   };
 
   const handleApplyChartFilter = () => {
     setAppliedStart(startMonth);
     setAppliedEnd(endMonth);
+    setVisibleSeries(new Set(ALL_SERIES));
   };
 
   const startDate = useMemo(() => {
@@ -494,22 +453,11 @@ export function DashboardGeralWidget() {
     return toApiDate(endOfMonth(d));
   }, [appliedEnd]);
 
-  const { data: filiadosData, isLoading: l1 } =
-    useTotalFiliados(appliedDateMonth);
+  const { data: filiadosData, isLoading: l1 } = useTotalFiliados(appliedDateMonth);
+  const { data: faturamentoCard2Data, isLoading: l2 } = useTotalFaturamentoGeral(appliedDateMonth, appliedSearchBy);
+  const { data: despesasCard3Data, isLoading: l2_2 } = useTotalDespesasPorConvenio(appliedDateMonth);
 
-  // Card 2: Faturamento do Mês
-  const { data: faturamentoCard2Data, isLoading: l2 } =
-    useTotalFaturamentoGeral(appliedDateMonth, appliedSearchBy);
-
-  // Card 3: Títulos a Pagar
-  const { data: despesasCard3Data, isLoading: l2_2 } =
-    useTotalDespesasPorConvenio(appliedDateMonth);
-
-  // Card 4: Inadimplência
-  const cardDateMonth = useMemo(
-    () => monthInputToDate(appliedDateMonth),
-    [appliedDateMonth],
-  );
+  const cardDateMonth = useMemo(() => monthInputToDate(appliedDateMonth), [appliedDateMonth]);
 
   const { data: delinquencyCard4Data, isLoading: l3 } = useDelinquencySummary(
     toApiDate(startOfMonth(cardDateMonth)),
@@ -517,16 +465,16 @@ export function DashboardGeralWidget() {
     appliedSearchBy,
   );
 
-  // Chart
-  const { data: resumoMensalData, isLoading: l4 } =
-    useResumoMensalFinanceiroPorPeriodo(startDate, endDate, appliedSearchBy);
+  const { data: resumoMensalData, isLoading: l4 } = useResumoMensalFinanceiroPorPeriodo(
+    startDate,
+    endDate,
+    appliedSearchBy,
+  );
 
-  const { data: delinquencyChartData, isLoading: l3_chart } =
-    useDelinquencySummary(startDate, endDate);
+  const { data: delinquencyChartData, isLoading: l3_chart } = useDelinquencySummary(startDate, endDate);
 
   const isLoading = l1 || l2 || l2_2 || l3 || l3_chart || l4;
 
-  // ── Derived card data ──
   const filiadosInfo = useMemo(() => {
     if (!filiadosData) return null;
     return {
@@ -534,9 +482,7 @@ export function DashboardGeralWidget() {
       totalDesligados: filiadosData.totalDesligados,
       totalNovos: filiadosData.totalNovos,
       totalAnterior:
-        filiadosData.totalAtivos +
-        filiadosData.totalDesligados -
-        filiadosData.totalNovos,
+        filiadosData.totalAtivos + filiadosData.totalDesligados - filiadosData.totalNovos,
       faturamentoPerdido: filiadosData.valorDesligados,
       totalAdesoes: filiadosData.valorNovos,
       faturamentoTotal: filiadosData.faturamentoTotal,
@@ -546,12 +492,9 @@ export function DashboardGeralWidget() {
   const faturamentoInfoCard2 = useMemo(() => {
     if (!faturamentoCard2Data) return null;
     const total = faturamentoCard2Data.totalGeral;
-    const percentAVencer =
-      total > 0 ? (faturamentoCard2Data.totalAberto / total) * 100 : 0;
-    const percentVencido =
-      total > 0 ? (faturamentoCard2Data.totalVencido / total) * 100 : 0;
-    const percentPago =
-      total > 0 ? (faturamentoCard2Data.totalPago / total) * 100 : 0;
+    const percentAVencer = total > 0 ? (faturamentoCard2Data.totalAberto / total) * 100 : 0;
+    const percentVencido = total > 0 ? (faturamentoCard2Data.totalVencido / total) * 100 : 0;
+    const percentPago = total > 0 ? (faturamentoCard2Data.totalPago / total) * 100 : 0;
     return {
       totalGeral: total,
       totalPago: faturamentoCard2Data.totalPago,
@@ -566,12 +509,9 @@ export function DashboardGeralWidget() {
   const despesasInfoCard3 = useMemo(() => {
     if (!despesasCard3Data?.valorTotal) return null;
     const total = despesasCard3Data.valorTotal;
-    const percentPago =
-      total > 0 ? (despesasCard3Data.liquidado / total) * 100 : 0;
-    const percentAVencer =
-      total > 0 ? (despesasCard3Data.emAberto / total) * 100 : 0;
-    const percentVencido =
-      total > 0 ? (despesasCard3Data.valorVencido / total) * 100 : 0;
+    const percentPago = total > 0 ? (despesasCard3Data.liquidado / total) * 100 : 0;
+    const percentAVencer = total > 0 ? (despesasCard3Data.emAberto / total) * 100 : 0;
+    const percentVencido = total > 0 ? (despesasCard3Data.valorVencido / total) * 100 : 0;
     return {
       totalGeral: despesasCard3Data.valorTotal,
       totalPago: despesasCard3Data.liquidado,
@@ -598,16 +538,10 @@ export function DashboardGeralWidget() {
     };
   }, [delinquencyCard4Data, faturamentoCard2Data]);
 
-  // ── Chart data ──
   const startMonthNum = useMemo(() => {
     const [, m] = appliedStart.split("-").map(Number);
     return m;
   }, [appliedStart]);
-
-  const endMonthNum = useMemo(() => {
-    const [, m] = appliedEnd.split("-").map(Number);
-    return m;
-  }, [appliedEnd]);
 
   const crossesYear = useMemo(() => {
     const [sy] = appliedStart.split("-").map(Number);
@@ -628,14 +562,12 @@ export function DashboardGeralWidget() {
       };
     }
 
-    // Chronological sort: months before startMonth belong to the next year
     const sortedData = [...resumoMensalData].sort((a, b) => {
       const aKey = crossesYear && a.mes < startMonthNum ? a.mes + 12 : a.mes;
       const bKey = crossesYear && b.mes < startMonthNum ? b.mes + 12 : b.mes;
       return aKey - bKey;
     });
 
-    // Parse years from the period for labels
     const [startYear] = appliedStart.split("-").map(Number);
     const [endYear] = appliedEnd.split("-").map(Number);
 
@@ -657,20 +589,16 @@ export function DashboardGeralWidget() {
     };
   }, [resumoMensalData, startMonthNum, crossesYear, appliedStart, appliedEnd]);
 
+  const sum = (arr: number[]) => arr.reduce((s, v) => s + v, 0);
+
   const chartTotals = useMemo(() => {
-    const totalCobranca = chartInfo.cobrancaData.reduce((s, v) => s + v, 0);
-    const totalPagamento = chartInfo.pagamentoData.reduce((s, v) => s + v, 0);
-    const totalVencido = chartInfo.vencidoData.reduce((s, v) => s + v, 0);
-    const totalFaturado = chartInfo.faturamentoData.reduce((s, v) => s + v, 0);
-    const resultado = chartInfo.resultadoData.reduce((s, v) => s + v, 0); // Receitas - Despesas
     return {
-      totalCobranca,
-      totalPagamento,
-      totalVencido,
-      resultado,
-      totalFaturado,
+      totalFaturado: visibleSeries.has("Faturamento") ? sum(chartInfo.faturamentoData) : 0,
+      totalCobranca: visibleSeries.has("Receitas") ? sum(chartInfo.cobrancaData) : 0,
+      totalPagamento: visibleSeries.has("Despesas") ? sum(chartInfo.pagamentoData) : 0,
+      resultado: visibleSeries.has("Resultado") ? sum(chartInfo.resultadoData) : 0,
     };
-  }, [chartInfo]);
+  }, [chartInfo, visibleSeries]);
 
   const chartKey = useMemo(() => {
     return `${isMobile}-${appliedStart}-${appliedEnd}-${appliedSearchBy}`;
@@ -682,14 +610,30 @@ export function DashboardGeralWidget() {
       toolbar: { show: false },
       fontFamily: "inherit",
       animations: { enabled: !isMobile },
-      events: isMobile
-        ? {
-            mounted(chartCtx: any) {
-              chartCtx.hideSeries("Faturamento");
-              chartCtx.hideSeries("Inadimplência");
-            },
-          }
-        : {},
+      events: {
+        ...(isMobile
+          ? {
+              mounted(chartCtx: any) {
+                chartCtx.hideSeries("Faturamento");
+                chartCtx.hideSeries("Inadimplência");
+              },
+            }
+          : {}),
+        legendClick(_chartCtx: any, seriesIndex: number) {
+          if (isMobile) return;
+          const clickedName = SERIES_NAMES[seriesIndex];
+          if (!clickedName) return;
+          setVisibleSeries((prev) => {
+            const next = new Set(prev);
+            if (next.has(clickedName)) {
+              next.delete(clickedName);
+            } else {
+              next.add(clickedName);
+            }
+            return next;
+          });
+        },
+      },
     },
     plotOptions: {
       bar: {
@@ -702,16 +646,8 @@ export function DashboardGeralWidget() {
         },
       },
     },
-    colors: [
-      "#23a329", // Faturamento
-      "#e9a81b", // Receitas
-      "#fa600d",
-      "#db2020", // Inadimplente
-      "#0D47A1", // Resultado
-    ],
-    fill: {
-      type: "fill",
-    },
+    colors: ["#23a329", "#e9a81b", "#fa600d", "#db2020", "#0D47A1"],
+    fill: { type: "fill" },
     dataLabels: {
       enabled: isMobile,
       formatter(val: number, opts: any) {
@@ -723,8 +659,7 @@ export function DashboardGeralWidget() {
               ? chartInfo.resultadoData[opts.dataPointIndex]
               : val;
 
-        const wasNegative =
-          isMobile && typeof originalData === "number" && originalData < 0;
+        const wasNegative = isMobile && typeof originalData === "number" && originalData < 0;
         const prefix = wasNegative ? "-" : "";
 
         if (val >= 1000000) return `${prefix}${(val / 1000000).toFixed(1)}M`;
@@ -737,7 +672,7 @@ export function DashboardGeralWidget() {
         colors: isMobile ? ["#131313"] : ["rgb(255, 255, 255)"],
       },
       background: {
-        enabled: isMobile, // ← só ativa no mobile
+        enabled: isMobile,
         foreColor: "#e7e7e7",
         borderRadius: 4,
         padding: 4,
@@ -774,8 +709,7 @@ export function DashboardGeralWidget() {
           ? (value) => String(value)
           : (value) => {
               if (value == null || typeof value !== "number") return "";
-              if (value >= 1000000)
-                return `R$ ${(value / 1000000).toFixed(1)}M`;
+              if (value >= 1000000) return `R$ ${(value / 1000000).toFixed(1)}M`;
               if (value >= 1000) return `R$ ${(value / 1000).toFixed(0)}k`;
               return `R$ ${value.toFixed(0)}`;
             },
@@ -800,10 +734,8 @@ export function DashboardGeralWidget() {
       style: { fontSize: "14px" },
       y: {
         formatter(val) {
-          return val.toLocaleString("pt-BR", {
-            style: "currency",
-            currency: "BRL",
-          });
+          if (val == null || typeof val !== "number") return "—";
+          return val.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
         },
       },
     },
@@ -822,19 +754,12 @@ export function DashboardGeralWidget() {
     { name: "Receitas", data: chartInfo.cobrancaData },
     {
       name: "Despesas",
-      data: isMobile
-        ? chartInfo.pagamentoData.map((v) => Math.abs(v))
-        : chartInfo.pagamentoData,
+      data: isMobile ? chartInfo.pagamentoData.map((v) => Math.abs(v)) : chartInfo.pagamentoData,
     },
-    {
-      name: "Inadimplência",
-      data: chartInfo.vencidoData,
-    },
+    { name: "Inadimplência", data: chartInfo.vencidoData },
     {
       name: "Resultado",
-      data: isMobile
-        ? chartInfo.resultadoData.map((v) => Math.abs(v))
-        : chartInfo.resultadoData,
+      data: isMobile ? chartInfo.resultadoData.map((v) => Math.abs(v)) : chartInfo.resultadoData,
     },
   ];
 
@@ -842,7 +767,6 @@ export function DashboardGeralWidget() {
 
   return (
     <Box sx={{ maxWidth: "100%" }}>
-      {/* ── PERIOD SELECTOR ── */}
       <Card
         elevation={0}
         sx={{
@@ -856,11 +780,12 @@ export function DashboardGeralWidget() {
           compact
           title=""
           subtitle={
-          <>
-            Resumo do Faturamento (Associados | Faturamento | Pagamentos | Inadimplência)
-            <br/>
-            Obs: Valores Apurados de serviços
-          </>}
+            <>
+              Resumo do Faturamento (Associados | Faturamento | Pagamentos | Inadimplência)
+              <br />
+              Obs: Valores Apurados de serviços
+            </>
+          }
           icon={
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -900,19 +825,14 @@ export function DashboardGeralWidget() {
               Mês de Apuração:
             </Typography>
           </Box>
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={ptBR}
-          >
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
             <DatePicker
               views={["year", "month"]}
               label=""
               openTo="month"
               value={dateMonth ? parse(dateMonth, "yyyy-MM", new Date()) : null}
               onChange={(newValue) => {
-                const mesFormatado = newValue
-                  ? format(newValue, "yyyy-MM")
-                  : "";
+                const mesFormatado = newValue ? format(newValue, "yyyy-MM") : "";
                 setEndMonth(mesFormatado);
                 setDateMonth(mesFormatado);
               }}
@@ -923,19 +843,14 @@ export function DashboardGeralWidget() {
                     minWidth: "12em",
                     maxWidth: { xs: "none", sm: "13em" },
                     width: { xs: "100%", sm: "13em" },
-                    "& .MuiInputBase-root": {
-                      cursor: "default",
-                    },
+                    "& .MuiInputBase-root": { cursor: "default" },
                   },
                   InputLabelProps: { shrink: true },
                 },
                 popper: {
                   sx: {
                     zIndex: 99999,
-                    "& .MuiPaper-root": {
-                      width: 320,
-                      maxHeight: 320,
-                    },
+                    "& .MuiPaper-root": { width: 320, maxHeight: 320 },
                   },
                 },
               }}
@@ -982,23 +897,18 @@ export function DashboardGeralWidget() {
           </Button>
         </Box>
       </Card>
-      {/* ── KPI CARDS — Row 1 ── */}
+
       <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
-        {/* Card 1 — Associados Ativos */}
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
             title="Qtde Associados"
-            mainValue={
-              filiadosInfo?.totalAtivos?.toLocaleString("pt-BR") ?? "—"
-            }
+            mainValue={filiadosInfo?.totalAtivos?.toLocaleString("pt-BR") ?? "—"}
             icon="heroicons-outline:users"
             gradientColors={["#b700cf", "#7e0058"]}
           >
             <KPIMetric
               label="Qtde mês anterior"
-              value={
-                filiadosInfo?.totalAnterior?.toLocaleString("pt-BR") ?? "0"
-              }
+              value={filiadosInfo?.totalAnterior?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#ffffff"
             />
             <KPIMetric
@@ -1008,20 +918,12 @@ export function DashboardGeralWidget() {
             />
             <KPIMetric
               label="Desligados"
-              value={
-                filiadosInfo?.totalDesligados?.toLocaleString("pt-BR") ?? "0"
-              }
+              value={filiadosInfo?.totalDesligados?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#ffffff"
             />
             <KPIDivider />
-            <KPIMetric
-              label="Total Faturado"
-              value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)}
-            />
-            <KPIMetric
-              label="Total Adesões"
-              value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)}
-            />
+            <KPIMetric label="Total Faturado" value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)} />
+            <KPIMetric label="Total Adesões" value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)} />
             <KPIMetric
               label="Total Perdido"
               value={formatCurrency(filiadosInfo?.faturamentoPerdido ?? 0)}
@@ -1030,7 +932,6 @@ export function DashboardGeralWidget() {
           </GradientKPI>
         </Grid>
 
-        {/* Card 2 — Faturamento do Mês */}
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
             title="Faturamento do Mês"
@@ -1043,25 +944,18 @@ export function DashboardGeralWidget() {
               value={formatCurrency(faturamentoInfoCard2?.aVencer ?? 0)}
               valueColor="#bbf7d0"
             />
-            <KPIMetric
-              label=""
-              value={formatPercent(faturamentoInfoCard2?.percentAVencer ?? 0)}
-            />
+            <KPIMetric label="" value={formatPercent(faturamentoInfoCard2?.percentAVencer ?? 0)} />
             <KPIDivider />
             <KPIMetric
               label="Vencido"
               value={formatCurrency(faturamentoInfoCard2?.vencido ?? 0)}
               valueColor="#ffffff"
             />
-            <KPIMetric
-              label=""
-              value={formatPercent(faturamentoInfoCard2?.percentVencido ?? 0)}
-            />
+            <KPIMetric label="" value={formatPercent(faturamentoInfoCard2?.percentVencido ?? 0)} />
             <KPIDivider />
           </GradientKPI>
         </Grid>
 
-        {/* Card 3 — Títulos a Pagar */}
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
             title="Títulos a Pagar"
@@ -1074,35 +968,24 @@ export function DashboardGeralWidget() {
               value={formatCurrency(despesasInfoCard3?.aVencer ?? 0)}
               valueColor="#ffffff"
             />
-            <KPIMetric
-              label=""
-              value={formatPercent(despesasInfoCard3?.percentAVencer ?? 0)}
-              valueColor="#ffffff"
-            />
+            <KPIMetric label="" value={formatPercent(despesasInfoCard3?.percentAVencer ?? 0)} valueColor="#ffffff" />
             <KPIDivider />
             <KPIMetric
               label="Vencido"
               value={formatCurrency(despesasInfoCard3?.vencido ?? 0)}
               valueColor="#ffffff"
             />
-            <KPIMetric
-              label=""
-              value={formatPercent(despesasInfoCard3?.percentVencido ?? 0)}
-              valueColor="#ffffff"
-            />
+            <KPIMetric label="" value={formatPercent(despesasInfoCard3?.percentVencido ?? 0)} valueColor="#ffffff" />
             <KPIDivider />
             <KPIMetric
               label="Liquidado"
               value={formatCurrency(despesasInfoCard3?.totalPago ?? 0)}
               valueColor="#4ade80"
             />
-            <KPIMetric
-              label=""
-              value={formatPercent(despesasInfoCard3?.percentPago ?? 0)}
-              valueColor="#4ade80"
-            />
+            <KPIMetric label="" value={formatPercent(despesasInfoCard3?.percentPago ?? 0)} valueColor="#4ade80" />
           </GradientKPI>
         </Grid>
+
         <Grid item xs={12} sm={6} lg={3}>
           <GradientKPI
             title="Inadimplência"
@@ -1122,7 +1005,6 @@ export function DashboardGeralWidget() {
         </Grid>
       </Grid>
 
-      {/* ── PERIOD SELECTOR ── */}
       <Card
         elevation={0}
         sx={{
@@ -1176,21 +1058,14 @@ export function DashboardGeralWidget() {
             </Typography>
           </Box>
 
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={ptBR}
-          >
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
             <DatePicker
               views={["year", "month"]}
               label="Início"
               openTo="month"
-              value={
-                startMonth ? parse(startMonth, "yyyy-MM", new Date()) : null
-              }
+              value={startMonth ? parse(startMonth, "yyyy-MM", new Date()) : null}
               onChange={(newValue) => {
-                const mesFormatado = newValue
-                  ? format(newValue, "yyyy-MM")
-                  : "";
+                const mesFormatado = newValue ? format(newValue, "yyyy-MM") : "";
                 setStartMonth(mesFormatado);
               }}
               slotProps={{
@@ -1206,10 +1081,7 @@ export function DashboardGeralWidget() {
                 popper: {
                   sx: {
                     zIndex: 99999,
-                    "& .MuiPaper-root": {
-                      width: 320,
-                      maxHeight: 320,
-                    },
+                    "& .MuiPaper-root": { width: 320, maxHeight: 320 },
                   },
                 },
               }}
@@ -1221,9 +1093,7 @@ export function DashboardGeralWidget() {
               openTo="month"
               value={endMonth ? parse(endMonth, "yyyy-MM", new Date()) : null}
               onChange={(newValue) => {
-                const mesFormatado = newValue
-                  ? format(newValue, "yyyy-MM")
-                  : "";
+                const mesFormatado = newValue ? format(newValue, "yyyy-MM") : "";
                 setEndMonth(mesFormatado);
               }}
               slotProps={{
@@ -1239,10 +1109,7 @@ export function DashboardGeralWidget() {
                 popper: {
                   sx: {
                     zIndex: 99999,
-                    "& .MuiPaper-root": {
-                      width: 320,
-                      maxHeight: 320,
-                    },
+                    "& .MuiPaper-root": { width: 320, maxHeight: 320 },
                   },
                 },
               }}
@@ -1270,7 +1137,6 @@ export function DashboardGeralWidget() {
         </Box>
       </Card>
 
-      {/* ── RESULTADO DO GRÁFICO — Separate Card ── */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={3}>
           <GradientKPI
@@ -1278,6 +1144,7 @@ export function DashboardGeralWidget() {
             mainValue={formatCurrency(chartTotals.totalFaturado)}
             icon="heroicons-outline:arrow-trending-up"
             gradientColors={["#23a329", "#229229"]}
+            dimmed={!visibleSeries.has("Faturamento")}
           />
         </Grid>
         <Grid item xs={12} sm={3}>
@@ -1286,6 +1153,7 @@ export function DashboardGeralWidget() {
             mainValue={formatCurrency(chartTotals.totalCobranca)}
             icon="heroicons-outline:arrow-trending-up"
             gradientColors={["#e9a81b", "#da9500"]}
+            dimmed={!visibleSeries.has("Receitas")}
           />
         </Grid>
         <Grid item xs={12} sm={3}>
@@ -1294,6 +1162,7 @@ export function DashboardGeralWidget() {
             mainValue={formatCurrency(chartTotals.totalPagamento)}
             icon="heroicons-outline:banknotes"
             gradientColors={["#F57F17", "#ee5b0c"]}
+            dimmed={!visibleSeries.has("Despesas")}
           />
         </Grid>
         <Grid item xs={12} sm={3}>
@@ -1302,11 +1171,11 @@ export function DashboardGeralWidget() {
             mainValue={formatCurrency(chartTotals.resultado)}
             icon="heroicons-outline:scale"
             gradientColors={["#1565C0", "#0D47A1"]}
+            dimmed={!visibleSeries.has("Resultado")}
           />
         </Grid>
       </Grid>
 
-      {/* ── CHART ── */}
       <Card
         className="w-full rounded-2xl overflow-hidden"
         elevation={0}
@@ -1320,8 +1189,7 @@ export function DashboardGeralWidget() {
               color: "text.primary",
             }}
           >
-            Faturamento / Receitas / Despesas / Inadimplência / Resultado
-            (Período Selecionado)
+            Faturamento / Receitas / Despesas / Inadimplência / Resultado (Período Selecionado)
           </Typography>
         </Box>
 
