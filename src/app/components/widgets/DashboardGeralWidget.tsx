@@ -1285,7 +1285,7 @@ export function DashboardGeralWidget() {
         </Grid>
         <Grid item xs={12} sm={3}>
           <GradientKPI
-            title="Pagamento Período (Gráfico)"
+            title="Despesas Período (Gráfico)"
             mainValue={formatCurrency(chartTotals.totalPagamento)}
             icon="heroicons-outline:banknotes"
             gradientColors={["#F57F17", "#ee5b0c"]}
