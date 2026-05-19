@@ -3,7 +3,7 @@ import { ReactNode } from 'react';
 
 interface PageHeaderProps {
   title: string;
-  subtitle?: string;
+  subtitle?: ReactNode;
   icon?: ReactNode;
   compact?: boolean; 
 }
@@ -69,8 +69,8 @@ export function PageHeader({ title, subtitle, icon, compact }: PageHeaderProps) 
             variant={compact ? 'body1' : 'subtitle1'}
             sx={{
               color: 'text.secondary',
+              fontWeight:'bold',
               lineHeight: 1.4,
-              whiteSpace: { xs: 'normal', sm: 'nowrap' },
               overflow: 'hidden',
               textOverflow: 'ellipsis',
             }}

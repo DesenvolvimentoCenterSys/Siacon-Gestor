@@ -855,7 +855,12 @@ export function DashboardGeralWidget() {
         <PageHeader
           compact
           title=""
-          subtitle="Resumo Operacional do Mês (Associados | Faturamento | Pagamentos | Inadimplência)"
+          subtitle={
+          <>
+            Resumo do Faturamento (Associados | Faturamento | Pagamentos | Inadimplência)
+            <br/>
+            Obs: Valores Apurados de serviços
+          </>}
           icon={
             <svg
               xmlns="http://www.w3.org/2000/svg"
