@@ -62,14 +62,18 @@ export function MensalidadeMediaWidget({ startDate, endDate, initialIsFavorite }
 
   const isLoading = isLoadingGeral || isLoadingConvenio;
 
-  useEffect(() => {
-    if (!selectedConvenio && convenioData && convenioData.length > 0) {
-      const sorted = [...convenioData].sort((a: any, b: any) =>
-        a.nomeConvenio.localeCompare(b.nomeConvenio)
-      );
+useEffect(() => {
+  if (convenioData && convenioData.length > 0) {
+    const sorted = [...convenioData].sort((a: any, b: any) =>
+      a.nomeConvenio.localeCompare(b.nomeConvenio)
+    );
+    const validOptions = sorted.map((c: any) => c.nomeConvenio);
+    
+    if (!selectedConvenio || !validOptions.includes(selectedConvenio)) {
       setSelectedConvenio(sorted[0].nomeConvenio);
     }
-  }, [convenioData, selectedConvenio, setSelectedConvenio]);
+  }
+}, [convenioData]);
 
   const kpiData = useMemo(() => {
     if (!mensalidadeData) return null;

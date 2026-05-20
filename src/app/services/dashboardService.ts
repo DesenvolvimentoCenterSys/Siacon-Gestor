@@ -325,6 +325,15 @@ export const dashboardService = {
       searchParams
     }).json<FinancialEvolutionResponseDto>();
   },
+  getGetSaldoAtual: async (date?: string, grupos?: number[], bancos?:number[]) : Promise<number> =>{
+    const searchParams: Record<string, string> = {};
+    if (date) searchParams.date = date;
+    if (grupos && grupos.length > 0) searchParams.grupos = grupos.join(',');
+    if (bancos && bancos.length > 0) searchParams.bancos = bancos.join(',');
+    return dashboardClient.get('api/Dashboard/saldo-atual-fluxo-caixa', {
+      searchParams
+    }).json<number>();
+  },
   getFinancialEvolutionCompetencia: async (startDate?: string, endDate?: string, gruposEscolhidos?: number[]): Promise<FinancialEvolutionDto[]> => {
     const searchParams: Record<string, string> = {};
     if (startDate) searchParams.startDate = startDate;

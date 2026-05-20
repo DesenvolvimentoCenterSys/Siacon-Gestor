@@ -23,12 +23,12 @@ const navigationConfig: FuseNavItemType[] = [
 	// },
 	// ─── D ──────────────────────────────────────────────────────────────────────
 	{
-		id: 'dashboard-geral',
-		title: 'Dashboard Geral',
-		translate: 'DASHBOARD_GERAL',
+		id: 'resumo-geral',
+		title: 'Resumo Geral',
+		translate: 'RESUMO_GERAL',
 		type: 'item',
 		icon: 'heroicons-outline:chart-bar-square',
-		url: 'dashboard-geral'
+		url: 'resumo-geral'
 	},
 	/* {
 		id: 'dashboard',
@@ -40,20 +40,38 @@ const navigationConfig: FuseNavItemType[] = [
 	}, */
 	// ─── E ──────────────────────────────────────────────────────────────────────
 	{
-		id: 'eventos',
-		title: 'Eventos',
-		translate: 'Eventos',
-		type: 'item',
-		icon: 'heroicons-outline:ticket',
-		url: 'eventos'
+		id: 'faturamento',
+		title: 'Faturamento',
+		translate: 'Faturamento',
+		type: 'collapse',
+		icon: 'heroicons-outline:currency-dollar',
+		children: [
+			{
+				id: 'eventos',
+				title: 'Eventos',
+				translate: 'Eventos',
+				type: 'item',
+				icon: 'heroicons-outline:ticket',
+				url: 'eventos'
+			},
+			{
+				id: 'faturamento-por-convenio',
+				title: 'Por Convênio',
+				translate: 'FATURAMENTO_POR_CONVENIO',
+				type: 'item',
+				icon: 'heroicons-outline:document-currency-dollar',
+				url: 'financeiro'
+			},
+		]
 	},
+	
 	// ─── F ──────────────────────────────────────────────────────────────────────
 	{
 		id: 'financeiro',
 		title: 'Financeiro',
 		translate: 'Financeiro',
 		type: 'collapse',
-		icon: 'heroicons-outline:currency-dollar',
+		icon: 'heroicons-outline:banknotes',
 		children: [
 			{
 				id: 'bancos',
@@ -71,14 +89,6 @@ const navigationConfig: FuseNavItemType[] = [
 			//	icon: 'heroicons-outline:archive-box',
 			//	url: 'caixa'
 			//},
-			{
-				id: 'faturamento',
-				title: 'Faturamento',
-				translate: 'Faturamento',
-				type: 'item',
-				icon: 'heroicons-outline:document-currency-dollar',
-				url: 'financeiro'
-			},
 			{
 				id: 'inadimplencia',
 				title: 'Inadimplência',

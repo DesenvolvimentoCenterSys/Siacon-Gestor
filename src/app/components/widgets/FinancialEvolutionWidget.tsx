@@ -11,20 +11,12 @@ import {
   Typography,
   Box,
   IconButton,
-  Tooltip,
-  DialogTitle,
   FormControl,
   InputLabel,
   Select,
-  Menu,
   MenuItem,
-  ListItemIcon,
   ListItemText,
-  Divider,
   Button,
-  Dialog,
-  DialogContent,
-  DialogActions,
   OutlinedInput,
   Checkbox,
   Chip,
@@ -44,15 +36,13 @@ import WidgetLoading from "../ui/WidgetLoading";
 import { FinancialEvolutionDto } from "@/types/dashboardTypes";
 import {
   useFinancialEvolution,
-  useToggleFavoriteWidget,
-  useUserFavoriteWidgets,
   useGrupoBanco,
+  useGetSaldoAtual,
 } from "../../hooks/useDashboard";
 import {
   useChartDataAggregation,
   SeriesData,
 } from "../../hooks/useChartDataAggregation";
-import { fontSize } from "@mui/system";
 
 interface FinancialEvolutionWidgetProps {
   initialIsFavorite?: boolean;
@@ -75,9 +65,7 @@ export function FinancialEvolutionWidget({
   const MOBILE_PAGE_SIZE = viewMode === "monthly" ? 12 : 10;
   const [mobilePage, setMobilePage] = useState(0);
 
-  const [tempViewMode, setTempViewMode] = useState<"daily" | "monthly">(
-    "monthly",
-  );
+  const [tempViewMode, setTempViewMode] = useState<"daily" | "monthly">("monthly");
   const [tempStartDate, setTempStartDate] = useState<Date>(initialStartDate);
   const [tempEndDate, setTempEndDate] = useState<Date>(initialEndDate);
 
@@ -85,11 +73,32 @@ export function FinancialEvolutionWidget({
 
   const [selectedGrupos, setSelectedGrupos] = useState<number[]>([]);
   const [tempSelectedGrupos, setTempSelectedGrupos] = useState<number[]>([]);
-
-  const [selectedBank, setSelectedBank] = useSessionUrlFilter<string>(
-    "bancos_selectedBank",
-    "Todos",
+  
+  const [rawSelectedBanks, setSelectedBanks] = useSessionUrlFilter<string[]>(
+    "bancos_selectedBanks",
+    [],
   );
+
+
+  const selectedBanks = useMemo(() => {
+    if (!rawSelectedBanks) return [];
+    const raw = rawSelectedBanks as unknown as string | string[];
+    
+    const arr = Array.isArray(raw)
+      ? raw
+      : typeof raw === "string"
+      ? raw.split(",")
+      : [];
+      
+    return arr.filter((b) => typeof b === "string" && b.trim() !== "");
+  }, [rawSelectedBanks]);
+
+  const [pendingBanks, setPendingBanks] = useState<string[]>([]);
+  const [banksDirty, setBanksDirty] = useState(false);
+
+  useEffect(() => {
+    setPendingBanks(selectedBanks);
+  }, [selectedBanks]);
 
   const [activeSeries, setActiveSeries] = useSessionUrlFilter<string>(
     "bancos_activeSeries",
@@ -109,9 +118,7 @@ export function FinancialEvolutionWidget({
   const handleGrupoBancoChange = (
     event: SelectChangeEvent<typeof selectedGrupos>,
   ) => {
-    const {
-      target: { value },
-    } = event;
+    const { target: { value } } = event;
     setTempSelectedGrupos(
       typeof value === "string"
         ? value.split(",").map(Number)
@@ -119,14 +126,7 @@ export function FinancialEvolutionWidget({
     );
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabIndex(newValue);
-  };
-
-  const apiStartDate = useMemo(
-    () => format(startDate, "yyyy-MM-dd"),
-    [startDate],
-  );
+  const apiStartDate = useMemo(() => format(startDate, "yyyy-MM-dd"), [startDate]);
 
   const apiEndDate = useMemo(() => {
     if (viewMode === "monthly") {
@@ -135,68 +135,73 @@ export function FinancialEvolutionWidget({
     return format(endDate, "yyyy-MM-dd");
   }, [endDate, viewMode]);
 
-
-  const { data: widgetData, isLoading } =
-    useFinancialEvolution(apiStartDate, apiEndDate, selectedGrupos);
-
-  // Favorite logic
-  
-  const [optimisticStatus, setOptimisticStatus] = useState<boolean | null>(
-    null,
+  const { data: widgetData, isLoading } = useFinancialEvolution(
+    apiStartDate,
+    apiEndDate,
+    selectedGrupos,
   );
 
-  // Colors
-  const colorReceber = "rgb(21, 101, 192)"; 
-  const colorPagar = "rgb(250, 96, 13)"; 
-  const colorSaldo = "rgb(35, 163, 41)"; 
+  // CORREÇÃO 3: Persistir o mapa de IDs em State para não perder os IDs durante um loading da API
+  const [bankMap, setBankMap] = useState<Map<string, number>>(new Map());
+  useEffect(() => {
+    if (widgetData?.data) {
+      setBankMap((prev) => {
+        const newMap = new Map(prev);
+        widgetData.data.forEach((d: FinancialEvolutionDto) => {
+          // Fallback seguro caso o back-end mande bancoId em vez de codigoBanco
+          const idToUse = (d as any).bancoId ?? d.codigoBanco;
+          if (idToUse !== undefined) newMap.set(d.nomeBanco, idToUse);
+        });
+        return newMap;
+      });
+    }
+  }, [widgetData?.data]);
 
-  // Derived data
+  const selectedBankIds = useMemo(() => {
+    if (selectedBanks.length === 0) return [];
+    return selectedBanks
+      .map((name) => bankMap.get(name))
+      .filter((id): id is number => id !== undefined);
+  }, [selectedBanks, bankMap]);
+
+  const saldoFinal = useGetSaldoAtual(
+    apiEndDate,
+    selectedGrupos.length > 0 ? selectedGrupos : undefined,
+    selectedBankIds.length > 0 ? selectedBankIds : undefined,
+  );
+
+  const colorReceber = "rgb(21, 101, 192)";
+  const colorPagar = "rgb(250, 96, 13)";
+  const colorSaldo = "rgb(35, 163, 41)";
+
   const banks = useMemo(() => {
     if (!widgetData?.data) return [];
-
-    return [
-      "Todos",
-      ...Array.from(
-        new Set(widgetData.data.map((d: FinancialEvolutionDto) => d.nomeBanco)),
-      ),
-    ];
+    return Array.from(
+      new Set(widgetData.data.map((d: FinancialEvolutionDto) => d.nomeBanco)),
+    );
   }, [widgetData]);
+
+  const bancoPrincipal = widgetData?.bancoPrincipal ?? "";
 
   const filteredData = useMemo(() => {
     if (!widgetData) return [];
-
-    const data = widgetData.data ?? []; // ← acessa .data
-
-    if (selectedBank === "Todos") return data;
-
-    return data.filter(
-      (d: FinancialEvolutionDto) => d.nomeBanco === selectedBank,
+    const data = widgetData.data ?? [];
+    if (selectedBanks.length === 0) return data;
+    return data.filter((d: FinancialEvolutionDto) =>
+      selectedBanks.includes(d.nomeBanco),
     );
-  }, [widgetData, selectedBank]);
+  }, [widgetData, selectedBanks]);
 
   const rawData = useMemo(() => {
     if (!filteredData || filteredData.length === 0)
       return {
         dates: [],
         series: [],
-        totals: { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 },
+        totals: { receber: 0, pagar: 0, saldoAcumulado: 0 },
       };
 
-    console.log("📦 filteredData sample:", filteredData.slice(0, 5));
-    console.log(
-      "🗓️ apiStartDate:",
-      apiStartDate,
-      "| apiEndDate:",
-      apiEndDate,
-      "| viewMode:",
-      viewMode,
-    );
-
     const groupedByDate = filteredData.reduce(
-      (
-        acc: Record<string, FinancialEvolutionDto>,
-        curr: FinancialEvolutionDto,
-      ) => {
+      (acc: Record<string, FinancialEvolutionDto>, curr: FinancialEvolutionDto) => {
         const dateKey =
           viewMode === "monthly"
             ? curr.data.split("T")[0].substring(0, 7)
@@ -214,7 +219,6 @@ export function FinancialEvolutionWidget({
         }
         acc[dateKey].totalReceber += curr.totalReceber;
         acc[dateKey].totalPagar += curr.totalPagar;
-        acc[dateKey].saldoDoDia += curr.saldoDoDia;
         acc[dateKey].saldoAcumulado += curr.saldoAcumulado;
         return acc;
       },
@@ -252,13 +256,12 @@ export function FinancialEvolutionWidget({
       (acc, d) => ({
         receber: acc.receber + Math.abs(d.totalReceber),
         pagar: acc.pagar + Math.abs(d.totalPagar),
-        saldoDia: widgetData?.saldoAtual ?? 0,       
         saldoAcumulado:
           sortedData.length > 0
             ? sortedData[sortedData.length - 1].saldoAcumulado
             : 0,
       }),
-      { receber: 0, pagar: 0, saldoDia: 0, saldoAcumulado: 0 },
+      { receber: 0, pagar: 0, saldoAcumulado: 0 },
     );
 
     return { dates, series: seriesList, totals };
@@ -273,13 +276,6 @@ export function FinancialEvolutionWidget({
 
   const finalSeries = useMemo(() => {
     if (!isMobile) return aggregatedData.series;
-
-    const mapSeries = (s: SeriesData, color: string) => ({
-      ...s,
-      type: "bar",
-      color,
-      data: s.data.map((v) => Math.abs(v as number)),
-    });
 
     switch (activeSeries) {
       case "receber":
@@ -304,24 +300,14 @@ export function FinancialEvolutionWidget({
             data: saldoSeries.data.map((v) => Math.abs(v as number)),
           },
         ];
-
       default:
         return aggregatedData.series;
     }
-  }, [
-    aggregatedData.series,
-    isMobile,
-    activeSeries,
-    colorReceber,
-    colorPagar,
-    colorSaldo,
-  ]);
+  }, [aggregatedData.series, isMobile, activeSeries, colorReceber, colorPagar, colorSaldo]);
 
   const mobileSeriesColor = useMemo(() => {
     if (activeSeries === "receber") return colorReceber;
-
     if (activeSeries === "pagar") return colorPagar;
-
     return colorSaldo;
   }, [activeSeries, colorReceber, colorPagar, colorSaldo]);
 
@@ -335,12 +321,12 @@ export function FinancialEvolutionWidget({
       animations: { enabled: true },
     },
     colors: [colorReceber, colorPagar, colorSaldo],
-    stroke: { show: false },
+    stroke: { show: true, width: 1, colors: ["transparent"] },
     fill: { type: "solid", opacity: 1 },
     plotOptions: {
       bar: {
-        columnWidth: "70%",
-        borderRadius: 2,
+        columnWidth: "65%",
+        borderRadius: 4,
         horizontal: false,
         dataLabels: { position: "top" },
       },
@@ -366,46 +352,56 @@ export function FinancialEvolutionWidget({
       labels: {
         rotate: -45,
         hideOverlappingLabels: true,
-        style: { colors: theme.palette.text.secondary, fontSize: "11px" },
+        style: {
+          colors: theme.palette.text.secondary,
+          fontSize: viewMode === "monthly" ? "13px" : "11px",
+          fontWeight: 600,
+        },
       },
     },
     yaxis: {
       forceNiceScale: true,
       labels: {
-        style: { colors: theme.palette.text.secondary, fontSize: "11px" },
+        style: { colors: theme.palette.text.secondary, fontSize: "13px", fontWeight: 500 },
         formatter: (v) => {
-          if (Math.abs(v) >= 1000000) return `R$${(v / 1000000).toFixed(1)}M`;
-          if (Math.abs(v) >= 1000) return `R$${(v / 1000).toFixed(0)}k`;
-          return `R$${v.toFixed(0)}`;
+          if (Math.abs(v) >= 1000000) return `R$ ${(v / 1000000).toFixed(1)}M`;
+          if (Math.abs(v) >= 1000) return `R$ ${(v / 1000).toFixed(0)}k`;
+          return `R$ ${v.toFixed(0)}`;
         },
       },
     },
     tooltip: {
       shared: true,
       intersect: false,
+      theme: theme.palette.mode,
+      style: { fontSize: "14px" },
       y: {
         formatter: (v) =>
           v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       },
-      theme: theme.palette.mode,
     },
-    markers: {
-      size: 0,
+    markers: { size: 0 },
+    legend: {
+      show: true,
+      position: "top",
+      horizontalAlign: "center",
+      fontSize: "14px",
+      fontWeight: 600,
+      itemMargin: { horizontal: 16, vertical: 6 },
     },
-    legend: { show: true, position: "top", horizontalAlign: "center" },
     grid: {
       borderColor: theme.palette.divider,
-      strokeDashArray: 3,
-      padding: { left: 20, right: 20, top: 10 },
+      strokeDashArray: 4,
+      yaxis: { lines: { show: true } },
+      xaxis: { lines: { show: false } },
+      padding: { left: 15, right: 15, top: 10 },
     },
   };
 
   const paginatedSeries = useMemo(() => {
     if (!isMobile) return finalSeries;
-
     const start = mobilePage * MOBILE_PAGE_SIZE;
     const end = start + MOBILE_PAGE_SIZE;
-
     return finalSeries.map((s) => ({
       ...s,
       data: (s.data as number[]).slice(start, end),
@@ -414,10 +410,8 @@ export function FinancialEvolutionWidget({
 
   const paginatedCategories = useMemo(() => {
     if (!isMobile) return aggregatedData.categories;
-
     const start = mobilePage * MOBILE_PAGE_SIZE;
     const end = start + MOBILE_PAGE_SIZE;
-
     return aggregatedData.categories.slice(start, end);
   }, [aggregatedData.categories, isMobile, mobilePage]);
 
@@ -427,7 +421,7 @@ export function FinancialEvolutionWidget({
 
   useEffect(() => {
     setMobilePage(0);
-  }, [aggregatedData.categories, viewMode, selectedBank, selectedGrupos]);
+  }, [aggregatedData.categories, viewMode, selectedBanks, selectedGrupos]);
 
   const chartOptionsMobile: ApexOptions = {
     chart: {
@@ -437,7 +431,7 @@ export function FinancialEvolutionWidget({
       animations: { enabled: false },
     },
     colors: [mobileSeriesColor],
-    stroke: { show: false },
+    stroke: { show: true, width: 1, colors: ["transparent"] },
     fill: { type: "solid", opacity: 1 },
     plotOptions: {
       bar: {
@@ -449,9 +443,16 @@ export function FinancialEvolutionWidget({
     },
     dataLabels: {
       enabled: true,
-      offsetX: 8,
-      style: { fontSize: "10px", fontWeight: 700, colors: ["#181818"] },
-      background: { enabled: false },
+      offsetX: 20,
+      style: { fontSize: "10px", fontWeight: 700, colors: ["#131313"] },
+      background: {
+        enabled: true,
+        foreColor: "#e7e7e7",
+        borderRadius: 4,
+        padding: 4,
+        opacity: 0.85,
+        borderWidth: 0,
+      },
       formatter: (val: number, opts: any) => {
         const serie = opts.w.config.series[0];
         const original = serie?.originalData ?? serie?.data;
@@ -462,67 +463,68 @@ export function FinancialEvolutionWidget({
         const prefix = isNeg ? "-" : "";
         if (abs >= 1000000) return `${prefix}${(abs / 1000000).toFixed(1)}M`;
         if (abs >= 1000) return `${prefix}${(abs / 1000).toFixed(1)}k`;
-        return `${prefix}${abs % 1 === 0 ? abs : abs.toFixed(1)}`;
+        return `${prefix}${abs % 1 === 0 ? String(abs) : abs.toFixed(1)}`;
       },
     },
     xaxis: {
-      categories: aggregatedData.categories,
+      categories: paginatedCategories,
       labels: {
-        rotate: -45,
-        hideOverlappingLabels: true,
-        style: { colors: theme.palette.text.secondary, fontSize: "11px" },
-        formatter: (val: string) => {
-          if (!val) return val;
-          if (viewMode === "monthly" && val.length === 7) {
-            const [year, month] = val.split("-");
-            const months = [
-              "Jan",
-              "Fev",
-              "Mar",
-              "Abr",
-              "Mai",
-              "Jun",
-              "Jul",
-              "Ago",
-              "Set",
-              "Out",
-              "Nov",
-              "Dez",
-            ];
-            return `${months[parseInt(month) - 1]}/${year}`;
-          }
-          if (val.length >= 10) {
-            const [year, month, day] = val.split("-");
-            return `${day}/${month}/${year.slice(2)}`;
-          }
-          return val;
+        formatter: (value: any) => {
+          if (value == null || typeof value !== "number") return "";
+          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+          if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+          return String(value);
         },
+        style: { colors: theme.palette.text.secondary, fontSize: "11px", fontWeight: 600 },
       },
+      axisBorder: { show: false },
+      axisTicks: { show: false },
     },
     yaxis: {
       labels: {
         style: { colors: theme.palette.text.secondary, fontSize: "10px" },
         maxWidth: 80,
+        formatter: (val: number) => {
+          const str = String(val);
+          if (!str) return str;
+          if (viewMode === "monthly" && str.length === 7) {
+            const [year, month] = str.split("-");
+            const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+            return `${months[parseInt(month) - 1]}/${year}`;
+          }
+          if (str.length >= 10) {
+            const [year, month, day] = str.split("-");
+            return `${day}/${month}/${year.slice(2)}`;
+          }
+          return str;
+        },
       },
     },
     tooltip: {
+      shared: true,
+      intersect: false,
+      theme: theme.palette.mode,
+      style: { fontSize: "14px" },
       y: {
         formatter: (v) =>
           v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }),
       },
-      theme: theme.palette.mode,
     },
     legend: { show: false },
     grid: {
       borderColor: theme.palette.divider,
-      strokeDashArray: 3,
+      strokeDashArray: 4,
+      yaxis: { lines: { show: true } },
+      xaxis: { lines: { show: false } },
       padding: { left: 5, right: 40 },
     },
   };
 
-  const formatCurrency = (v: number) =>
-    v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const formatCurrency = (v: number | undefined | null) =>
+    (v ?? 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 
+  // CORREÇÃO 4: O valor do saldo agora é associado diretamente aqui, 
+  // limpando a renderização confusa lá no JSX
   const metricCards = [
     {
       label: "Receitas",
@@ -550,7 +552,7 @@ export function FinancialEvolutionWidget({
     },
     {
       label: "Saldo Atual",
-      value: rawData.totals.saldoDia,
+      value: saldoFinal.data ?? 0, 
       color: "rgb(183, 0, 207)",
       fontSize: "0.95rem",
       icon: "heroicons-outline:calendar-days",
@@ -571,7 +573,6 @@ export function FinancialEvolutionWidget({
       }}
     >
       <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
-        {/* Linha 1 — Título + Favorito */}
         <Box
           sx={{
             display: "flex",
@@ -589,7 +590,6 @@ export function FinancialEvolutionWidget({
           </Typography>
         </Box>
 
-        {/* Linha 2 — Filtros */}
         <Box
           sx={{
             display: "flex",
@@ -600,35 +600,30 @@ export function FinancialEvolutionWidget({
             pb: 2,
           }}
         >
-          {/* Visualização */}
           <FormControl size="small" sx={{ width: isMobile ? "100%" : 140 }}>
             <InputLabel>Visualização</InputLabel>
             <Select
-                value={tempViewMode}
-                label="Visualização"
-                onChange={(e: SelectChangeEvent) => {
-                  const mode = e.target.value as "daily" | "monthly";
-                  setTempViewMode(mode);
-                  if (mode === "daily") {
-                    const today = new Date();
-                    setTempEndDate(today);
-                    setTempStartDate(addDays(today, -14));
-                  } else {
-                    setTempStartDate(initialStartDate);
-                    setTempEndDate(initialEndDate);
-                  }
-                }}
-              >
+              value={tempViewMode}
+              label="Visualização"
+              onChange={(e: SelectChangeEvent) => {
+                const mode = e.target.value as "daily" | "monthly";
+                setTempViewMode(mode);
+                if (mode === "daily") {
+                  const today = new Date();
+                  setTempEndDate(today);
+                  setTempStartDate(addDays(today, -14));
+                } else {
+                  setTempStartDate(initialStartDate);
+                  setTempEndDate(initialEndDate);
+                }
+              }}
+            >
               <MenuItem value="daily">Diária</MenuItem>
               <MenuItem value="monthly">Mensal</MenuItem>
             </Select>
           </FormControl>
 
-          {/* Datas */}
-          <LocalizationProvider
-            dateAdapter={AdapterDateFns}
-            adapterLocale={ptBR}
-          >
+          <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
             <DatePicker
               views={
                 tempViewMode === "monthly"
@@ -645,10 +640,7 @@ export function FinancialEvolutionWidget({
                 }
               }}
               slotProps={{
-                textField: {
-                  size: "small",
-                  sx: { width: isMobile ? "100%" : 175 },
-                },
+                textField: { size: "small", sx: { width: isMobile ? "100%" : 175 } },
                 popper: { sx: { zIndex: 9999 } },
               }}
             />
@@ -661,23 +653,15 @@ export function FinancialEvolutionWidget({
               label="Data Final"
               value={tempEndDate}
               minDate={tempStartDate}
-              maxDate={
-                tempViewMode === "daily"
-                  ? addDays(tempStartDate, 30)
-                  : undefined
-              }
-              onChange={(v) => v && setTempEndDate(v)}  
+              maxDate={tempViewMode === "daily" ? addDays(tempStartDate, 30) : undefined}
+              onChange={(v) => v && setTempEndDate(v)}
               slotProps={{
-                textField: {
-                  size: "small",
-                  sx: { width: isMobile ? "100%" : 175 },
-                },
+                textField: { size: "small", sx: { width: isMobile ? "100%" : 175 } },
                 popper: { sx: { zIndex: 9999 } },
               }}
             />
           </LocalizationProvider>
 
-          {/* Grupos de Bancos */}
           <FormControl size="small" sx={{ width: isMobile ? "100%" : 200 }}>
             <InputLabel id="grupo-banco-label">Grupos de Bancos</InputLabel>
             <Select
@@ -696,16 +680,13 @@ export function FinancialEvolutionWidget({
             >
               {gruposBancos?.map((banco) => (
                 <MenuItem key={banco.codigo} value={banco.codigo}>
-                  <Checkbox
-                    checked={tempSelectedGrupos.indexOf(banco.codigo) > -1}
-                  />
+                  <Checkbox checked={tempSelectedGrupos.indexOf(banco.codigo) > -1} />
                   <ListItemText primary={banco.nomeGrupo} />
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          {/* Pesquisar */}
           <Button
             onClick={() => {
               setViewMode(tempViewMode);
@@ -726,13 +707,14 @@ export function FinancialEvolutionWidget({
               textTransform: "none",
               fontWeight: 700,
               width: isMobile ? "100%" : "auto",
-              ml: isMobile ? 0 : "auto", // empurra pro final no desktop
+              ml: isMobile ? 0 : "auto",
             }}
           >
             Pesquisar
           </Button>
         </Box>
       </Box>
+
       <CardContent
         sx={{
           display: "flex",
@@ -741,20 +723,84 @@ export function FinancialEvolutionWidget({
           "&:last-child": { pb: 3 },
         }}
       >
-        {/* Bank filter chips */}
-        {banks.length > 1 && (
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 2 }}>
-            {banks.map((bank) => (
-              <Chip
-                key={bank}
-                label={bank}
+        {banks.length > 0 && (
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              flexWrap: "wrap",
+              mb: 2,
+              alignItems: "center",
+            }}
+          >
+            <Chip
+              key="Todos"
+              label="Todos"
+              size="small"
+              onClick={() => {
+                setBanksDirty(true);
+                setPendingBanks([]);
+              }}
+              variant={pendingBanks.length === 0 ? "filled" : "outlined"}
+              color={pendingBanks.length === 0 ? "primary" : "default"}
+              sx={{ fontWeight: 700 }}
+            />
+
+            {banks.map((bank) => {
+              const isPrincipal = bank === bancoPrincipal;
+              const isPending = pendingBanks.includes(bank);
+              return (
+                <Chip
+                  key={bank}
+                  label={isPrincipal ? `★ ${bank}` : bank}
+                  size="small"
+                  onClick={() => {
+                    setBanksDirty(true);
+                    setPendingBanks((prev) =>
+                      prev.includes(bank)
+                        ? prev.filter((b) => b !== bank)
+                        : [...prev, bank],
+                    );
+                  }}
+                  variant={isPending ? "filled" : "outlined"}
+                  color={isPending ? "primary" : "default"}
+                  sx={{
+                    fontWeight: isPending || isPrincipal ? 700 : 400,
+                    ...(isPrincipal && !isPending && {
+                      borderColor: theme.palette.warning.main,
+                      color: theme.palette.warning.dark,
+                      bgcolor: alpha(theme.palette.warning.main, 0.08),
+                    }),
+                    ...(isPrincipal && isPending && {
+                      bgcolor: theme.palette.warning.main,
+                      "&:hover": { bgcolor: theme.palette.warning.dark },
+                    }),
+                  }}
+                />
+              );
+            })}
+
+            {banksDirty && (
+              <Button
                 size="small"
-                onClick={() => setSelectedBank(bank)}
-                variant={selectedBank === bank ? "filled" : "outlined"}
-                color={selectedBank === bank ? "primary" : "default"}
-                sx={{ fontWeight: selectedBank === bank ? 700 : 400 }}
-              />
-            ))}
+                variant="contained"
+                color="primary"
+                sx={{
+                  height: 28,
+                  borderRadius: 2,
+                  textTransform: "none",
+                  width: isMobile ? '100%' : 'inherit',
+                  fontWeight: 700,
+                  ml: 1,
+                }}
+                onClick={() => {
+                  setSelectedBanks(pendingBanks);
+                  setBanksDirty(false);
+                }}
+              >
+                Aplicar
+              </Button>
+            )}
           </Box>
         )}
 
@@ -768,20 +814,13 @@ export function FinancialEvolutionWidget({
             sx={{
               minHeight: 40,
               mb: 2,
-              "& .MuiTabs-indicator": {
-                bgcolor: mobileSeriesColor,
-              },
+              "& .MuiTabs-indicator": { bgcolor: mobileSeriesColor },
             }}
           >
             <Tab
               value="receber"
               label="Receber"
-              sx={{
-                color: colorReceber,
-                fontWeight: 700,
-                minHeight: 40,
-                py: 1,
-              }}
+              sx={{ color: colorReceber, fontWeight: 700, minHeight: 40, py: 1 }}
             />
             <Tab
               value="pagar"
@@ -822,10 +861,7 @@ export function FinancialEvolutionWidget({
                   position: "relative",
                   overflow: "hidden",
                   transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                  "&:hover": {
-                    transform: "translateY(-2px)",
-                    boxShadow: 4,
-                  },
+                  "&:hover": { transform: "translateY(-2px)", boxShadow: 4 },
                 }}
               >
                 <Box
@@ -840,7 +876,6 @@ export function FinancialEvolutionWidget({
                     zIndex: 0,
                   }}
                 />
-
                 <Box sx={{ position: "relative", zIndex: 1 }}>
                   <Box
                     sx={{
@@ -885,6 +920,7 @@ export function FinancialEvolutionWidget({
             );
           })}
         </Box>
+
         {isLoading ? (
           <WidgetLoading height={380} />
         ) : filteredData.length === 0 ? (
@@ -923,17 +959,12 @@ export function FinancialEvolutionWidget({
                   onClick={() => setMobilePage((p) => Math.max(0, p - 1))}
                   disabled={mobilePage === 0}
                   sx={{
-                    bgcolor:
-                      mobilePage === 0
-                        ? "transparent"
-                        : alpha(mobileSeriesColor, 0.1),
+                    bgcolor: mobilePage === 0 ? "transparent" : alpha(mobileSeriesColor, 0.1),
                     border: `1px solid ${alpha(mobileSeriesColor, 0.3)}`,
                     borderRadius: 2,
                   }}
                 >
-                  <FuseSvgIcon size={18}>
-                    heroicons-outline:chevron-left
-                  </FuseSvgIcon>
+                  <FuseSvgIcon size={18}>heroicons-outline:chevron-left</FuseSvgIcon>
                 </IconButton>
 
                 <Typography
@@ -964,17 +995,13 @@ export function FinancialEvolutionWidget({
                     borderRadius: 2,
                   }}
                 >
-                  <FuseSvgIcon size={18}>
-                    heroicons-outline:chevron-right
-                  </FuseSvgIcon>
+                  <FuseSvgIcon size={18}>heroicons-outline:chevron-right</FuseSvgIcon>
                 </IconButton>
               </Box>
             )}
 
             <ReactApexChart
-              key={
-                isMobile ? `mobile-${activeSeries}-${mobilePage}` : "desktop"
-              }
+              key={isMobile ? `mobile-${activeSeries}-${mobilePage}` : "desktop"}
               options={isMobile ? chartOptionsMobile : chartOptionsDesktop}
               series={isMobile ? paginatedSeries : aggregatedData.series}
               type="bar"
@@ -991,7 +1018,7 @@ export function FinancialEvolutionWidget({
             {viewMode === "monthly"
               ? format(startDate, "MMMM/yyyy", { locale: ptBR })
               : `${format(startDate, "dd/MM/yyyy")} até ${format(endDate, "dd/MM/yyyy")}`}
-            {selectedBank !== "Todos" ? ` · ${selectedBank}` : ""}
+            {selectedBanks.length > 0 ? ` · ${selectedBanks.join(", ")}` : ""}
           </Typography>
         </Box>
       </CardContent>

@@ -1,8 +1,9 @@
 const locale = {
 	APPLICATIONS: 'تطبيقات',
 	EXAMPLE: 'مثال',
-	DASHBOARD_GERAL: 'Dashboard Geral',
-	EVOLUCAO_FINANCEIRA: 'Evolução Financeira'
+	RESUMO_GERAL: 'Resumo Geral',
+	EVOLUCAO_FINANCEIRA: 'Evolução Financeira',
+	FATURAMENTO_POR_CONVENIO: 'Por Convênio'
 };
 
 export default locale;

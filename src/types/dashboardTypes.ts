@@ -236,6 +236,7 @@ export interface UsuarioDashboardWidgetDto {
 export interface FinancialEvolutionDto {
   data: string;
   nomeBanco: string;
+  codigoBanco: number;
   totalReceber: number;
   totalPagar: number;
   saldoDoDia: number;
@@ -244,7 +245,7 @@ export interface FinancialEvolutionDto {
 
 export interface FinancialEvolutionResponseDto {
   data: FinancialEvolutionDto[];
-  saldoAtual: number;
+  bancoPrincipal: string;
 }
 
 export interface AccumulatedDelinquencyDto {

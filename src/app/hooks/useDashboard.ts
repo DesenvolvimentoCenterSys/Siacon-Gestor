@@ -304,6 +304,13 @@ export const useGrupoBanco = () => {
   });
 }
 
+export const useGetSaldoAtual= (date?:string, grupos?:number[], bancos?:number[]) => {
+  return useQuery({
+    queryKey: ['saldoAtual',date,grupos,bancos],
+    queryFn: () => dashboardService.getGetSaldoAtual(date,grupos,bancos)
+  });
+}
+
 export const useAccumulatedDelinquency = (year?: number) => {
   return useQuery({
     queryKey: ['accumulatedDelinquency', year],
