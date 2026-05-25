@@ -19,8 +19,6 @@ import {
   Tabs,
   Tab,
   Checkbox,
-  FormControlLabel,
-  FormGroup,
   Popover,
   Skeleton,
   useMediaQuery,
@@ -53,8 +51,6 @@ interface EventAnalyticsWidgetProps {
 
 const brl = (v: number) =>
   v?.toLocaleString("pt-BR", { style: "currency", currency: "BRL" }) ?? "R$ 0,00";
-
-// ─── GradientKPI ─────────────────────────────────────────────────────────────
 
 interface GradientKPIProps {
   title: string;
@@ -97,9 +93,9 @@ function GradientKPI({
         sx={{
           position: "relative",
           zIndex: 1,
-          p: compactSpaces ? 1.3 : { xs: 2, sm: 2.5 },
+          p: compactSpaces ? 1.5 : { xs: 2, sm: 2.5 },
           "&:last-child": {
-            pb: compactSpaces ? 1.3 : { xs: 2, sm: 2.5 },
+            pb: compactSpaces ? 1.5 : { xs: 2, sm: 2.5 },
           },
         }}
       >
@@ -115,7 +111,7 @@ function GradientKPI({
             sx={{
               opacity: 0.9,
               fontWeight: 700,
-              fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.4rem" },
+              fontSize: { xs: "1.2rem", sm: "1.3rem", md: "1.4rem" },
               letterSpacing: 0.3,
             }}
           >
@@ -129,7 +125,7 @@ function GradientKPI({
         <Typography
           sx={{
             fontWeight: 800,
-            mb: compactSpaces ? 0 : 1.5,
+            mb: compactSpaces ? 1 : 1.5,
             fontSize: { xs: "1.5rem", sm: "1.6rem", md: "2rem" },
             lineHeight: 1.1,
           }}
@@ -187,7 +183,7 @@ function KPIMetric({
       }}
     >
       <Typography
-        sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "1.2rem", sm: "1.2rem" } }}
+        sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "1.2rem", sm: "1.3rem", xl: "1.2rem" } }}
       >
         {label}
       </Typography>
@@ -195,7 +191,7 @@ function KPIMetric({
         sx={{
           fontWeight: 700,
           color: valueColor || "inherit",
-          fontSize: { xs: "1.2rem", sm: "1.2rem" },
+          fontSize: { xs: "1.2rem", sm: "1.3rem", xl: "1.2rem" },
         }}
       >
         {value}
@@ -207,8 +203,6 @@ function KPIMetric({
 function KPIDivider() {
   return <Box sx={{ borderTop: "1px solid rgba(255,255,255,0.25)", my: 0.75 }} />;
 }
-
-// ─── MiniCard ────────────────────────────────────────────────────────────────
 
 interface MiniCardProps {
   title: string;
@@ -236,7 +230,7 @@ function MiniCard({ title, value, color }: MiniCardProps) {
         sx={{
           fontWeight: 700,
           color,
-          fontSize: { xs: "1.1rem", sm: "1.1rem", md: "1.1rem" },
+          fontSize: { xs: "1.2rem", sm: "1.3rem", md: "1.4rem" },
           lineHeight: 1.2,
           mb: 0.5,
         }}
@@ -247,7 +241,7 @@ function MiniCard({ title, value, color }: MiniCardProps) {
         sx={{
           fontWeight: 800,
           color,
-          fontSize: { xs: "1.4rem", sm: "1.2rem", md: "1.3rem" },
+          fontSize: { xs: "1.4rem", sm: "1.3rem", md: "1.4rem" },
           lineHeight: 1,
         }}
       >
@@ -256,8 +250,6 @@ function MiniCard({ title, value, color }: MiniCardProps) {
     </Box>
   );
 }
-
-// ─── MultiCheckFilter ────────────────────────────────────────────────────────
 
 interface MultiCheckFilterProps {
   label: string;
@@ -354,7 +346,6 @@ function MultiCheckFilter({
         }}
       >
         <Box sx={{ py: 1 }}>
-          {/* Opção: Selecionar Todos transformado em MenuItem */}
           <MenuItem onClick={toggleAll} sx={{ py: 0.75, px: 2 }}>
             <Checkbox
               size="small"
@@ -374,7 +365,6 @@ function MultiCheckFilter({
 
           <Divider sx={{ my: 0.5 }} />
 
-          {/* Lista de Opções transformadas em MenuItem */}
           {options.map((o) => (
             <MenuItem key={o.code} onClick={() => toggle(o.code)} sx={{ py: 0.75, px: 2 }}>
               <Checkbox
@@ -407,8 +397,6 @@ function MultiCheckFilter({
     </>
   );
 }
-
-// ─── Mobile Event Card ───────────────────────────────────────────────────────
 
 interface MobileEventCardProps {
   item: EventAnalyticsDto;
@@ -461,7 +449,7 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
       <Card
         elevation={2}
         sx={{
-          background: "linear-gradient(135deg, #2ddd36 0%, #229229 100%)",
+          background: "linear-gradient(135deg, #27c52f 0%, #229229 100%)",
           color: "white",
           mb: 1,
           borderRadius: 2,
@@ -576,8 +564,6 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
     </Box>
   );
 }
-
-// ─── Tab: Dados Gerais ────────────────────────────────────────────────────────
 
 interface DadosGeraisTabProps {
   data: EventAnalyticsDto[];
@@ -814,8 +800,6 @@ function DadosGeraisTab({ data, isLoading, onSelectEvent }: DadosGeraisTabProps)
   );
 }
 
-// ─── Tab: Detalhamento ────────────────────────────────────────────────────────
-
 interface DetalhamentoTabProps {
   codEvento: number;
   codGrupo: number | null;
@@ -879,7 +863,7 @@ function DetalhamentoTab({ codEvento, codGrupo }: DetalhamentoTabProps) {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(4, 1fr)" },
+          gridTemplateColumns: { xs: "1fr", lg: "repeat(4, 1fr)" },
           gap: 2,
           mb: 3,
         }}
@@ -892,93 +876,47 @@ function DetalhamentoTab({ codEvento, codGrupo }: DetalhamentoTabProps) {
         </Box>
 
         <GradientKPI
-          title="Faturamento Total"
+          title="Faturamento Detalhado"
           mainValue={brl(d.faturamentoEventoDetalhado.totalFaturamento)}
           icon="heroicons-outline:currency-dollar"
-          gradientColors={["#2fcc37", "#229229"]}
+          gradientColors={["#19c922", "#229229"]}
+          compactSpaces={true}
         >
-          <KPIMetric label="Liquidado" value={brl(d.faturamentoEventoDetalhado.liquidado)} valueColor="#ffffff" />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <KPIMetric label="Venda" value={brl(d.faturamentoEventoDetalhado.venda)} />
+            <KPIMetric label="Entrada Manual" value={brl(d.faturamentoEventoDetalhado.entradaManual)} />
+            <KPIMetric label="A Vencer" value={brl(d.faturamentoEventoDetalhado.aVencer)} valueColor="#ffffff" />
+            <KPIMetric label="Vencido" value={brl(d.faturamentoEventoDetalhado.vencido)} valueColor="#ffffff" />
+            <KPIDivider />
+            <KPIMetric label="Liquidado" value={brl(d.faturamentoEventoDetalhado.liquidado)} valueColor="#ffffff" />
+          </Box>
         </GradientKPI>
 
         <GradientKPI
-          title="Total Despesas"
+          title="Despesas Detalhadas"
           mainValue={brl(d.despesaEventoDetalhado.totalDespesa)}
           icon="heroicons-outline:document-text"
           gradientColors={["#fa780d", "#f04816"]}
+          compactSpaces={true}
         >
-          <KPIMetric label="Em Aberto" value={brl(d.despesaEventoDetalhado.emAberto)} valueColor="#ffffff" />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <KPIMetric label="Em Aberto" value={brl(d.despesaEventoDetalhado.emAberto)} valueColor="#ffffff" />
+            <KPIDivider />
+            <KPIMetric label="Liquidado" value={brl(d.despesaEventoDetalhado.liquidado)} valueColor="#ffffff" />
+          </Box>
         </GradientKPI>
 
         <GradientKPI
           title="Resultado"
           mainValue={brl(d.resultadoEventoDetalhado.realizado)}
           icon="heroicons-outline:scale"
-          gradientColors={
-            d.resultadoEventoDetalhado.realizado >= d.resultadoEventoDetalhado.previsto
-              ? ["#1565C0", "#0D47A1"]
-              : ["#ca1c16", "#d42721"]
-          }
+          gradientColors={["#1565C0", "#0D47A1"]}
+          compactSpaces={true}
         >
-          <KPIMetric label="Previsto" value={brl(d.resultadoEventoDetalhado.previsto)} />
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+            <KPIMetric label="Previsto" value={brl(d.resultadoEventoDetalhado.previsto)} />
+          </Box>
         </GradientKPI>
-      </Box>
-
-      <Box
-        sx={{
-          display: "grid",
-          gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)" },
-          gap: 2,
-          mb: 3,
-        }}
-      >
-        <Card
-          elevation={3}
-          sx={{
-            background: "linear-gradient(135deg, #19c922 0%, #229229 100%)",
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: 2,
-          }}
-        >
-          <CardContent sx={{ position: "relative", zIndex: 1, p: { xs: 2.5, sm: 3 } }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2.5, fontSize: { xs: "1.2rem", sm: "1.5rem" }, opacity: 0.9 }}>
-              FATURAMENTO DETALHADO
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              <KPIMetric label="Venda" value={brl(d.faturamentoEventoDetalhado.venda)} />
-              <KPIMetric label="Entrada Manual" value={brl(d.faturamentoEventoDetalhado.entradaManual)} />
-              <KPIMetric label="A Vencer" value={brl(d.faturamentoEventoDetalhado.aVencer)} valueColor="#ffffff" />
-              <KPIMetric label="Vencido" value={brl(d.faturamentoEventoDetalhado.vencido)} valueColor="#ffffff" />
-              <KPIDivider />
-              <KPIMetric label="Liquidado" value={brl(d.faturamentoEventoDetalhado.liquidado)} valueColor="#ffffff" />
-            </Box>
-          </CardContent>
-          <Box sx={{ position: "absolute", right: -20, bottom: -20, width: 140, height: 140, borderRadius: "50%", background: alpha("#ffffff", 0.08), zIndex: 0 }} />
-        </Card>
-
-        <Card
-          elevation={3}
-          sx={{
-            background: "linear-gradient(135deg, #fa780d 0%, #f04816 100%)",
-            color: "white",
-            position: "relative",
-            overflow: "hidden",
-            borderRadius: 2,
-          }}
-        >
-          <CardContent sx={{ position: "relative", zIndex: 1, p: { xs: 2.5, sm: 3 } }}>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 2.5, fontSize: { xs: "1.3rem", sm: "1.5rem" }, opacity: 0.9 }}>
-              DESPESAS DETALHADAS
-            </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-              <KPIMetric label="Em Aberto" value={brl(d.despesaEventoDetalhado.emAberto)} valueColor="#ffffff" />
-              <KPIDivider />
-              <KPIMetric label="Liquidado" value={brl(d.despesaEventoDetalhado.liquidado)} valueColor="#ffffff" />
-            </Box>
-          </CardContent>
-          <Box sx={{ position: "absolute", right: -20, bottom: -20, width: 140, height: 140, borderRadius: "50%", background: alpha("#ffffff", 0.08), zIndex: 0 }} />
-        </Card>
       </Box>
 
       <Box
@@ -1098,14 +1036,11 @@ function DetalhamentoTab({ codEvento, codGrupo }: DetalhamentoTabProps) {
   );
 }
 
-// ─── Main Widget ──────────────────────────────────────────────────────────────
-
 export function EventAnalyticsWidget({
   initialIsFavorite = false,
 }: EventAnalyticsWidgetProps) {
   const theme = useTheme();
   const { data: user } = useUser();
-  const [isFavorite, setIsFavorite] = useState(initialIsFavorite);
   const [activeTab, setActiveTab] = useState(0);
   const [selectedEvent, setSelectedEvent] = useState<EventAnalyticsDto | null>(null);
 
@@ -1119,18 +1054,7 @@ export function EventAnalyticsWidget({
     appliedEventos,
     appliedGrupos,
   );
-  const toggleFavoriteMutation = useToggleFavoriteWidget();
 
-  const handleToggleFavorite = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!user?.id) return;
-    const newStatus = !isFavorite;
-    setIsFavorite(newStatus);
-    toggleFavoriteMutation.mutate(
-      { codUsu: Number(user.id), widgetId: 16, isFavorite: newStatus },
-      { onError: () => setIsFavorite(!newStatus) },
-    );
-  };
 
   const handleSearch = () => {
     setAppliedEventos(selectedEventos);
@@ -1176,6 +1100,7 @@ export function EventAnalyticsWidget({
     () => totalFaturamento - totalDespesas,
     [totalFaturamento, totalDespesas],
   );
+
   return (
     <Card
       elevation={0}
@@ -1187,150 +1112,85 @@ export function EventAnalyticsWidget({
         flexDirection: "column",
       }}
     >
-      <Box
-        sx={{
-          p: { xs: 2, md: 3 },
-          pb: 2,
-          display: "flex",
-          flexDirection: { xs: "column", sm: "row" },
-          justifyContent: "space-between",
-          alignItems: { xs: "flex-start", sm: "center" },
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          gap: 2,
-          flexShrink: 0,
-        }}
-      >
-        <Box>
-          <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: "1.1rem", md: "1.35rem" } }}>
-            Análise de Eventos
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }}>
-            Performance financeira por evento e grupo
-          </Typography>
+      <Box sx={{ p: { xs: 2, md: 3 }, pb: 0, flexShrink: 0 }}>
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+          <Box>
+            <Typography variant="h6" fontWeight={700} sx={{ fontSize: { xs: "1.1rem", md: "1.35rem" } }}>
+              Análise de Eventos
+            </Typography>
+            <Typography variant="body2" color="text.secondary" sx={{ fontSize: { xs: "1rem", md: "1.1rem" } }}>
+              Performance financeira por evento e grupo
+            </Typography>
+          </Box>
         </Box>
 
-        <Tooltip title={isFavorite ? "Remover dos favoritos" : "Adicionar aos favoritos"}>
-          <IconButton size="small" onClick={handleToggleFavorite} sx={{ minWidth: 40, minHeight: 40 }}>
-            <FuseSvgIcon size={22} sx={{ color: isFavorite ? "#FFD700" : "action.disabled" }}>
-              {isFavorite ? "heroicons-solid:star" : "heroicons-outline:star"}
-            </FuseSvgIcon>
-          </IconButton>
-        </Tooltip>
-      </Box>
-
-      {data.length > 0 && (
         <Box
           sx={{
-            px: { xs: 2, md: 3 },
-            py: 2,
-            display: "grid",
-            gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
-            gap: 2,
-            borderBottom: `1px solid ${theme.palette.divider}`,
-            flexShrink: 0,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            flexWrap: "wrap",
+            mb: 2,
           }}
         >
-          <GradientKPI
-            title="Faturamento Total"
-            mainValue={brl(totalFaturamento)}
-            icon="heroicons-outline:currency-dollar"
-            gradientColors={["#23a329", "#229229"]}
+          <MultiCheckFilter
+            label="Eventos"
+            icon="heroicons-outline:ticket"
+            options={eventoOptions}
+            selected={selectedEventos}
+            onChange={setSelectedEventos}
           />
-          <GradientKPI
-            title="Receitas Pagas"
-            mainValue={brl(totalPago)}
-            icon="heroicons-outline:check-circle"
-            gradientColors={["#e9a81b", "#da9500"]}
+
+          <MultiCheckFilter
+            label="Grupos"
+            icon="heroicons-outline:user-group"
+            options={grupoOptions}
+            selected={selectedGrupos}
+            onChange={setSelectedGrupos}
           />
-          <GradientKPI
-            title="Total Despesas"
-            mainValue={brl(totalDespesas)}
-            icon="heroicons-outline:document-text"
-            gradientColors={["#fa600d", "#f04816"]}
-          />
-          <GradientKPI
-            title="Resultado"
-            mainValue={brl(totalResultado)}
-            icon="heroicons-outline:scale"
-            gradientColors={
-              totalResultado >= 0
-                ? ["#1565C0", "#0D47A1"]
-                : ["#ca1c16", "#d42721"]
-            }
-          />
-        </Box>
-      )}
 
-      <Box
-        sx={{
-          px: { xs: 2, md: 3 },
-          py: 1.5,
-          display: "flex",
-          alignItems: "center",
-          gap: 1.5,
-          flexWrap: "wrap",
-          borderBottom: `1px solid ${theme.palette.divider}`,
-          bgcolor: alpha(theme.palette.background.default, 0.5),
-          flexShrink: 0,
-        }}
-      >
-        <MultiCheckFilter
-          label="Eventos"
-          icon="heroicons-outline:ticket"
-          options={eventoOptions}
-          selected={selectedEventos}
-          onChange={setSelectedEventos}
-        />
-
-        <MultiCheckFilter
-          label="Grupos"
-          icon="heroicons-outline:user-group"
-          options={grupoOptions}
-          selected={selectedGrupos}
-          onChange={setSelectedGrupos}
-        />
-
-        <Button
-          variant="contained"
-          size="small"
-          onClick={handleSearch}
-          startIcon={<FuseSvgIcon size={16}>heroicons-outline:magnifying-glass</FuseSvgIcon>}
-          sx={{
-            borderRadius: "8px",
-            textTransform: "none",
-            width: { xs: "100%", sm: "auto" },
-            minHeight: 40,
-            px: 2,
-            fontWeight: 700,
-            fontSize: "1.2rem",
-            backgroundColor: "#1E1E1E",
-          }}
-        >
-          Pesquisar
-        </Button>
-
-        {(appliedEventos.length > 0 || appliedGrupos.length > 0) && (
           <Button
-            variant="text"
+            variant="contained"
             size="small"
-            onClick={() => {
-              setSelectedEventos([]);
-              setSelectedGrupos([]);
-              setAppliedEventos([]);
-              setAppliedGrupos([]);
-              setSelectedEvent(null);
-              setActiveTab(0);
-            }}
+            onClick={handleSearch}
+            startIcon={<FuseSvgIcon size={16}>heroicons-outline:magnifying-glass</FuseSvgIcon>}
             sx={{
+              borderRadius: "8px",
               textTransform: "none",
-              color: "text.secondary",
+              width: { xs: "100%", sm: "auto" },
               minHeight: 40,
+              px: 2,
+              fontWeight: 700,
               fontSize: "1.2rem",
+              backgroundColor: "#1E1E1E",
             }}
           >
-            Limpar filtros
+            Pesquisar
           </Button>
-        )}
+
+          {(appliedEventos.length > 0 || appliedGrupos.length > 0) && (
+            <Button
+              variant="text"
+              size="small"
+              onClick={() => {
+                setSelectedEventos([]);
+                setSelectedGrupos([]);
+                setAppliedEventos([]);
+                setAppliedGrupos([]);
+                setSelectedEvent(null);
+                setActiveTab(0);
+              }}
+              sx={{
+                textTransform: "none",
+                color: "text.secondary",
+                minHeight: 40,
+                fontSize: "1.2rem",
+              }}
+            >
+              Limpar filtros
+            </Button>
+          )}
+        </Box>
       </Box>
 
       <Box sx={{ borderBottom: `1px solid ${theme.palette.divider}`, flexShrink: 0 }}>
@@ -1369,23 +1229,61 @@ export function EventAnalyticsWidget({
         </Tabs>
       </Box>
 
-      <Box sx={{ flex: 1, overflow: "auto" }}>
-        <Box sx={{ display: activeTab === 0 ? "block" : "none" }}>
-          <DadosGeraisTab
-            data={data}
-            isLoading={isLoadingData}
-            onSelectEvent={handleSelectEvent}
-          />
-        </Box>
-        <Box sx={{ display: activeTab === 1 ? "block" : "none" }}>
-          {selectedEvent && (
-            <DetalhamentoTab
-              key={selectedEvent.codEvento}
-              codEvento={selectedEvent.codEvento}
-              codGrupo={selectedEvent.codGrupo}
+      <Box sx={{ flex: 1, overflow: "auto", bgcolor: alpha(theme.palette.background.default, 0.2) }}>
+        {activeTab === 0 && (
+          <>
+            {data.length > 0 && (
+              <Box
+                sx={{
+                  px: { xs: 2, md: 3 },
+                  py: 2,
+                  display: "grid",
+                  gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
+                  gap: 2,
+                  borderBottom: `1px solid ${theme.palette.divider}`,
+                }}
+              >
+                <GradientKPI
+                  title="Faturamento Total"
+                  mainValue={brl(totalFaturamento)}
+                  icon="heroicons-outline:currency-dollar"
+                  gradientColors={["#23a329", "#229229"]}
+                />
+                <GradientKPI
+                  title="Receitas Pagas"
+                  mainValue={brl(totalPago)}
+                  icon="heroicons-outline:check-circle"
+                  gradientColors={["#e9a81b", "#da9500"]}
+                />
+                <GradientKPI
+                  title="Total Despesas"
+                  mainValue={brl(totalDespesas)}
+                  icon="heroicons-outline:document-text"
+                  gradientColors={["#fa600d", "#f04816"]}
+                />
+                <GradientKPI
+                  title="Resultado"
+                  mainValue={brl(totalResultado)}
+                  icon="heroicons-outline:scale"
+                  gradientColors={["#1565C0", "#0D47A1"]}
+                />
+              </Box>
+            )}
+            <DadosGeraisTab
+              data={data}
+              isLoading={isLoadingData}
+              onSelectEvent={handleSelectEvent}
             />
-          )}
-        </Box>
+          </>
+        )}
+
+        {activeTab === 1 && selectedEvent && (
+          <DetalhamentoTab
+            key={selectedEvent.codEvento}
+            codEvento={selectedEvent.codEvento}
+            codGrupo={selectedEvent.codGrupo}
+          />
+        )}
       </Box>
     </Card>
   );
