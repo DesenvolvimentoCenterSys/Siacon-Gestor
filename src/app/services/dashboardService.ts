@@ -46,7 +46,10 @@ import {
   GrupoBancoDto,
   FiltrosDashboardDto,
   EvolucaoFinanceiraItemDto,
-  EvolucaoFinanceiraPayloadDto
+  EvolucaoFinanceiraPayloadDto,
+  EventAnalyticsDetailsDto,
+  EventGroupDto,
+  EventGraphics
 } from '@/types/dashboardTypes';
 
 const dashboardBaseUrl = process.env.NODE_ENV === 'development'
@@ -300,12 +303,6 @@ export const dashboardService = {
       searchParams
     }).json<TotalFaturamentoDto>();
   },
-  getEventAnalytics: async (date?: string): Promise<EventAnalyticsDto[]> => {
-    const searchParams = date ? { date } : undefined;
-    return dashboardClient.get('api/Dashboard/analise-eventos', {
-      searchParams
-    }).json<EventAnalyticsDto[]>();
-  },
   getCashFlowEvolution: async (startDate?: string, endDate?: string): Promise<CashFlowEvolutionDto[]> => {
     const searchParams: Record<string, string> = {};
     if (startDate) searchParams.startDate = startDate;
@@ -465,11 +462,52 @@ export const dashboardService = {
   getEvolucaoFinanceiraPorPeriodo: async (
   startDate: string,
   endDate: string,
-): Promise<EvolucaoFinanceiraPayloadDto> => {
+  ): Promise<EvolucaoFinanceiraPayloadDto> => {
   const searchParams: Record<string, string> = { startDate, endDate };
   return dashboardClient
     .get('api/dashboard/evolucao-financeira-periodo', { searchParams })
     .json<EvolucaoFinanceiraPayloadDto>();
+  },
+
+  getEventAnalytics: async (
+  codEventos: number[] = [],
+  codGrupos: number[] = []
+): Promise<EventAnalyticsDto[]> => {
+  const searchParams: Record<string, string> = {};
+  if (codEventos.length > 0) searchParams.codEvento = codEventos.join(',');
+  if (codGrupos.length > 0) searchParams.codGrupo = codGrupos.join(',');
+  return dashboardClient
+    .get('api/dashboard/analise-eventos', { searchParams })
+    .json<EventAnalyticsDto[]>();
+},
+
+getEventAnalyticsDetails: async (
+  codEvento: number,
+  codGrupo: number
+): Promise<EventAnalyticsDetailsDto> => {
+  const searchParams: Record<string, string> = {
+    codEvento: String(codEvento),
+    codGrupo: String(codGrupo),
+  };
+  return dashboardClient
+    .get('api/dashboard/analise-eventos-detalhes', { searchParams })
+    .json<EventAnalyticsDetailsDto>();
+},
+
+getGruposEEventos: async (): Promise<EventGroupDto> => {
+  return dashboardClient
+    .get('api/dashboard/grupos-e-eventos')
+    .json<EventGroupDto>();
+},
+
+getEventAnalyticsGraphics: async (codEvento: number, codGrupo:number): Promise<EventGraphics[]> => {
+  const searchParams: Record<string, string> = {
+    codEvento: String(codEvento),
+    codGrupo: String(codGrupo),
+  };
+  return dashboardClient
+    .get('api/dashboard/analise-grafica', { searchParams })
+    .json<EventGraphics[]>();
 }
   
 };

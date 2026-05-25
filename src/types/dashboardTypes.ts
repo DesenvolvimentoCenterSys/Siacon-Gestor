@@ -181,14 +181,6 @@ export interface TotalFaturamentoDto {
   porConvenio: FaturamentoDetalhadoConvenioDto[];
 }
 
-export interface EventAnalyticsDto {
-  nomeEvento: string;
-  nomeGrupo?: string;
-  totalFaturamento: number;
-  totalPago: number;
-  totalAberto: number;
-  totalVencido: number;
-}
 
 export interface CashFlowEvolutionDto {
   data: string;
@@ -380,5 +372,76 @@ export interface EvolucaoFinanceiraPayloadDto {
   totalReceitaEntradaCaixa: number;
   totalDespesaSaidaCaixa: number;
   totalLucroPrejuizo: number;
+}
+
+
+export interface EventGroupDto {
+  grupos: GruposEventoDto[];
+  eventos: EventosDto[];
+}
+ 
+export interface GruposEventoDto {
+  codGrupo: number;
+  nomeGrupo: string;
+}
+ 
+export interface EventosDto {
+  codEvento: number;
+  nomeEvento: string;
+}
+ 
+export interface EventAnalyticsDto {
+  nomeEvento: string;
+  codEvento: number;
+  nomeGrupo: string;
+  codGrupo: number;
+  faturamentoEvento: {
+    faturamento: number;
+    pago: number;
+    aberto: number;
+  };
+  pagamentosEvento: {
+    despesas: number;
+    pago: number;
+    aberto: number;
+  };
+}
+ 
+export interface EventAnalyticsDetailsDto {
+  nomeEvento: string;
+  codEvento: number;
+  nomeGrupo: string;
+  codGrupo: number;
+  participantes: number;
+  quantidadeVenda: number;
+  associados: number;
+  naoAssociados: number;
+  faturamentoEventoDetalhado: {
+    venda: number;
+    entradaManual: number;
+    totalFaturamento: number;
+    aVencer: number;
+    vencido: number;
+    liquidado: number;
+  };
+  despesaEventoDetalhado: {
+    emAberto: number;
+    liquidado: number;
+    totalDespesa: number;
+  };
+  resultadoEventoDetalhado: {
+    previsto: number;
+    realizado: number;
+  };
+}
+
+export interface EventGraphics{
+  mes: number;
+  ano: number;
+  valorReceita: number;
+  valorDespesa: number;
+  resultado: number;
+  dDataCompetencia: Date;
+  valorInadimplente: number;
 }
 

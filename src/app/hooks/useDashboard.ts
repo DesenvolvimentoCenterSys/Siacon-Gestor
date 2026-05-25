@@ -1,8 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient, queryOptions, UseQueryOptions } from '@tanstack/react-query';
 import { useSnackbar } from 'notistack';
-import { DashboardFaturamentoPayloadDto, EvolucaoFinanceiraPayloadDto } from '@/types/dashboardTypes';
+import { DashboardFaturamentoPayloadDto, EventAnalyticsDetailsDto, EventAnalyticsDto, EventGraphics, EventGroupDto, EvolucaoFinanceiraPayloadDto } from '@/types/dashboardTypes';
 import { dashboardService } from '../services/dashboardService';
 import { end } from '@popperjs/core';
+import { __isOptionsFunction } from '@tailwindcss/typography';
 
 export const useToggleFavoriteWidget = () => {
   const queryClient = useQueryClient();
@@ -269,12 +270,6 @@ export const useTotalFaturamentoPorConvenioReferenciaWithFilters = (
   });
 };
 
-export const useEventAnalytics = (date?: string) => {
-  return useQuery({
-    queryKey: ['eventAnalytics', date],
-    queryFn: () => dashboardService.getEventAnalytics(date)
-  });
-};
 
 export const useCashFlowEvolution = (startDate?: string, endDate?: string) => {
   return useQuery({
@@ -410,5 +405,46 @@ export const useResumoFinanceiroMensal = (
       dashboardService.getEvolucaoFinanceiraPorPeriodo(startDate!, endDate!),
     enabled: !!(startDate && endDate),
     placeholderData: (prev) => prev,
+  });
+};
+
+export const useEventAnalytics = (
+  codEventos: number[] = [],
+  codGrupos: number[] = []
+) => {
+  return useQuery<EventAnalyticsDto[]>({
+    queryKey: ['eventAnalytics', codEventos, codGrupos],
+    queryFn: () => dashboardService.getEventAnalytics(codEventos, codGrupos),
+  });
+};
+
+export const useEventAnalyticsGraphics = (
+  codEventos: number,
+  codGrupos: number
+) => {
+  return useQuery<EventGraphics[]>({
+    queryKey: ['eventAnalyticsGraphics', codEventos, codGrupos],
+    queryFn: () => dashboardService.getEventAnalyticsGraphics(codEventos, codGrupos),
+  });
+};
+
+export const useEventAnalyticsDetails = (
+  codEvento: number | null,
+  codGrupo: number | null,
+  options?: Omit<UseQueryOptions<EventAnalyticsDetailsDto>, 'queryKey' | 'queryFn'>
+) => {
+  return useQuery<EventAnalyticsDetailsDto>({
+    queryKey: ['eventAnalyticsDetails', codEvento, codGrupo],
+    queryFn: () => dashboardService.getEventAnalyticsDetails(codEvento!, codGrupo!),
+    enabled: codEvento !== null && codGrupo !== null,
+    ...options,
+  });
+};
+
+export const useEventGroupFilter = () => {
+  return useQuery<EventGroupDto>({
+    queryKey: ['eventGroupFilter'],
+    queryFn: () => dashboardService.getGruposEEventos(),
+    staleTime: 5 * 60 * 1000,
   });
 };
