@@ -120,7 +120,7 @@ const navigationConfig: FuseNavItemType[] = [
 			}
 		]
 	},
-	{
+	/* {
 		id: 'pessoas',
 		title: 'Pessoas',
 		type: 'collapse',
@@ -148,7 +148,7 @@ const navigationConfig: FuseNavItemType[] = [
 				url: 'pessoas/cadastros'
 			}
 		]
-	}
+	} */
 ];
 
 export default navigationConfig;
