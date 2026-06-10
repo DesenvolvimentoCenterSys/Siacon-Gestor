@@ -105,25 +105,31 @@ useEffect(() => {
 
     if (selectedConvenio && convenioData) {
       const cov = convenioData.find((c: any) => c.nomeConvenio === selectedConvenio);
+      const formattedPrevious = cov?.previousAverage != null
+    ? cov.previousAverage.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    : '';
       trendObj = {
         value: (
           <>
             {displayData.percentageChange > 0 ? '+' : ''}
             {displayData.percentageChange}% vs período anterior
             <br />
-            {cov?.periodoAnterior} = {cov?.previousAverage}
+            {cov?.periodoAnterior} = {formattedPrevious}
           </>
         ),
         isPositive: displayData.percentageChange >= 0,
       };
     } else {
+      const formattedPrevious = mensalidadeData?.previousAverage != null
+    ? mensalidadeData.previousAverage.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })
+    : '';
       trendObj = {
         value: (
           <>
             {displayData.percentageChange > 0 ? '+' : ''}
             {displayData.percentageChange}% vs período anterior
             <br />
-            {mensalidadeData.periodoAnterior} = {mensalidadeData.previousAverage}
+            {mensalidadeData.periodoAnterior} = {formattedPrevious}
           </>
         ),
         isPositive: displayData.percentageChange >= 0,

@@ -412,7 +412,11 @@ export function TotalFaturamentoPorConvenioWidget({
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {data.porConvenio.map((item) => {
+                  {data.porConvenio.filter((item) =>{ 
+                    const safeFaturamento = safeResumo(item.faturamento);
+                    return safeFaturamento.totalGeral !== 0;
+                  }
+                ).map((item) => {
                     const safeFaturamento = safeResumo(item.faturamento);
                     console.log(safeFaturamento);
                     return (

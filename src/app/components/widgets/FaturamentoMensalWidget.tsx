@@ -85,7 +85,10 @@ export function FaturamentoMensalWidget({
 
   const kpiData = useMemo(() => {
     if (!faturamentoData) return null;
-    const faturamento =  faturamentoData.anterior || 0;
+    const faturamento = (faturamentoData.anterior || 0).toLocaleString('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+});
     console.log("Faturamento do período anterior:", faturamento);
     return {
       title: "Faturamento do Período",
@@ -99,7 +102,7 @@ export function FaturamentoMensalWidget({
             {faturamentoData.percentageChange > 0 ? "+" : ""}
             {faturamentoData.percentageChange}% vs período anterior
             <br />
-            {faturamentoData.periodoAnterior} = {faturamentoData.anterior}
+            {faturamentoData.periodoAnterior} = {faturamento}
           </>
         ),
         isPositive: faturamentoData.percentageChange >= 0,
