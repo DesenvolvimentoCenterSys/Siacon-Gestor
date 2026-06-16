@@ -911,7 +911,7 @@ export function DashboardGeralWidget() {
               value={filiadosInfo?.totalAnterior?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#ffffff"
             /> <KPIMetric
-              label="Qtde ano anterior anterior"
+              label="Qtde ano anterior"
               value={filiadosInfo?.totalAnoAnterior?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#ffffff"
             />
