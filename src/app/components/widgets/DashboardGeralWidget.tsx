@@ -482,8 +482,7 @@ export function DashboardGeralWidget() {
       totalDesligados: filiadosData.totalDesligados,
       totalNovos: filiadosData.totalNovos,
       totalAnoAnterior: filiadosData.totalAnoAnterior,
-      totalAnterior:
-        filiadosData.totalAtivos + filiadosData.totalDesligados - filiadosData.totalNovos,
+      totalAnterior:filiadosData.totalAnterior,
       faturamentoPerdido: filiadosData.valorDesligados,
       totalAdesoes: filiadosData.valorNovos,
       faturamentoTotal: filiadosData.faturamentoTotal,
