@@ -196,6 +196,7 @@ export interface TotalFiliadosDto {
   totalAtivos: number;
   totalDesligados: number;
   totalAnoAnterior: number;
+  totalAnterior: number;
   totalNovos: number;
   valorDesligados: number;
   valorNovos: number;
