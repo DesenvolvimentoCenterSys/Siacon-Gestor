@@ -195,6 +195,7 @@ export interface CashFlowEvolutionDto {
 export interface TotalFiliadosDto {
   totalAtivos: number;
   totalDesligados: number;
+  totalAnoAnterior: number;
   totalNovos: number;
   valorDesligados: number;
   valorNovos: number;

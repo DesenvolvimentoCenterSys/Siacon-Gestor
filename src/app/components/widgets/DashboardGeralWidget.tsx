@@ -481,6 +481,7 @@ export function DashboardGeralWidget() {
       totalAtivos: filiadosData.totalAtivos,
       totalDesligados: filiadosData.totalDesligados,
       totalNovos: filiadosData.totalNovos,
+      totalAnoAnterior: filiadosData.totalAnoAnterior,
       totalAnterior:
         filiadosData.totalAtivos + filiadosData.totalDesligados - filiadosData.totalNovos,
       faturamentoPerdido: filiadosData.valorDesligados,
@@ -909,6 +910,10 @@ export function DashboardGeralWidget() {
             <KPIMetric
               label="Qtde mês anterior"
               value={filiadosInfo?.totalAnterior?.toLocaleString("pt-BR") ?? "0"}
+              valueColor="#ffffff"
+            /> <KPIMetric
+              label="Qtde ano anterior anterior"
+              value={filiadosInfo?.totalAnoAnterior?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#ffffff"
             />
             <KPIMetric
