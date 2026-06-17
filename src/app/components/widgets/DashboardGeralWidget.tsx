@@ -420,6 +420,12 @@ export function DashboardGeralWidget() {
   const [startMonth, setStartMonth] = useState(getDefaultStartMonth());
   const [dateMonth, setDateMonth] = useState(getDefaultEndMonth());
   const [endMonth, setEndMonth] = useState(getDefaultEndMonth());
+  const previousMonth = new Date();
+  previousMonth.setMonth(previousMonth.getMonth() - 1);
+  const [dateChosed, setYear] = useState(previousMonth);
+  const [lastYearDate, setlastYearDate] = useState(
+  previousMonth.getFullYear() - 1
+);
   const [appliedDateMonth, setAppliedDateMonth] = useState(getDefaultEndMonth());
   const [appliedStart, setAppliedStart] = useState(getDefaultStartMonth());
   const [appliedEnd, setAppliedEnd] = useState(getDefaultEndMonth());
@@ -482,10 +488,11 @@ export function DashboardGeralWidget() {
       totalDesligados: filiadosData.totalDesligados,
       totalNovos: filiadosData.totalNovos,
       totalAnoAnterior: filiadosData.totalAnoAnterior,
-      totalAnterior:filiadosData.totalAnterior,
+      totalAnterior:filiadosData.totalAnterior ?? 0,
       faturamentoPerdido: filiadosData.valorDesligados,
       totalAdesoes: filiadosData.valorNovos,
       faturamentoTotal: filiadosData.faturamentoTotal,
+      ticketMedio : filiadosData.totalAtivos > 0 ? (filiadosData.faturamentoTotal / filiadosData.totalAtivos) : 0
     };
   }, [filiadosData]);
 
@@ -763,6 +770,9 @@ export function DashboardGeralWidget() {
     },
   ];
 
+  const qtdeAssociadosAnterior = `Qtde ${format(dateChosed, "MM/yyyy")} | ano ${lastYearDate}`
+  const valorAnterior = `${(filiadosData?.totalAnterior ?? 0).toLocaleString("pt-BR")}|${(filiadosData?.totalAnoAnterior ?? 0).toLocaleString("pt-BR")}`;
+
   if (isLoading) return <WidgetLoading height={600} />;
 
   return (
@@ -835,6 +845,12 @@ export function DashboardGeralWidget() {
                 const mesFormatado = newValue ? format(newValue, "yyyy-MM") : "";
                 setEndMonth(mesFormatado);
                 setDateMonth(mesFormatado);
+                if (newValue) {
+                  const lastMonth = newValue;
+                  lastMonth.setMonth(lastMonth.getMonth() - 1);
+                  setYear(lastMonth);
+                  setlastYearDate(newValue.getFullYear() - 1);
+                }
               }}
               slotProps={{
                 textField: {
@@ -907,32 +923,43 @@ export function DashboardGeralWidget() {
             gradientColors={["#b700cf", "#7e0058"]}
           >
             <KPIMetric
-              label="Qtde mês anterior"
-              value={filiadosInfo?.totalAnterior?.toLocaleString("pt-BR") ?? "0"}
+              label={qtdeAssociadosAnterior}
+              value={valorAnterior}
               valueColor="#ffffff"
-            /> <KPIMetric
-              label="Qtde ano anterior"
-              value={filiadosInfo?.totalAnoAnterior?.toLocaleString("pt-BR") ?? "0"}
-              valueColor="#ffffff"
-            />
+            /> 
             <KPIMetric
-              label="Novos no mês"
+              label="Inclusões no mês"
               value={filiadosInfo?.totalNovos?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#4ade80"
             />
             <KPIMetric
-              label="Desligados"
+              label="Desligados no mês"
               value={filiadosInfo?.totalDesligados?.toLocaleString("pt-BR") ?? "0"}
               valueColor="#ffffff"
             />
             <KPIDivider />
             <KPIMetric label="Total Faturado" value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)} />
+            <KPIMetric label="Ticket Médio" value={formatCurrency(filiadosInfo?.ticketMedio)} />
             <KPIMetric label="Total Adesões" value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)} />
             <KPIMetric
               label="Total Perdido"
               value={formatCurrency(filiadosInfo?.faturamentoPerdido ?? 0)}
               valueColor="#ffffff"
             />
+            <KPIDivider />
+            <Typography
+              sx={{
+                fontSize: "1rem",
+                fontStyle: "italic",
+                fontWeight: 400,
+                opacity: 0.75,
+                textAlign: "center",
+                mt: 1,
+                lineHeight: 1.3,
+              }}
+            >
+              * Valores referentes à mensalidade de contribuição.
+            </Typography>
           </GradientKPI>
         </Grid>
 
