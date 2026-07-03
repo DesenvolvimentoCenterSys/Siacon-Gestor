@@ -43,7 +43,7 @@ const navigationConfig: FuseNavItemType[] = [
 		id: 'faturamento',
 		title: 'Faturamento',
 		translate: 'Faturamento',
-		type: 'collapse',
+		type: 'group',
 		icon: 'heroicons-outline:currency-dollar',
 		children: [
 			{
@@ -70,7 +70,7 @@ const navigationConfig: FuseNavItemType[] = [
 		id: 'financeiro',
 		title: 'Financeiro',
 		translate: 'Financeiro',
-		type: 'collapse',
+		type: 'group',
 		icon: 'heroicons-outline:banknotes',
 		children: [
 			{
@@ -123,7 +123,7 @@ const navigationConfig: FuseNavItemType[] = [
 	/* {
 		id: 'pessoas',
 		title: 'Pessoas',
-		type: 'collapse',
+		type: 'group',
 		icon: 'heroicons-outline:users',
 		children: [
 			{
