@@ -3,7 +3,7 @@ import { useSessionUrlFilter } from '@auth/useSessionUrlFilter';
 import { useTheme, alpha } from '@mui/material/styles';
 import ReactApexChart from 'react-apexcharts';
 import { ApexOptions } from 'apexcharts';
-import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, Tabs, Tab, Divider, ListItemIcon, ListItemText, Button, Dialog, DialogContent, DialogActions } from '@mui/material';
+import { Card, CardContent, Typography, Box, IconButton, Tooltip, Menu, MenuItem, Tabs, Tab, Divider, ListItemIcon, ListItemText, Button, Dialog, DialogContent, DialogActions, FormControl, InputLabel, Select, SelectChangeEvent } from '@mui/material';
 import FuseSvgIcon from '@fuse/core/FuseSvgIcon';
 import { useTotalFiliados, useToggleFavoriteWidget, useUserFavoriteWidgets } from '../../hooks/useDashboard';
 import WidgetLoading from '../ui/WidgetLoading';
@@ -42,10 +42,20 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
     Number
   );
 
+  const [searchBy, setSearchBy] = useSessionUrlFilter<string>(
+    'pessoas_assoc_filiados_searchBy',
+    'V',
+    String,
+    (s) => s
+  );
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
+  const handleSearchByChange = (event: SelectChangeEvent) => {
+    setSearchBy(event.target.value);
+  };
 
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const openMenu = Boolean(anchorEl);
@@ -90,7 +100,7 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
     setTempDate(filterDate);
   }, [filterDate]);
 
-  const { data: widgetData, isLoading } = useTotalFiliados(apiDate);
+  const { data: widgetData, isLoading } = useTotalFiliados(apiDate, searchBy);
   const { data: favoriteWidgets } = useUserFavoriteWidgets(user?.id ? Number(user.id) : undefined);
   const toggleFavoriteMutation = useToggleFavoriteWidget();
 
@@ -289,6 +299,21 @@ export function TotalFiliadosWidget({ initialIsFavorite = false }: TotalFiliados
         </Typography>
         <Box className="flex items-center gap-2" sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: { xs: 'space-between', sm: 'flex-end' } }}>
           {/* Date Filter */}
+          <FormControl size="small" sx={{ minWidth: 140 }}>
+            <InputLabel id="total-filiados-search-by-label">Pesquisar por</InputLabel>
+            <Select
+              labelId="total-filiados-search-by-label"
+              id="total-filiados-search-by"
+              value={searchBy}
+              label="Pesquisar por"
+              onChange={handleSearchByChange}
+              sx={{ bgcolor: 'background.paper' }}
+            >
+              <MenuItem value="C">Competência</MenuItem>
+              <MenuItem value="V">Vencimento</MenuItem>
+            </Select>
+          </FormControl>
+
           <Tooltip title="Filtrar por data">
             <IconButton size="small" onClick={handleClickMenu} sx={{ minWidth: 44, minHeight: 44 }}>
               <FuseSvgIcon size={20}>heroicons-outline:calendar</FuseSvgIcon>

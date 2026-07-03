@@ -120,8 +120,10 @@ export const dashboardService = {
     }).json<ClientesPorSexoDto>();
   },
 
-  getTotalFiliados: async (date?: string): Promise<TotalFiliadosDto> => {
-    const searchParams = date ? { date } : undefined;
+  getTotalFiliados: async (date?: string, pesquisarPor?: string): Promise<TotalFiliadosDto> => {
+    const searchParams : Record<string, string> = {};
+    if (date) searchParams.date = date;
+    if (pesquisarPor) searchParams.pesquisarPor = pesquisarPor;
     return dashboardClient.get('api/Dashboard/total-filiados', {
       searchParams
     }).json<TotalFiliadosDto>();

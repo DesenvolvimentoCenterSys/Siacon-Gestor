@@ -154,6 +154,7 @@ function GradientKPI({
         background: `linear-gradient(135deg, ${gradientColors[0]} 0%, ${gradientColors[1]} 100%)`,
         color: "white",
         height: "100%",
+        width: "100%",
         position: "relative",
         overflow: "hidden",
         opacity: dimmed ? 0.45 : 1,
@@ -168,9 +169,9 @@ function GradientKPI({
         sx={{
           position: "relative",
           zIndex: 1,
-          p: compactSpaces ? 1.3 : { xs: 2.3, sm: 2.5 },
+          p: compactSpaces ? 1.2 : { xs: 1.8, sm: 2.1, md: 2.3 },
           "&:last-child": {
-            pb: compactSpaces ? 1.3 : { xs: 2.3, sm: 2.5 },
+            pb: compactSpaces ? 1.2 : { xs: 1.8, sm: 2.1, md: 2.3 },
           },
         }}
       >
@@ -187,7 +188,7 @@ function GradientKPI({
               sx={{
                 opacity: 0.9,
                 fontWeight: 700,
-                fontSize: { xs: "1.8rem", sm: "1.25rem", md: "1.35rem" },
+                fontSize: { xs: "1.15rem", sm: "1.25rem", md: "1.4rem" },
                 letterSpacing: 0.3,
                 mb: onFilterChange ? 1.5 : 0,
               }}
@@ -336,8 +337,9 @@ function GradientKPI({
           sx={{
             fontWeight: 800,
             mb: compactSpaces ? 0 : 2,
-            fontSize: { xs: "2.2rem", sm: "2.0rem", md: "2.5rem" },
+            fontSize: { xs: "2rem", sm: "2.3rem", md: "2.5rem" },
             lineHeight: 1.1,
+            whiteSpace: "nowrap",
           }}
         >
           {mainValue}
@@ -390,17 +392,18 @@ function KPIMetric({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        py: 0.4,
+        py: 0.5,
       }}
     >
-      <Typography sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "1.35rem", sm: "1.25rem" } }}>
+      <Typography sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.3rem" } }}>
         {label}
       </Typography>
       <Typography
         sx={{
           fontWeight: 700,
           color: valueColor || "inherit",
-          fontSize: { xs: "1.35rem", sm: "1.25rem" },
+          fontSize: { xs: "1.1rem", sm: "1.2rem", md: "1.3rem" },
+          whiteSpace: "nowrap",
         }}
       >
         {value}
@@ -459,7 +462,7 @@ export function DashboardGeralWidget() {
     return toApiDate(endOfMonth(d));
   }, [appliedEnd]);
 
-  const { data: filiadosData, isLoading: l1 } = useTotalFiliados(appliedDateMonth);
+  const { data: filiadosData, isLoading: l1 } = useTotalFiliados(appliedDateMonth, appliedSearchBy);
   const { data: faturamentoCard2Data, isLoading: l2 } = useTotalFaturamentoGeral(appliedDateMonth, appliedSearchBy);
   const { data: despesasCard3Data, isLoading: l2_2 } = useTotalDespesasPorConvenio(appliedDateMonth);
 
@@ -776,7 +779,7 @@ export function DashboardGeralWidget() {
   if (isLoading) return <WidgetLoading height={600} />;
 
   return (
-    <Box sx={{ maxWidth: "100%" }}>
+    <>
       <Card
         elevation={0}
         sx={{
@@ -914,8 +917,8 @@ export function DashboardGeralWidget() {
         </Box>
       </Card>
 
-      <Grid container spacing={2.5} sx={{ mb: 2.5 }}>
-        <Grid item xs={12} sm={6} lg={3}>
+      <Grid container spacing={{ xs: 1.2, sm: 2, md: 2.5 }} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Qtde Associados"
             mainValue={filiadosInfo?.totalAtivos?.toLocaleString("pt-BR") ?? "—"}
@@ -963,7 +966,7 @@ export function DashboardGeralWidget() {
           </GradientKPI>
         </Grid>
 
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Faturamento do Mês"
             mainValue={formatCurrency(faturamentoInfoCard2?.totalGeral ?? 0)}
@@ -987,7 +990,7 @@ export function DashboardGeralWidget() {
           </GradientKPI>
         </Grid>
 
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Títulos a Pagar"
             mainValue={formatCurrency(despesasInfoCard3?.totalGeral ?? 0)}
@@ -1017,7 +1020,7 @@ export function DashboardGeralWidget() {
           </GradientKPI>
         </Grid>
 
-        <Grid item xs={12} sm={6} lg={3}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Inadimplência"
             mainValue={formatCurrency(delinquencyInfo?.totalInadimplente ?? 0)}
@@ -1168,8 +1171,8 @@ export function DashboardGeralWidget() {
         </Box>
       </Card>
 
-      <Grid container spacing={2.5} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={3}>
+      <Grid container spacing={{ xs: 1.2, sm: 2, md: 2.5 }} sx={{ mb: 2 }}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Faturamento Período (Gráfico)"
             mainValue={formatCurrency(chartTotals.totalFaturado)}
@@ -1178,7 +1181,7 @@ export function DashboardGeralWidget() {
             dimmed={!visibleSeries.has("Faturamento")}
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Receitas Período (Gráfico)"
             mainValue={formatCurrency(chartTotals.totalCobranca)}
@@ -1187,7 +1190,7 @@ export function DashboardGeralWidget() {
             dimmed={!visibleSeries.has("Receitas")}
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Despesas Período (Gráfico)"
             mainValue={formatCurrency(chartTotals.totalPagamento)}
@@ -1196,7 +1199,7 @@ export function DashboardGeralWidget() {
             dimmed={!visibleSeries.has("Despesas")}
           />
         </Grid>
-        <Grid item xs={12} sm={3}>
+        <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Resultado Período (Gráfico)"
             mainValue={formatCurrency(chartTotals.resultado)}
@@ -1234,6 +1237,6 @@ export function DashboardGeralWidget() {
           />
         </Box>
       </Card>
-    </Box>
+    </>
   );
 }

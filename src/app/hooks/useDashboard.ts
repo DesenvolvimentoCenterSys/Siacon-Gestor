@@ -111,10 +111,10 @@ export const useNovasVidas = (date?: string) => {
   });
 };
 
-export const useTotalFiliados = (startDate?: string) => {
+export const useTotalFiliados = (startDate?: string, pesquisarPor?: string) => {
   return useQuery({
-    queryKey: ['totalFiliados', startDate],
-    queryFn: () => dashboardService.getTotalFiliados(startDate),
+    queryKey: ['totalFiliados', startDate, pesquisarPor],
+    queryFn: () => dashboardService.getTotalFiliados(startDate, pesquisarPor),
     enabled: !!startDate 
   });
 };

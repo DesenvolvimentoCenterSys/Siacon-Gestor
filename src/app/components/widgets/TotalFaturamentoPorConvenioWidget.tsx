@@ -300,12 +300,6 @@ export function TotalFaturamentoPorConvenioWidget({
                           color="warning.main"
                           money
                         />
-                        <MetricItem
-                          label="Vencido"
-                          value={safeFaturamento.totalVencido}
-                          color="error.main"
-                          money
-                        />
                       </Box>
                     </CardContent>
                   </Card>
@@ -398,16 +392,6 @@ export function TotalFaturamentoPorConvenioWidget({
                       }}
                     >
                       Aberto
-                    </TableCell>
-                    <TableCell
-                      align="right"
-                      sx={{
-                        fontWeight: 600,
-                        bgcolor: "background.paper",
-                        py: 2,
-                      }}
-                    >
-                      Vencido
                     </TableCell>
                   </TableRow>
                 </TableHead>
@@ -507,19 +491,7 @@ export function TotalFaturamentoPorConvenioWidget({
                             color="warning.main"
                             fontWeight={500}
                           >
-                            {safeFaturamento.totalAberto.toLocaleString(
-                              "pt-BR",
-                              { style: "currency", currency: "BRL" },
-                            )}
-                          </Typography>
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography
-                            variant="body2"
-                            color="error.main"
-                            fontWeight={500}
-                          >
-                            {safeFaturamento.totalVencido.toLocaleString(
+                            {(safeFaturamento.totalAberto +  safeFaturamento.totalVencido).toLocaleString(
                               "pt-BR",
                               { style: "currency", currency: "BRL" },
                             )}

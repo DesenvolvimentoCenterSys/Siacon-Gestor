@@ -126,8 +126,11 @@ function GradientKPI({
           sx={{
             fontWeight: 800,
             mb: compactSpaces ? 1 : 1.5,
-            fontSize: { xs: "1.5rem", sm: "1.6rem", md: "2rem" },
+            fontSize: { xs: "1.2rem", sm: "1.4rem", md: "1.8rem" },
             lineHeight: 1.1,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
           }}
         >
           {mainValue}
@@ -179,11 +182,14 @@ function KPIMetric({
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        py: 0.3,
+        py: { xs: 0.2, md: 0.3 },
+        gap: 1,
+        minHeight: 0,
       }}
     >
       <Typography
-        sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "1.2rem", sm: "1.3rem", xl: "1.2rem" } }}
+        sx={{ opacity: 0.9, fontWeight: 600, fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" }, flex: 1, minWidth: 0 }}
+        noWrap
       >
         {label}
       </Typography>
@@ -191,8 +197,11 @@ function KPIMetric({
         sx={{
           fontWeight: 700,
           color: valueColor || "inherit",
-          fontSize: { xs: "1.2rem", sm: "1.3rem", xl: "1.2rem" },
+          fontSize: { xs: "0.9rem", sm: "1rem", md: "1.2rem" },
+          textAlign: "right",
+          flex: "0 1 auto",
         }}
+        noWrap
       >
         {value}
       </Typography>
@@ -428,7 +437,7 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
         <Typography
           variant="body1"
           fontWeight={700}
-          sx={{ flex: 1, mr: 1, fontSize: "1.5rem" }}
+          sx={{ flex: 1, mr: 1, fontSize: { xs: "1.1rem", sm: "1.3rem", md: "1.5rem" } }}
         >
           {item.nomeEvento}
         </Typography>
@@ -440,7 +449,7 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
               bgcolor: alpha(theme.palette.secondary.main, 0.1),
               color: theme.palette.secondary.main,
               fontWeight: 600,
-              fontSize: "1.2rem",
+              fontSize: { xs: "0.85rem", sm: "1rem", md: "1.2rem" },
             }}
           />
         ) : null}
@@ -461,7 +470,7 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
           <Typography
             sx={{
               fontWeight: 700,
-              fontSize: { xs: "1.3rem", sm: "1.1rem" },
+              fontSize: { xs: "1.1rem", sm: "1.1rem", md: "1.3rem" },
               textTransform: "uppercase",
               letterSpacing: "0.06em",
               opacity: 1,
@@ -470,22 +479,22 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
           >
             Faturamento
           </Typography>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" }, gap: { xs: 1.5, sm: 0.75 } }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" }, gap: { xs: 1, sm: 0.75 } }}>
             <Box>
-              <Typography sx={{ opacity: 0.75, fontSize: { xs: "1.3rem", sm: "1rem" } }}>Total</Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1rem" } }}>
+              <Typography sx={{ opacity: 0.75, fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>Total</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1rem", md: "1.2rem" }, whiteSpace: "nowrap" }}>
                 {brl(item.faturamentoEvento.faturamento)}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ opacity: 0.75, fontSize: { xs: "1.3rem", sm: "1rem" } }}>Pago</Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1rem" }, color: "#ffffff" }}>
+              <Typography sx={{ opacity: 0.75, fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>Pago</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1rem", md: "1.2rem" }, color: "#ffffff", whiteSpace: "nowrap" }}>
                 {brl(item.faturamentoEvento.pago)}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ opacity: 0.75, fontSize: { xs: "1.3rem", sm: "1rem" } }}>Aberto</Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1rem" }, color: "#ffffff" }}>
+              <Typography sx={{ opacity: 0.75, fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>Aberto</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1rem", md: "1.2rem" }, color: "#ffffff", whiteSpace: "nowrap" }}>
                 {brl(item.faturamentoEvento.aberto)}
               </Typography>
             </Box>
@@ -509,7 +518,7 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
           <Typography
             sx={{
               fontWeight: 700,
-              fontSize: { xs: "1.3rem", sm: "1.1rem" },
+              fontSize: { xs: "1.1rem", sm: "1.1rem", md: "1.3rem" },
               textTransform: "uppercase",
               letterSpacing: "0.06em",
               opacity: 0.9,
@@ -518,22 +527,22 @@ function MobileEventCard({ item, onSelectEvent }: MobileEventCardProps) {
           >
             Despesas
           </Typography>
-          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" }, gap: { xs: 1.5, sm: 0.75 } }}>
+          <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" }, gap: { xs: 1, sm: 0.75 } }}>
             <Box>
-              <Typography sx={{ opacity: 0.75, fontSize: { xs: "1.3rem", sm: "1rem" } }}>Total</Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1rem" } }}>
+              <Typography sx={{ opacity: 0.75, fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>Total</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1rem", md: "1.2rem" }, whiteSpace: "nowrap" }}>
                 {brl(item.pagamentosEvento.despesas)}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ opacity: 0.75, fontSize: { xs: "1.3rem", sm: "1rem" } }}>Pago</Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1rem" }, color: "#ffffff" }}>
+              <Typography sx={{ opacity: 0.75, fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>Pago</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1rem", md: "1.2rem" }, color: "#ffffff", whiteSpace: "nowrap" }}>
                 {brl(item.pagamentosEvento.pago)}
               </Typography>
             </Box>
             <Box>
-              <Typography sx={{ opacity: 0.75, fontSize: { xs: "1.3rem", sm: "1rem" } }}>Aberto</Typography>
-              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1.2rem", sm: "1rem" }, color: "#ffffff" }}>
+              <Typography sx={{ opacity: 0.75, fontSize: { xs: "0.9rem", sm: "0.95rem", md: "1rem" } }}>Aberto</Typography>
+              <Typography sx={{ fontWeight: 700, fontSize: { xs: "1rem", sm: "1rem", md: "1.2rem" }, color: "#ffffff", whiteSpace: "nowrap" }}>
                 {brl(item.pagamentosEvento.aberto)}
               </Typography>
             </Box>
@@ -1106,7 +1115,7 @@ export function EventAnalyticsWidget({
       elevation={0}
       sx={{
         height: { xs: "auto", md: "100%" },
-        overflow: "hidden",
+        width: "100%",
         border: `1px solid ${theme.palette.divider}`,
         display: "flex",
         flexDirection: "column",
@@ -1198,31 +1207,23 @@ export function EventAnalyticsWidget({
           value={activeTab}
           onChange={(_, v) => setActiveTab(v)}
           sx={{
-            px: { xs: 1, md: 2 },
+            px: { xs: 1, sm: 1.5, md: 2 },
             minHeight: 48,
             "& .MuiTab-root": {
               minHeight: 48,
               textTransform: "none",
               fontWeight: 700,
-              fontSize: "1.2rem",
+              fontSize: { xs: "0.95rem", sm: "1rem", md: "1.2rem" },
+              flex: { xs: "1", md: "auto" },
             },
           }}
         >
           <Tab label="Dados Gerais" value={0} />
           <Tab
-            label={
-              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75 }}>
-                Detalhamento Evento
-                {selectedEvent && (
-                  <Chip
-                    label={selectedEvent.nomeEvento}
-                    size="small"
-                    color="primary"
-                    sx={{ height: 20, fontSize: "1.2rem", maxWidth: 120 }}
-                  />
-                )}
-              </Box>
-            }
+            label={selectedEvent ? selectedEvent.nomeEvento : "Detalhamento Evento"}
+            sx={{
+              fontSize: { xs: "0.9rem", sm: "1rem" },
+            }}
             value={1}
             disabled={!selectedEvent}
           />
@@ -1235,11 +1236,11 @@ export function EventAnalyticsWidget({
             {data.length > 0 && (
               <Box
                 sx={{
-                  px: { xs: 2, md: 3 },
-                  py: 2,
+                  px: { xs: 1.5, sm: 2, md: 3 },
+                  py: { xs: 1.5, md: 2 },
                   display: "grid",
-                  gridTemplateColumns: { xs: "1fr 1fr", sm: "repeat(4, 1fr)" },
-                  gap: 2,
+                  gridTemplateColumns: { xs: "1fr", sm: "repeat(2, 1fr)", md: "repeat(4, 1fr)" },
+                  gap: { xs: 1, sm: 1.5, md: 2 },
                   borderBottom: `1px solid ${theme.palette.divider}`,
                 }}
               >

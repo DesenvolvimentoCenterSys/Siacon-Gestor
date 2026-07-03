@@ -122,10 +122,9 @@ export function DateRangeFilterWidget({
         <TextField {...params} label={label} placeholder="Buscar..." />
       )}
       sx={{
-        width: { xs: "100%", sm: "auto" },
-        minWidth: { sm: 160 },
-        flex: { sm: "1 1 auto" },
-        maxWidth: { sm: 250 },
+        flex: { xs: "1 1 100%", sm: "0 1 auto" },
+        minWidth: { sm: "140px" },
+        maxWidth: { xs: "100%", sm: "200px" },
       }}
     />
   );
@@ -135,8 +134,8 @@ export function DateRangeFilterWidget({
       sx={{
         display: "flex",
         flexDirection: "column",
-        gap: 2,
-        p: 2,
+        gap: { xs: 1.5, sm: 2 },
+        p: { xs: 1.5, sm: 2 },
         mb: 3,
         borderRadius: 2,
         bgcolor: "background.paper",
@@ -153,8 +152,9 @@ export function DateRangeFilterWidget({
           sx={{
             display: "flex",
             flexDirection: { xs: "column", sm: "row" },
-            gap: 2,
+            gap: { xs: 1, sm: 1.5, md: 2 },
             alignItems: { xs: "stretch", sm: "center" },
+            flexWrap: "wrap",
           }}
         >
           {/* Data inicial */}
@@ -166,7 +166,11 @@ export function DateRangeFilterWidget({
             slotProps={{
               textField: {
                 size: "small",
-                sx: { width: { xs: "100%", sm: 160 } },
+                sx: { 
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "140px" },
+                  flex: { xs: "1 1 100%", sm: "0 1 auto" },
+                },
               },
             }}
           />
@@ -180,18 +184,16 @@ export function DateRangeFilterWidget({
             slotProps={{
               textField: {
                 size: "small",
-                sx: { width: { xs: "100%", sm: 160 } },
+                sx: { 
+                  width: { xs: "100%", sm: "auto" },
+                  minWidth: { sm: "140px" },
+                  flex: { xs: "1 1 100%", sm: "0 1 auto" },
+                },
               },
             }}
           />
 
-          {/*
-            Toggle Competência / Vencimento
-            - height 40px = mesma altura dos DatePickers size="small"
-            - Não selecionado: texto cinza apagado sobre fundo escuro
-            - Selecionado: fundo branco + texto preto + negrito (contraste máximo)
-            - Sem Box wrapper: fica direto no flex row → alinhamento perfeito
-          */}
+          {/* Toggle Competência / Vencimento */}
           <ToggleButtonGroup
             value={tempTab}
             exclusive
@@ -200,12 +202,11 @@ export function DateRangeFilterWidget({
             aria-label="Filtrar por"
             sx={{
               height: 40,
-              width: { xs: "100%", sm: "auto" },
+              flex: { xs: "1 1 100%", sm: "0 1 auto" },
               bgcolor: "#111111",
               border: "1px solid #333",
               borderRadius: "5px !important",
               overflow: "hidden",
-              flexShrink: 0,
               "& .MuiToggleButtonGroup-grouped": {
                 border: "none !important",
                 borderRadius: "0 !important",
@@ -213,10 +214,11 @@ export function DateRangeFilterWidget({
               },
               "& .MuiToggleButton-root": {
                 flex: { xs: 1, sm: "initial" },
-                px: 2.5,
+                px: { xs: 1.5, sm: 2 },
+                py: 1,
                 color: "#a3a3a3",
                 bgcolor: "transparent",
-                fontSize: "1.1rem",
+                fontSize: { xs: "0.95rem", sm: "1rem" },
                 fontWeight: 500,
                 letterSpacing: "0.02em",
                 transition: "all 0.15s ease",
@@ -248,12 +250,12 @@ export function DateRangeFilterWidget({
             startIcon={<RestartAlt />}
             onClick={reset}
             sx={{
-              width: { xs: "100%", sm: "auto" },
+              flex: { xs: "1 1 100%", sm: "0 1 auto" },
               height: 40,
               color: "text.secondary",
               whiteSpace: "nowrap",
               borderColor: "divider",
-              flexShrink: 0,
+              minWidth: { sm: "120px" },
               "&:hover": { bgcolor: "action.hover" },
             }}
           >
@@ -267,12 +269,13 @@ export function DateRangeFilterWidget({
               <FuseSvgIcon size={18}>heroicons-outline:magnifying-glass</FuseSvgIcon>
             }
             sx={{
-              width: { xs: "100%", sm: "auto" },
+              flex: { xs: "1 1 100%", sm: "0 1 auto" },
               height: 40,
               bgcolor: "#000000",
               color: "#ffffff",
               boxShadow: "none",
-              flexShrink: 0,
+              minWidth: { sm: "110px" },
+              whiteSpace: "nowrap",
               "&:hover": { bgcolor: "#333333", boxShadow: "none" },
             }}
           >
