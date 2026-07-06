@@ -126,6 +126,9 @@ export function PrevisaoFaturamentoVsPagamentoWidget({ data }: PrevisaoWidgetPro
     return calculated > baseHeight ? calculated : baseHeight;
   }, [categories.length]);
 
+  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  const formatPercent = (v: number) => `${v.toFixed(1)}%`;
+
   const chartOptions: ApexOptions = {
     chart: {
       type: 'bar',
@@ -214,17 +217,39 @@ export function PrevisaoFaturamentoVsPagamentoWidget({ data }: PrevisaoWidgetPro
       xaxis: { lines: { show: isMobile } },  
       padding: { left: 10, right: isMobile ? 45 : 20 },
     },
-    tooltip: {
+   tooltip: {
       theme: theme.palette.mode,
-      y: { 
-        formatter: (val: number, opts?: any) => {
-          const originalSeriesArray = [receitaData, despesaData, lucroData];
-          if (opts && opts.seriesIndex !== undefined && opts.dataPointIndex !== undefined) {
-            const realVal = originalSeriesArray[opts.seriesIndex]?.[opts.dataPointIndex] ?? val;
-            return realVal.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-          }
-          return val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-        } 
+      shared: false,
+      intersect: false,
+      custom: ({ series, dataPointIndex, w }: any) => {
+        const receita = Number(series?.[0]?.[dataPointIndex] ?? 0);
+        const despesa = Number(series?.[1]?.[dataPointIndex] ?? 0);
+        const lucro = receita - despesa;
+        const percentualLucro = receita !== 0 ? (lucro / receita) * 100 : 0;
+        const periodo = w?.globals?.labels?.[dataPointIndex] ?? 'Período';
+        const colors = ['#23a329', '#fa600d', '#e4c725'];
+
+        const rows = [
+          { label: 'Receita', value: fmt(receita), color: colors[0] },
+          { label: 'Despesa', value: fmt(despesa), color: colors[1] },
+          { label: 'Lucro', value: fmt(lucro), color: colors[2] },
+          { label: '% Lucro', value: formatPercent(percentualLucro), color: colors[2] },
+        ];
+
+        return `
+          <div style="padding:10px 12px; min-width:190px; font-family:inherit;">
+            <div style="font-weight:700; margin-bottom:8px;">${periodo}</div>
+            ${rows.map((row) => `
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:6px;">
+                <span style="display:flex; align-items:center; gap:6px;">
+                  <span style="width:8px; height:8px; border-radius:999px; background:${row.color}; display:inline-block;"></span>
+                  ${row.label}
+                </span>
+                <span>${row.value}</span>
+              </div>
+            `).join('')}
+          </div>
+        `;
       },
     },
     legend: {
@@ -250,7 +275,6 @@ export function PrevisaoFaturamentoVsPagamentoWidget({ data }: PrevisaoWidgetPro
     { name: 'Lucro', group: 'lucro', data: isMobile ? lucroData.map(Math.abs) : lucroData },
   ];
 
-  const fmt = (v: number) => v.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
   const lucro = totals.totalReceita - totals.totalDespesa;
 
   return (

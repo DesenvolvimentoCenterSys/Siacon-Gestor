@@ -9,6 +9,7 @@ import {
   Typography,
   Autocomplete,
   Checkbox,
+  Chip,
   TextField,
 } from "@mui/material";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -99,7 +100,7 @@ export function DateRangeFilterWidget({
     <Autocomplete
       multiple
       size="small"
-      limitTags={1}
+      limitTags={2}
       disableCloseOnSelect
       options={opcoesFuturasDaAPI}
       getOptionLabel={(option) => option.nome}
@@ -110,21 +111,73 @@ export function DateRangeFilterWidget({
       renderOption={(props, option, { selected }) => {
         const { key, ...restProps } = props as any;
         return (
-          <li key={option.id || option.nome} {...restProps} style={{ padding: "4px 8px" }}>
+          <li
+            key={option.id || option.nome}
+            {...restProps}
+            style={{ padding: "6px 10px" }}
+          >
             <Checkbox style={{ marginRight: 8 }} checked={selected} size="small" />
-            <Typography variant="body2" noWrap>
+            <Typography
+              variant="body2"
+              sx={{
+                lineHeight: 1.4,
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+              }}
+            >
               {option.nome}
             </Typography>
           </li>
         );
       }}
+      renderTags={(tagValue, getTagProps) =>
+        tagValue.map((option, index) => (
+          <Chip
+            {...getTagProps({ index })}
+            key={option.id || option.nome}
+            label={option.nome}
+            size="small"
+            sx={{
+              height: "auto",
+              minHeight: 24,
+              maxWidth: "100%",
+              alignItems: "flex-start",
+              py: 0.25,
+              "& .MuiChip-label": {
+                whiteSpace: "normal",
+                lineHeight: 1.25,
+                overflowWrap: "anywhere",
+                wordBreak: "break-word",
+                py: 0.25,
+              },
+            }}
+          />
+        ))
+      }
       renderInput={(params) => (
         <TextField {...params} label={label} placeholder="Buscar..." />
       )}
       sx={{
         flex: { xs: "1 1 100%", sm: "0 1 auto" },
-        minWidth: { sm: "140px" },
-        maxWidth: { xs: "100%", sm: "200px" },
+        minWidth: { sm: "180px" },
+        maxWidth: { xs: "100%", sm: "260px", md: "300px" },
+        width: { xs: "100%", sm: "auto" },
+        "& .MuiAutocomplete-inputRoot": {
+          flexWrap: "wrap",
+          alignItems: "flex-start",
+          minHeight: 40,
+          py: 0.25,
+        },
+        "& .MuiAutocomplete-input": {
+          minHeight: 20,
+          paddingTop: 0,
+          paddingBottom: 0,
+        },
+        "& .MuiAutocomplete-tag": {
+          margin: 0.25,
+          maxWidth: "100%",
+        },
       }}
     />
   );
@@ -201,7 +254,7 @@ export function DateRangeFilterWidget({
             size="small"
             aria-label="Filtrar por"
             sx={{
-              height: 40,
+              minHeight: 44,
               flex: { xs: "1 1 100%", sm: "0 1 auto" },
               bgcolor: "#111111",
               border: "1px solid #333",
@@ -229,10 +282,14 @@ export function DateRangeFilterWidget({
               },
               "& .MuiToggleButton-root.Mui-selected": {
                 bgcolor: "#ffffff !important",
-                color: "#000000 !important",
+                color: "#1976d2 !important",
                 fontWeight: 700,
+                boxShadow: "inset 0 0 0 2px #1976d2",
+                outline: "2px solid #1976d2",
+                outlineOffset: "-2px",
                 "&:hover": {
                   bgcolor: "#f0f0f0 !important",
+                  color: "#1565c0 !important",
                 },
               },
             }}

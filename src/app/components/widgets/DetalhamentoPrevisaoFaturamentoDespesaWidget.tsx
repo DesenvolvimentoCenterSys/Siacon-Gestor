@@ -15,23 +15,40 @@ import type {
   DetalhamentoFaturamentoPrevistoRealizadoDto,
 } from '@/types/dashboardTypes';
 
+function parseToLocalDate(dateStr: string): Date | null {
+  const trimmed = dateStr?.trim();
+  if (!trimmed) return null;
+
+  if (/^\d{4}-\d{2}$/.test(trimmed)) {
+    const [year, month] = trimmed.split('-').map(Number);
+    return new Date(year, month - 1, 1);
+  }
+
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const [year, month, day] = trimmed.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  if (/^\d{2}\/\d{2}\/\d{4}$/.test(trimmed)) {
+    const [day, month, year] = trimmed.split('/').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
+  if (/^\d{2}\/\d{4}$/.test(trimmed)) {
+    const [month, year] = trimmed.split('/').map(Number);
+    return new Date(year, month - 1, 1);
+  }
+
+  const candidate = new Date(trimmed);
+  return Number.isNaN(candidate.getTime()) ? null : candidate;
+}
+
 function formatToCompetencia(dateStr: string): string {
   if (/^\d{2}\/\d{4}$/.test(dateStr)) {
     return dateStr;
   }
 
-  let parsedDate: Date | null = null;
-
-  if (/^\d{4}-\d{2}$/.test(dateStr)) {
-    const [year, month] = dateStr.split('-').map(Number);
-    parsedDate = new Date(year, month - 1, 1);
-  } else if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
-    parsedDate = new Date(dateStr);
-  } else {
-    const candidate = new Date(dateStr);
-    parsedDate = Number.isNaN(candidate.getTime()) ? null : candidate;
-  }
-
+  const parsedDate = parseToLocalDate(dateStr);
   if (!parsedDate || Number.isNaN(parsedDate.getTime())) {
     return dateStr;
   }
