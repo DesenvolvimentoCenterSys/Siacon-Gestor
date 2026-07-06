@@ -992,7 +992,6 @@ export function DashboardGeralWidget() {
               value={formatCurrency(faturamentoInfoCard2?.totalPago ?? 0)}
               valueColor="#ffffff"
             />
-            <KPIMetric label="" value={formatPercent(faturamentoInfoCard2?.percentPago?? 0)} /> 
           </GradientKPI>
         </Grid>
 
