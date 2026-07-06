@@ -19,10 +19,10 @@ import {
   Tabs,
   Tab,
   Checkbox,
-  Popover,
   Skeleton,
   useMediaQuery,
-  MenuItem,
+  Autocomplete,
+  TextField,
 } from "@mui/material";
 import FuseSvgIcon from "@fuse/core/FuseSvgIcon";
 import { EventAnalyticsDto } from "../../../types/dashboardTypes";
@@ -276,134 +276,81 @@ function MultiCheckFilter({
   onChange,
 }: MultiCheckFilterProps) {
   const theme = useTheme();
-  const [anchor, setAnchor] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchor);
 
-  const toggleAll = () => {
-    if (selected.length === options.length) onChange([]);
-    else onChange(options.map((o) => o.code));
-  };
+  const sortedOptions = useMemo(
+    () => [...options].sort((a, b) => a.name.localeCompare(b.name, "pt-BR")),
+    [options],
+  );
 
-  const toggle = (code: number) => {
-    if (selected.includes(code)) onChange(selected.filter((c) => c !== code));
-    else onChange([...selected, code]);
-  };
-
-  const displayLabel =
-    selected.length === 0
-      ? `Todos os ${label}`
-      : selected.length === 1
-        ? options.find((o) => o.code === selected[0])?.name ?? label
-        : `${selected.length} selecionados`;
+  const selectedValues = useMemo(
+    () => sortedOptions.filter((option) => selected.includes(option.code)),
+    [selected, sortedOptions],
+  );
 
   return (
-    <>
-      <Button
-        variant="outlined"
-        size="small"
-        onClick={(e) => setAnchor(e.currentTarget)}
-        startIcon={<FuseSvgIcon size={16}>{icon}</FuseSvgIcon>}
-        endIcon={
-          selected.length > 0 ? (
-            <Chip
-              label={selected.length}
-              size="small"
-              color="primary"
-              sx={{ height: 18, fontSize: "0.65rem", ml: -0.5 }}
-            />
-          ) : (
-            <FuseSvgIcon size={14}>heroicons-solid:chevron-down</FuseSvgIcon>
-          )
-        }
-        sx={{
-          borderRadius: "8px",
-          textTransform: "none",
-          color: selected.length > 0 ? "primary.main" : "text.secondary",
-          borderColor: selected.length > 0 ? "primary.main" : "divider",
+    <Autocomplete
+      multiple
+      disableCloseOnSelect
+      size="small"
+      options={sortedOptions}
+      value={selectedValues}
+      getOptionLabel={(option) => option.name}
+      isOptionEqualToValue={(option, value) => option.code === value.code}
+      onChange={(_, newValue) => onChange(newValue.map((option) => option.code))}
+      renderOption={(props, option, { selected }) => {
+        const { key, ...restProps } = props as any;
+        return (
+          <li key={option.code} {...restProps} style={{ padding: "6px 10px" }}>
+            <Checkbox checked={selected} size="small" sx={{ mr: 1 }} />
+            <Typography variant="body2" sx={{ fontSize: "0.95rem" }}>
+              {option.name}
+            </Typography>
+          </li>
+        );
+      }}
+      renderTags={(tagValue, getTagProps) =>
+        tagValue.slice(0, 2).map((option, index) => (
+          <Chip
+            {...getTagProps({ index })}
+            key={option.code}
+            label={option.name}
+            size="small"
+            sx={{ maxWidth: "100%" }}
+          />
+        ))
+      }
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label={label}
+          placeholder={selected.length > 0 ? "Buscar mais..." : "Buscar..."}
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: (
+              <FuseSvgIcon size={16} sx={{ mr: 1, color: "text.secondary" }}>
+                {icon}
+              </FuseSvgIcon>
+            ),
+          }}
+        />
+      )}
+      sx={{
+        flex: { xs: "1 1 100%", sm: "0 1 280px", md: "0 1 320px" },
+        minWidth: { xs: "100%", sm: 260, md: 300 },
+        width: { xs: "100%", sm: "auto" },
+        maxWidth: { xs: "100%", sm: 360 },
+        "& .MuiAutocomplete-inputRoot": {
           minHeight: 40,
-          maxWidth: 220,
-          whiteSpace: "nowrap",
-          overflow: "hidden",
-          textOverflow: "ellipsis",
-          fontSize: "0.9rem",
-        }}
-      >
-        <Typography
-          variant="body2"
-          noWrap
-          sx={{ maxWidth: 140, fontSize: "0.9rem" }}
-        >
-          {displayLabel}
-        </Typography>
-      </Button>
-
-      <Popover
-        open={open}
-        anchorEl={anchor}
-        onClose={() => setAnchor(null)}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        PaperProps={{
-          sx: {
-            mt: 1,
-            borderRadius: 2,
-            minWidth: 240,
-            maxHeight: 360,
-            overflow: "auto",
-            boxShadow: theme.shadows[8],
-          },
-        }}
-      >
-        <Box sx={{ py: 1 }}>
-          <MenuItem onClick={toggleAll} sx={{ py: 0.75, px: 2 }}>
-            <Checkbox
-              size="small"
-              disableRipple 
-              checked={selected.length === options.length && options.length > 0}
-              indeterminate={selected.length > 0 && selected.length < options.length}
-              sx={{
-                p: 0, 
-                mr: 1.5,
-                "& .MuiSvgIcon-root": { fontSize: 22 },
-              }}
-            />
-            <Typography variant="body2" fontWeight={600} sx={{ fontSize: "0.95rem" }}>
-              Selecionar todos
-            </Typography>
-          </MenuItem>
-
-          <Divider sx={{ my: 0.5 }} />
-
-          {options.map((o) => (
-            <MenuItem key={o.code} onClick={() => toggle(o.code)} sx={{ py: 0.75, px: 2 }}>
-              <Checkbox
-                size="small"
-                disableRipple
-                checked={selected.includes(o.code)}
-                sx={{
-                  p: 0,
-                  mr: 1.5,
-                  "& .MuiSvgIcon-root": { fontSize: 22 },
-                }}
-              />
-              <Typography variant="body2" sx={{ fontSize: "0.95rem" }}>
-                {o.name}
-              </Typography>
-            </MenuItem>
-          ))}
-
-          {options.length === 0 && (
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{ py: 2, textAlign: "center", fontSize: "0.95rem" }}
-            >
-              Nenhuma opção disponível
-            </Typography>
-          )}
-        </Box>
-      </Popover>
-    </>
+          py: 0.25,
+          alignItems: "flex-start",
+          flexWrap: "wrap",
+        },
+        "& .MuiAutocomplete-tag": {
+          margin: 0.25,
+          maxWidth: "100%",
+        },
+      }}
+    />
   );
 }
 
