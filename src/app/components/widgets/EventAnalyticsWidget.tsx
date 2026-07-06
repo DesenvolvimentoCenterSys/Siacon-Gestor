@@ -331,6 +331,24 @@ function MultiCheckFilter({
                 {icon}
               </FuseSvgIcon>
             ),
+            endAdornment: (
+              <Box sx={{ display: "flex", alignItems: "center", gap: 0.75, mr: 0.5 }}>
+                {selected.length > 0 && (
+                  <Chip
+                    label={`${selected.length} selecionado${selected.length > 1 ? "s" : ""}`}
+                    size="small"
+                    color="primary"
+                    sx={{
+                      height: { xs: 24, sm: 26 },
+                      fontSize: { xs: "0.8rem", sm: "0.85rem" },
+                      fontWeight: 700,
+                      px: 0.75,
+                    }}
+                  />
+                )}
+                {params.InputProps.endAdornment}
+              </Box>
+            ),
           }}
         />
       )}
