@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { styled } from "@mui/material/styles";
 import FusePageSimple from "@fuse/core/FusePageSimple";
 import {
   Box, Grid, useTheme, Card, CardContent,
   InputLabel, Select, FormControl, MenuItem,
-  SelectChangeEvent, Button, CircularProgress, Alert,
+  SelectChangeEvent, Button, CircularProgress, Alert, LinearProgress,
 } from "@mui/material";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
@@ -22,6 +22,7 @@ import { PrevisaoFaturamentoVsPagamentoWidget } from "../../components/widgets/P
 import { DetalhamentoPrevisaoFaturamentoDespesaWidget } from "../../components/widgets/DetalhamentoPrevisaoFaturamentoDespesaWidget";
 import { PageHeader } from "@/app/components/ui/PageHeader";
 import { useDashboardFaturamentoPayload } from '../../hooks/useDashboard';
+import type { DashboardFaturamentoPayloadDto } from '@/types/dashboardTypes';
 
 const Root = styled(FusePageSimple)(({ theme }) => ({
   "& .FusePageSimple-header": { backgroundColor: theme.palette.background.default },
@@ -47,7 +48,7 @@ function monthInputToDate(monthStr: string): Date {
 function PrevisaoFaturamentoVsPagamentoPage() {
   const theme = useTheme();
 
-  const [dataType, setDataType] = useState<"simulacao" | "previsto_realizado">("simulacao");
+  const [dataType, setDataType] = useState<"simulacao" | "previsto_realizado">("previsto_realizado");
   const [searchBy, setSearchBy] = useState("C");
   const [startMonth, setStartMonth] = useState<string>(getDefaultStartMonth());
   const [endMonth, setEndMonth] = useState<string>(getDefaultEndMonth());
@@ -92,6 +93,16 @@ function PrevisaoFaturamentoVsPagamentoPage() {
     appliedDataType,
     appliedSearchBy,
   );
+
+  const [cachedPayload, setCachedPayload] = useState<DashboardFaturamentoPayloadDto | null>(null);
+
+  useEffect(() => {
+    if (payload) {
+      setCachedPayload(payload);
+    }
+  }, [payload]);
+
+  const displayPayload = payload ?? cachedPayload;
 
   const parsedStartDateObj = startMonth ? parse(startMonth, "yyyy-MM", new Date()) : null;
   const parsedEndDateObj = endMonth ? parse(endMonth, "yyyy-MM", new Date()) : null;
@@ -186,9 +197,26 @@ function PrevisaoFaturamentoVsPagamentoPage() {
               </Grid>
             )}
 
+            {isLoading && !displayPayload ? (
+              <Grid item xs={12}>
+                <Card elevation={0} sx={{ border: `1px solid ${theme.palette.divider}`, bgcolor: 'background.paper' }}>
+                  <CardContent sx={{ py: 6, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1 }}>
+                    <CircularProgress />
+                    <Box sx={{ mt: 1, fontWeight: 700 }}>Carregando dados...</Box>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ) : null}
+
+            {isLoading && displayPayload && (
+              <Grid item xs={12}>
+                <LinearProgress />
+              </Grid>
+            )}
+
             <Grid item xs={12}>
               <PrevisaoFaturamentoVsPagamentoWidget
-                data={payload?.resumoGrafico ?? []}
+                data={displayPayload?.resumoGrafico ?? []}
               />
             </Grid>
 
@@ -196,14 +224,14 @@ function PrevisaoFaturamentoVsPagamentoPage() {
               {appliedDataType === 'simulacao' ? (
                 <DetalhamentoPrevisaoFaturamentoDespesaWidget
                   dataType="simulacao"
-                  data={payload?.tabelaSimulacao ?? null}
+                  data={displayPayload?.tabelaSimulacao ?? null}
                   startDate={appliedStartDate}
                   endDate={appliedEndDate}
                 />
               ) : (
                 <DetalhamentoPrevisaoFaturamentoDespesaWidget
                   dataType="previsto_realizado"
-                  data={payload?.tabelaPrevistoRealizado ?? null}
+                  data={displayPayload?.tabelaPrevistoRealizado ?? null}
                   startDate={appliedStartDate}
                   endDate={appliedEndDate}
                 />
