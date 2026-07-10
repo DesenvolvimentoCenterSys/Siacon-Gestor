@@ -256,10 +256,13 @@ export function TotalFaturamentoPorConvenioWidget({
                           value={item.percentual || 0}
                           sx={{
                             flex: 1,
-                            height: 6,
-                            borderRadius: 1,
-                            bgcolor: alpha(theme.palette.primary.main, 0.1),
-                            "& .MuiLinearProgress-bar": { borderRadius: 1 },
+                            height: 10,
+                            borderRadius: 999,
+                            bgcolor: alpha(theme.palette.primary.main, 0.12),
+                            "& .MuiLinearProgress-bar": {
+                              borderRadius: 999,
+                              transition: "transform 0.3s ease-in-out",
+                            },
                           }}
                         />
                         <Typography
@@ -449,11 +452,14 @@ export function TotalFaturamentoPorConvenioWidget({
                               variant="determinate"
                               value={item.percentual || 0}
                               sx={{
-                                width: 50,
-                                height: 6,
-                                borderRadius: 1,
-                                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                "& .MuiLinearProgress-bar": { borderRadius: 1 },
+                                width: { xs: 70, sm: 90 },
+                                height: 8,
+                                borderRadius: 999,
+                                bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                "& .MuiLinearProgress-bar": {
+                                  borderRadius: 999,
+                                  transition: "transform 0.3s ease-in-out",
+                                },
                               }}
                             />
                             <Typography
