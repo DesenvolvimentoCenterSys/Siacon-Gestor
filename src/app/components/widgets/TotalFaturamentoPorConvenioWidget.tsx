@@ -229,7 +229,7 @@ export function TotalFaturamentoPorConvenioWidget({
                         mb: 2,
                       }}>
                         <Typography
-                          variant="caption"
+                          variant="body2"
                           color="text.secondary"
                           sx={{ minWidth: 45, fontWeight: 600 }} >
                           Quantidade: {item.associados}
@@ -245,7 +245,7 @@ export function TotalFaturamentoPorConvenioWidget({
                         }}
                       >
                         <Typography
-                          variant="caption"
+                          variant="body2"
                           color="text.secondary"
                           sx={{ minWidth: 45, fontWeight: 600 }}
                         >
@@ -463,9 +463,9 @@ export function TotalFaturamentoPorConvenioWidget({
                               }}
                             />
                             <Typography
-                              variant="caption"
+                              variant="body2"
                               color="text.secondary"
-                              sx={{ fontSize: "0.75rem" }}
+                              sx={{ fontWeight: 600 }}
                             >
                               {(item.percentual || 0).toFixed(1)}%
                             </Typography>
