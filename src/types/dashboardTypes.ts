@@ -1,5 +1,5 @@
 // Dashboard DTOs for financial data, users, delinquency, and related metrics
-import { FiltroOption } from '@/app/hooks/useDateFilter';
+import { ConvenioOption, FiltroOption } from '@/app/hooks/useDateFilter';
 
 export interface OverviewAcummulatedDelinquencyDto {
   lastMonthTaxVariation: number;
@@ -354,10 +354,8 @@ export interface GrupoBancoDto {
 }
 
 export interface FiltrosDashboardDto {
-  convenios: FiltroOption[];
-  servicos: FiltroOption[];
-  centrosCusto: FiltroOption[];
-  planosConta: FiltroOption[];
+  convenios: ConvenioOption[];
+  operadoras: FiltroOption[];
 }
 
 export interface EvolucaoFinanceiraItemDto {
@@ -446,4 +444,24 @@ export interface EventGraphics{
   dDataCompetencia: Date;
   valorInadimplente: number;
 }
+
+export interface ConveniosDtos{
+  dataReferencia: Date;
+  totalGeral: number;
+  quantidadeProponentes: number;
+  quantidadeVidas: number;
+  percentual: number;
+  nomeConvenio: string;
+  faturamento: FaturamentoDetalhadoConvenioDataDto;
+}
+
+
+export interface FaturamentoDetalhadoConvenioDataDto{
+  codConvenio: number;
+  mensalidade: number;
+  utilizacoes: number;
+  ajustes: number;
+  taxaAdm: number;
+}
+
 

@@ -49,7 +49,8 @@ import {
   EvolucaoFinanceiraPayloadDto,
   EventAnalyticsDetailsDto,
   EventGroupDto,
-  EventGraphics
+  EventGraphics,
+  ConveniosDtos
 } from '@/types/dashboardTypes';
 
 const dashboardBaseUrl = process.env.NODE_ENV === 'development'
@@ -304,6 +305,24 @@ export const dashboardService = {
     return dashboardClient.get('api/Dashboard/total-faturamento-convenio-referencia-filters', {
       searchParams
     }).json<TotalFaturamentoDto>();
+  },
+  getFaturamentoDetalhadoConvenio: async (
+    startDate?: string,
+    endDate?: string,
+    searchBy?: string,
+    convenios?: number[],
+    operadoras?: number[],
+  ): Promise<ConveniosDtos[]> => {
+    const searchParams: Record<string, string> = {};
+    if (startDate) searchParams.startDate = startDate;
+    if (endDate) searchParams.endDate = endDate;
+    if (convenios && convenios.length > 0) searchParams.convenios = convenios.join(',');
+    if (operadoras && operadoras.length > 0) searchParams.operadoras = operadoras.join(',');
+    if (searchBy) searchParams.searchBy = searchBy;
+
+    return dashboardClient.get('api/Dashboard/faturamento-detalhado-convenio', {
+      searchParams
+    }).json<ConveniosDtos[]>();
   },
   getCashFlowEvolution: async (startDate?: string, endDate?: string): Promise<CashFlowEvolutionDto[]> => {
     const searchParams: Record<string, string> = {};

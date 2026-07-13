@@ -1,23 +1,14 @@
-"use client";
-
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   Box,
   Typography,
   Skeleton,
-  Tab,
-  Tabs,
   Card,
   useMediaQuery,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
-import { format } from "date-fns";
 import * as Recharts from "recharts";
-import {
-  useTotalFaturamentoPorConvenioWithFilters,
-  useTotalFaturamentoPorConvenioReferenciaWithFilters,
-} from "../../hooks/useDashboard";
-import type { DateFilterTab } from "../../hooks/useDateFilter";
+import { ConveniosDtos } from "@/types/dashboardTypes";
 
 const {
   PieChart,
@@ -87,15 +78,12 @@ function CustomTooltip({ active, payload }: any) {
 
 const RADIAN = Math.PI / 180;
 
-
 const LABEL_THRESHOLD = 0.03;
 
 function renderCustomLabel(props: any) {
   const { cx, cy, midAngle, outerRadius, name, percent } = props;
 
-
   if (percent < LABEL_THRESHOLD) return null;
-
 
   const radius = outerRadius + 32;
   const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -121,77 +109,33 @@ function renderCustomLabel(props: any) {
 }
 
 interface FaturamentoPorConvenioDonutWidgetProps {
-  startDate?: Date | null;
-  endDate?: Date | null;
-  tab?: DateFilterTab;
-  convenios?: number[];
-  servicos?: number[];
-  centrosCusto?: number[];
-  planosContas?: number[];
+  data?: ConveniosDtos[];
+  isLoading?: boolean;
+  isError?: boolean;
 }
 
 export function FaturamentoPorConvenioDonutWidget({
-  startDate,
-  endDate,
-  tab: externalTab,
-  convenios = [],
-  servicos = [],
-  centrosCusto = [],
-  planosContas = [],
+  data = [],
+  isLoading = false,
+  isError = false,
 }: FaturamentoPorConvenioDonutWidgetProps) {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
-  const [internalTab, setInternalTab] = useState<DateFilterTab>("competencia");
-
-  const showInternalTabs = externalTab === undefined;
-  const tab = externalTab ?? internalTab;
-
-  const startStr = startDate ? format(startDate, "yyyy-MM-dd") : undefined;
-  const endStr = endDate ? format(endDate, "yyyy-MM-dd") : undefined;
-
-  const {
-    data: dataVencimento,
-    isLoading: isLoadingVencimento,
-    isError: isErrorVencimento,
-  } = useTotalFaturamentoPorConvenioWithFilters(
-    startStr,
-    endStr,
-    convenios,
-    servicos,
-    centrosCusto,
-    planosContas,
-  );
-  const {
-    data: dataCompetencia,
-    isLoading: isLoadingCompetencia,
-    isError: isErrorCompetencia,
-  } = useTotalFaturamentoPorConvenioReferenciaWithFilters(
-    startStr,
-    endStr,
-    convenios,
-    servicos,
-    centrosCusto,
-    planosContas,
-  );
-
-  const data = tab === "vencimento" ? dataVencimento : dataCompetencia;
-  const isLoading =
-    tab === "vencimento" ? isLoadingVencimento : isLoadingCompetencia;
-  const isError = tab === "vencimento" ? isErrorVencimento : isErrorCompetencia;
-
   const chartData = useMemo(() => {
-    if (!data?.porConvenio?.length) return [];
-    const total = data.porConvenio.reduce(
-      (sum, d) => sum + (d.faturamento?.totalGeral ?? 0),
+    if (!data?.length) return [];
+    
+    const total = data.reduce(
+      (sum, d) => sum + (d.totalGeral ?? 0),
       0,
     );
-    return data.porConvenio
-      .filter((d) => (d.faturamento?.totalGeral ?? 0) > 0)
+    
+    return data
+      .filter((d) => (d.totalGeral ?? 0) > 0)
       .map((d) => ({
         name: d.nomeConvenio,
-        value: d.faturamento?.totalGeral ?? 0,
-        percent: total > 0 ? (d.faturamento?.totalGeral ?? 0) / total : 0,
+        value: d.totalGeral ?? 0,
+        percent: total > 0 ? (d.totalGeral ?? 0) / total : 0,
       }))
       .sort((a, b) => b.value - a.value);
   }, [data]);
@@ -263,29 +207,6 @@ export function FaturamentoPorConvenioDonutWidget({
         },
       }}
     >
-      {showInternalTabs && (
-        <Box
-          sx={{
-            borderBottom: 1,
-            borderColor: "divider",
-            bgcolor: "rgba(0,0,0,0.02)",
-          }}
-        >
-          <Tabs
-            value={internalTab}
-            onChange={(_, v) => setInternalTab(v)}
-            variant="fullWidth"
-            sx={{
-              minHeight: 40,
-              "& .MuiTab-root": { minHeight: 40, py: 0.5, fontSize: "0.9rem" },
-            }}
-          >
-            <Tab label="Por Vencimento" value="vencimento" />
-            <Tab label="Por Competência" value="competencia" />
-          </Tabs>
-        </Box>
-      )}
-
       <Box sx={{ p: 3, flexGrow: 1, display: "flex", flexDirection: "column" }}>
         <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 0.5 }}>
           Faturamento por Convênio
@@ -349,7 +270,7 @@ export function FaturamentoPorConvenioDonutWidget({
               </PieChart>
             </ResponsiveContainer>
 
-            {/* Legenda compacta para slices < 3% que ficam sem label inline */}
+            {/* Legenda compacta para fatias < 3% que ficam sem rótulos nas linhas */}
             {smallSlices.length > 0 && (
               <Box
                 sx={{

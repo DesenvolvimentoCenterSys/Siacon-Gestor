@@ -8,14 +8,16 @@ export type FiltroOption = {
   nome: string;
 };
 
+export type ConvenioOption = FiltroOption & {
+  idOperadora: string | number;
+}
+
 export interface DateFilter {
   startDate: Date | null;
   endDate: Date | null;
   tab: DateFilterTab;
-  convenios: FiltroOption[];
-  servicos: FiltroOption[];
-  centrosCusto: FiltroOption[];
-  planosContas: FiltroOption[];
+  convenios: ConvenioOption[];
+  operadoras: FiltroOption[];
 }
 
 export interface UseDateFilterReturn extends DateFilter {
@@ -23,9 +25,7 @@ export interface UseDateFilterReturn extends DateFilter {
   setEndDate: (date: Date | null) => void;
   setTab: (tab: DateFilterTab) => void;
   setConvenios: (val: FiltroOption[]) => void;
-  setServicos: (val: FiltroOption[]) => void;
-  setCentrosCusto: (val: FiltroOption[]) => void;
-  setPlanosContas: (val: FiltroOption[]) => void;
+  setOperadoras: (val: FiltroOption[]) => void;
   reset: () => void;
 }
 
@@ -34,9 +34,7 @@ const getDefaults = (): DateFilter => ({
   endDate: endOfMonth(new Date()),
   tab: "competencia",
   convenios: [],
-  servicos: [],
-  centrosCusto: [],
-  planosContas: [],
+  operadoras: []
 });
 
 export function useDateFilter(): UseDateFilterReturn {
@@ -54,20 +52,12 @@ export function useDateFilter(): UseDateFilterReturn {
     setFilter((prev) => ({ ...prev, tab }));
   }, []);
 
-  const setConvenios = useCallback((val: FiltroOption[]) => {
+  const setConvenios = useCallback((val: ConvenioOption[]) => {
     setFilter((prev) => ({ ...prev, convenios: val }));
   }, []);
 
-  const setServicos = useCallback((val: FiltroOption[]) => {
-    setFilter((prev) => ({ ...prev, servicos: val }));
-  }, []);
-
-  const setCentrosCusto = useCallback((val: FiltroOption[]) => {
-    setFilter((prev) => ({ ...prev, centrosCusto: val }));
-  }, []);
-
-  const setPlanosContas = useCallback((val: FiltroOption[]) => {
-    setFilter((prev) => ({ ...prev, planosContas: val }));
+  const setOperadoras = useCallback((val: FiltroOption[]) => {
+    setFilter((prev) => ({ ...prev, operadoras: val }));
   }, []);
 
   const reset = useCallback(() => {
@@ -80,9 +70,7 @@ export function useDateFilter(): UseDateFilterReturn {
     setEndDate, 
     setTab, 
     setConvenios, 
-    setServicos, 
-    setCentrosCusto, 
-    setPlanosContas, 
+    setOperadoras, 
     reset 
   };
 }

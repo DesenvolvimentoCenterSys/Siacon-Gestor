@@ -224,6 +224,20 @@ export const useFilterOptions = () => {
   });
 };
 
+export const useFaturamentoDetalhadoConvenio = (
+  startDate?: string,
+  endDate?: string,
+  searchBy?: string,
+  convenios?: number[],
+  operadoras?: number[],
+) => {
+  return useQuery({
+    queryKey: ['faturamentoDetalhadoConvenio', startDate, endDate, searchBy,convenios, operadoras],
+    queryFn: () => dashboardService.getFaturamentoDetalhadoConvenio(startDate, endDate, searchBy, convenios, operadoras),
+    enabled: !!(startDate && endDate),
+  });
+};
+
 export const useTotalFaturamentoPorConvenioWithFilters = (
   startDate?: string,
   endDate?: string,
