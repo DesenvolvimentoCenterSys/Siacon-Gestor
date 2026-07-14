@@ -432,8 +432,8 @@ export function DashboardGeralWidget() {
   const [appliedDateMonth, setAppliedDateMonth] = useState(getDefaultEndMonth());
   const [appliedStart, setAppliedStart] = useState(getDefaultStartMonth());
   const [appliedEnd, setAppliedEnd] = useState(getDefaultEndMonth());
-  const [searchBy, setSearchBy] = useState("V");
-  const [appliedSearchBy, setAppliedSearchBy] = useState("V");
+  const [searchBy, setSearchBy] = useState("C");
+  const [appliedSearchBy, setAppliedSearchBy] = useState("C");
   const [visibleSeries, setVisibleSeries] = useState<Set<SeriesName>>(new Set(ALL_SERIES));
 
   const handleDateModeFilterChange = (event: SelectChangeEvent) => {
