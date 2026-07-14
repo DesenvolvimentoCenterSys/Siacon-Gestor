@@ -494,7 +494,7 @@ export function DashboardGeralWidget() {
       totalAnterior:filiadosData.totalAnterior ?? 0,
       qtdeFaturado: filiadosData.qtdeFaturado,
       faturamentoTotal: filiadosData.faturamentoTotal,
-      ticketMedio : filiadosData.totalAtivos > 0 ? (filiadosData.faturamentoTotal / filiadosData.totalAtivos) : 0
+      ticketMedio : filiadosData.qtdeFaturado > 0 ? (filiadosData.faturamentoTotal / filiadosData.qtdeFaturado) : 0
     };
   }, [filiadosData]);
 
@@ -942,7 +942,7 @@ export function DashboardGeralWidget() {
             <KPIDivider />
             <KPIMetric label="Total Faturado" value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)} />
             <KPIMetric label="Ticket Médio" value={formatCurrency(filiadosInfo?.ticketMedio)} />
-            <KPIMetric label="Qtde. Faturado" value={filiadosInfo?.qtdeFaturado} />
+            <KPIMetric label="Qtde. Faturado" value={filiadosInfo?.qtdeFaturado.toString()} />
             {/*
             <KPIMetric label="Total Adesões" value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)} />
             <KPIMetric
