@@ -942,7 +942,7 @@ export function DashboardGeralWidget() {
             <KPIDivider />
             <KPIMetric label="Total Faturado" value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)} />
             <KPIMetric label="Ticket Médio" value={formatCurrency(filiadosInfo?.ticketMedio)} />
-            <KPIMetric label="Qntde. Faturado" value={formatCurrency(filiadosInfo?.qtdeFaturado)} />
+            <KPIMetric label="Qtde. Faturado" value={filiadosInfo?.qtdeFaturado} />
             {/*
             <KPIMetric label="Total Adesões" value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)} />
             <KPIMetric
