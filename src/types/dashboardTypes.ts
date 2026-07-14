@@ -198,8 +198,7 @@ export interface TotalFiliadosDto {
   totalAnoAnterior: number;
   totalAnterior: number;
   totalNovos: number;
-  valorDesligados: number;
-  valorNovos: number;
+  qtdeFaturado: number;
   faturamentoTotal: number;
   dataReferencia: string;
 }

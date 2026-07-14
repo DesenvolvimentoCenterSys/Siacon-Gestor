@@ -480,9 +480,9 @@ export function DashboardGeralWidget() {
     appliedSearchBy,
   );
 
-  const { data: delinquencyChartData, isLoading: l3_chart } = useDelinquencySummary(startDate, endDate);
 
-  const isLoading = l1 || l2 || l2_2 || l3 || l3_chart || l4;
+
+  const isLoading = l1 || l2 || l2_2 || l3 || l4;
 
   const filiadosInfo = useMemo(() => {
     if (!filiadosData) return null;
@@ -492,8 +492,7 @@ export function DashboardGeralWidget() {
       totalNovos: filiadosData.totalNovos,
       totalAnoAnterior: filiadosData.totalAnoAnterior,
       totalAnterior:filiadosData.totalAnterior ?? 0,
-      faturamentoPerdido: filiadosData.valorDesligados,
-      totalAdesoes: filiadosData.valorNovos,
+      qtdeFaturado: filiadosData.qtdeFaturado,
       faturamentoTotal: filiadosData.faturamentoTotal,
       ticketMedio : filiadosData.totalAtivos > 0 ? (filiadosData.faturamentoTotal / filiadosData.totalAtivos) : 0
     };
@@ -943,12 +942,15 @@ export function DashboardGeralWidget() {
             <KPIDivider />
             <KPIMetric label="Total Faturado" value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)} />
             <KPIMetric label="Ticket Médio" value={formatCurrency(filiadosInfo?.ticketMedio)} />
+            <KPIMetric label="Qntde. Faturado" value={formatCurrency(filiadosInfo?.qtdeFaturado)} />
+            {/*
             <KPIMetric label="Total Adesões" value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)} />
             <KPIMetric
               label="Total Perdido"
               value={formatCurrency(filiadosInfo?.faturamentoPerdido ?? 0)}
               valueColor="#ffffff"
             />
+            */}
             <KPIDivider />
             <Typography
               sx={{
@@ -1028,7 +1030,7 @@ export function DashboardGeralWidget() {
         <Grid item xs={12} sm={6} xl={3}>
           <GradientKPI
             title="Inadimplência"
-            mainValue={formatCurrency(delinquencyInfo?.totalInadimplente ?? 0)}
+            mainValue={formatCurrency(faturamentoCard2Data.totalVencido ?? 0)}
             icon="heroicons-outline:document-text"
             gradientColors={["#ca1c16", "#d42721"]}
           >
