@@ -348,10 +348,10 @@ export const useDailyDelinquencyReferencia = (startDate?: string, endDate?: stri
   });
 };
 
-export const useDelinquencyAging = (referenceYear?: number) => {
+export const useDelinquencyAging = (ano?: number) => {
   return useQuery({
-    queryKey: ['delinquencyAging', referenceYear],
-    queryFn: () => dashboardService.getDelinquencyAging(referenceYear)
+    queryKey: ['delinquencyAging', ano],
+    queryFn: () => dashboardService.getDelinquencyAging(ano)
   });
 };
 

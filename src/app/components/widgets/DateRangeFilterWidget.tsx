@@ -35,6 +35,23 @@ type Props = {
   reset: () => void;
 };
 
+function getDateErrorMessage(reason: string | null): string | null {
+  switch (reason) {
+    case "maxDate":
+      return "Data não pode ser posterior à data final";
+    case "minDate":
+      return "Data final não pode ser anterior à data inicial";
+    case "invalidDate":
+      return "Data inválida";
+    case "disablePast":
+      return "Data não pode estar no passado";
+    case "disableFuture":
+      return "Data não pode estar no futuro";
+    default:
+      return reason ? "Data inválida" : null;
+  }
+}
+
 export function DateRangeFilterWidget({
   startDate,
   endDate,
@@ -54,6 +71,14 @@ export function DateRangeFilterWidget({
   const [tempConvenios, setTempConvenios] = useState<ConvenioOption[]>(convenios);
   const [tempOperadoras, setTempOperadoras] = useState<FiltroOption[]>(operadoras);
 
+  // ── Estado de erro dos DatePickers ──
+  const [startErrorReason, setStartErrorReason] = useState<string | null>(null);
+  const [endErrorReason, setEndErrorReason] = useState<string | null>(null);
+
+  const startErrorMessage = getDateErrorMessage(startErrorReason);
+  const endErrorMessage = getDateErrorMessage(endErrorReason);
+  const hasDateError = Boolean(startErrorMessage) || Boolean(endErrorMessage);
+
   const { data: filterOptionsData, isLoading } = useFilterOptions();
 
   const opcoesConvenios: ConvenioOption[] = filterOptionsData?.convenios || [];
@@ -68,6 +93,9 @@ export function DateRangeFilterWidget({
   }, [startDate, endDate, tab, convenios, operadoras]);
 
   const handlePesquisar = () => {
+    // Trava de segurança extra, mesmo com o botão desabilitado via hasDateError
+    if (tempStart && tempEnd && tempStart > tempEnd) return;
+
     setStartDate(tempStart);
     setEndDate(tempEnd);
     setTab(tempTab);
@@ -75,20 +103,26 @@ export function DateRangeFilterWidget({
     if (setOperadoras) setOperadoras(tempOperadoras);
   };
 
+  const handleReset = () => {
+    setStartErrorReason(null);
+    setEndErrorReason(null);
+    reset();
+  };
+
   const opcoesConveniosFiltradas = useMemo(() => {
     if (tempOperadoras.length === 0) return opcoesConvenios;
-    
-    return opcoesConvenios.filter((conv: ConvenioOption) => 
+
+    return opcoesConvenios.filter((conv: ConvenioOption) =>
       tempOperadoras.some((op) => String(op.id) === String(conv.idOperadora))
     );
   }, [opcoesConvenios, tempOperadoras]);
 
   const handleOperadorasChange = (novasOperadoras: FiltroOption[]) => {
     setTempOperadoras(novasOperadoras);
-    
+
     if (novasOperadoras.length > 0) {
-      setTempConvenios((prev) => 
-        prev.filter((conv: ConvenioOption) => 
+      setTempConvenios((prev) =>
+        prev.filter((conv: ConvenioOption) =>
           novasOperadoras.some((op) => String(op.id) === String(conv.idOperadora))
         )
       );
@@ -160,15 +194,21 @@ export function DateRangeFilterWidget({
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
         {/* Utilizamos flex-start para que, se algum elemento crescer (como a seleção múltipla), os outros não estiquem estranhamente */}
         <Grid container spacing={2} alignItems="flex-start">
-          
+
           <Grid item xs={12} sm={6} md={2}>
             <DatePicker
               label="Data inicial"
               value={tempStart}
               onChange={(val) => setTempStart(val)}
               maxDate={tempEnd ?? undefined}
+              onError={(reason) => setStartErrorReason(reason)}
               slotProps={{
-                textField: { size: "small", fullWidth: true },
+                textField: {
+                  size: "small",
+                  fullWidth: true,
+                  error: Boolean(startErrorMessage),
+                  helperText: startErrorMessage ?? undefined,
+                },
               }}
             />
           </Grid>
@@ -179,8 +219,14 @@ export function DateRangeFilterWidget({
               value={tempEnd}
               onChange={(val) => setTempEnd(val)}
               minDate={tempStart ?? undefined}
+              onError={(reason) => setEndErrorReason(reason)}
               slotProps={{
-                textField: { size: "small", fullWidth: true },
+                textField: {
+                  size: "small",
+                  fullWidth: true,
+                  error: Boolean(endErrorMessage),
+                  helperText: endErrorMessage ?? undefined,
+                },
               }}
             />
           </Grid>
@@ -237,7 +283,7 @@ export function DateRangeFilterWidget({
           <Grid item xs={12} sm={6} md={2}>
             {renderMultiSelect("Operadoras", tempOperadoras, handleOperadorasChange, opcoesOperadoras)}
           </Grid>
-          
+
           <Grid item xs={12} sm={6} md={3}>
             {renderMultiSelect("Convênios", tempConvenios, setTempConvenios, opcoesConveniosFiltradas)}
           </Grid>
@@ -248,7 +294,7 @@ export function DateRangeFilterWidget({
               variant="outlined"
               size="small"
               startIcon={<RestartAlt />}
-              onClick={reset}
+              onClick={handleReset}
               sx={{
                 height: 38,
                 color: "text.secondary",
@@ -264,6 +310,7 @@ export function DateRangeFilterWidget({
               variant="contained"
               size="small"
               onClick={handlePesquisar}
+              disabled={hasDateError}
               startIcon={
                 <FuseSvgIcon size={18}>heroicons-outline:magnifying-glass</FuseSvgIcon>
               }
@@ -274,6 +321,10 @@ export function DateRangeFilterWidget({
                 boxShadow: "none",
                 minWidth: "120px",
                 "&:hover": { bgcolor: "#333333", boxShadow: "none" },
+                "&.Mui-disabled": {
+                  bgcolor: "action.disabledBackground",
+                  color: "text.disabled",
+                },
               }}
             >
               Pesquisar

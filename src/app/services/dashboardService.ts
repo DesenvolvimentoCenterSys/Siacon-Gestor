@@ -396,9 +396,9 @@ export const dashboardService = {
       searchParams
     }).json<DailyDelinquencyDto[]>();
   },
-  getDelinquencyAging: async (referenceYear?: number): Promise<DelinquencyAgingDto[]> => {
+  getDelinquencyAging: async (ano?: number): Promise<DelinquencyAgingDto[]> => {
     const searchParams: Record<string, string> = {};
-    if (referenceYear) searchParams.referenceYear = referenceYear.toString();
+    if (ano) searchParams.ano = ano.toString();
 
     return dashboardClient.get('api/Dashboard/delinquency-aging', {
       searchParams
