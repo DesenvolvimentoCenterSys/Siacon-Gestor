@@ -940,9 +940,22 @@ export function DashboardGeralWidget() {
               valueColor="#ffffff"
             />
             <KPIDivider />
+            <Typography
+              sx={{
+                fontSize: "1.4rem",
+                fontWeight: 600,
+                opacity: 0.95,
+                textAlign: "start",
+                mt: 1,
+                lineHeight: 1.3,
+              }}
+            >
+              Faturamento Associados
+            </Typography>
+            <br/>
             <KPIMetric label="Total Faturado" value={formatCurrency(filiadosInfo?.faturamentoTotal ?? 0)} />
             <KPIMetric label="Ticket Médio" value={formatCurrency(filiadosInfo?.ticketMedio)} />
-            <KPIMetric label="Qtde. Faturado" value={filiadosInfo?.qtdeFaturado.toString()} />
+            <KPIMetric label="Qtde. Faturado" value={(filiadosInfo?.qtdeFaturado ?? 0).toString()} />
             {/*
             <KPIMetric label="Total Adesões" value={formatCurrency(filiadosInfo?.totalAdesoes ?? 0)} />
             <KPIMetric
