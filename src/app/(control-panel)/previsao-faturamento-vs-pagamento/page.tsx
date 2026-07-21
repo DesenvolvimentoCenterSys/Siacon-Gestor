@@ -49,7 +49,7 @@ function PrevisaoFaturamentoVsPagamentoPage() {
   const theme = useTheme();
 
   const [dataType, setDataType] = useState<"simulacao" | "previsto_realizado">("previsto_realizado");
-  const [searchBy, setSearchBy] = useState("C");
+  const [searchBy, setSearchBy] = useState("V");
   const [startMonth, setStartMonth] = useState<string>(getDefaultStartMonth());
   const [endMonth, setEndMonth] = useState<string>(getDefaultEndMonth());
 
