@@ -32,7 +32,7 @@ export interface UseDateFilterReturn extends DateFilter {
 const getDefaults = (): DateFilter => ({
   startDate: startOfMonth(new Date()),
   endDate: endOfMonth(new Date()),
-  tab: "competencia",
+  tab: "vencimento",
   convenios: [],
   operadoras: []
 });
